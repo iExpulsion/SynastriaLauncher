@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+             x:Class="SynastriaLauncher.App.Views.WdmView"
+             x:DataType="vm:WdmViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="32,28,32,32" MaxWidth="980">
+      <!-- Header -->
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Command="{Binding CheckCommand}" IsEnabled="{Binding IsIdle}" VerticalAlignment="Top">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+            <TextBlock Text="Check for Updates" />
+          </StackPanel>
+        </Button>
+        <StackPanel>
+          <TextBlock Classes="pageTitle" Text="WoW Dungeon Maps" />
+          <TextBlock Classes="pageSubtitle" Text="{Binding Summary}" />
+        </StackPanel>
+      </DockPanel>
+
+      <!-- Credit -->
+      <Border Classes="panel afterHeader" Padding="16">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="Map Patches on GitHub" Command="{Binding OpenPatchRepoCommand}" />
+            <Button Content="Addons on GitHub" Command="{Binding OpenAddonRepoCommand}" />
+          </StackPanel>
+          <StackPanel Spacing="4" Margin="0,0,12,0">
+            <TextBlock Classes="name" Text="By Trimitor" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Classic and TBC dungeon maps for 3.3.5a, cave maps, and addons that show them. The launcher installs them from Trimitor's GitHub releases; nothing is re-hosted." />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+
+      <!-- WDM's patches beside Reforged's maps -->
+      <Border IsVisible="{Binding HasConflict}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource AmberSoft}">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center" Command="{Binding UninstallConflictsCommand}">
+            <TextBlock Text="Uninstall Them" Foreground="{StaticResource Amber}" FontWeight="SemiBold" />
+          </Button>
+          <PathIcon DockPanel.Dock="Left" Data="{StaticResource IconWarning}" Width="14" Height="14" Margin="0,0,8,0"
+                    VerticalAlignment="Center" Foreground="{StaticResource Amber}" />
+          <TextBlock Text="{Binding Conflict}" Foreground="{StaticResource Amber}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        </DockPanel>
+      </Border>
+
+      <Border Classes="panel" Margin="0,12,0,0" Padding="16" IsVisible="{Binding !HasGame}">
+        <TextBlock Classes="muted" Text="Choose your game folder in Settings first." />
+      </Border>
+
+      <!-- Parts -->
+      <ItemsControl ItemsSource="{Binding Sections}" IsEnabled="{Binding IsIdle}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:WdmSectionViewModel">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{Binding Title}" />
+              <TextBlock Classes="sectionNote" Text="{Binding Note}" TextWrapping="Wrap" />
+              <Border Classes="panel">
+                <ItemsControl ItemsSource="{Binding Parts}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:WdmPartViewModel">
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                          <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="name" Text="{Binding Name}" />
+                              <Border Classes="pill accent" IsVisible="{Binding IsPreRelease}" VerticalAlignment="Center"
+                                      ToolTip.Tip="Trimitor publishes this one as a pre-release">
+                                <TextBlock Text="Pre-Release" />
+                              </Border>
+                            </StackPanel>
+                            <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" Text="{Binding Description}" />
+                            <TextBlock Classes="small" TextWrapping="Wrap" Text="{Binding DetailsLine}" />
+                            <TextBlock Classes="small" TextWrapping="Wrap" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
+                            <TextBlock Classes="small" TextWrapping="Wrap" Text="{Binding LockNote}" IsVisible="{Binding IsLocked}" Foreground="{StaticResource Info}" />
+                            <TextBlock Classes="small" TextWrapping="Wrap" Text="{Binding Missing}" IsVisible="{Binding HasMissing}" Foreground="{StaticResource Amber}" />
+                          </StackPanel>
+                          <Border Grid.Column="1" Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}" Classes.info="{Binding IsInfo}"
+                                  IsVisible="{Binding ShowState}" Margin="12,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding StateLabel}" />
+                          </Border>
+                          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Classes="primary" MinWidth="88" HorizontalContentAlignment="Center" Content="{Binding PrimaryLabel}"
+                                    Command="{Binding InstallCommand}" IsVisible="{Binding HasPrimary}" />
+                            <Button MinWidth="88" HorizontalContentAlignment="Center" Content="Uninstall"
+                                    Command="{Binding UninstallCommand}" IsVisible="{Binding ShowUninstall}" />
+                            <Button Classes="icon" ToolTip.Tip="More">
+                              <PathIcon Data="{StaticResource IconMore}" />
+                              <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                  <MenuItem Header="Reinstall" Command="{Binding InstallCommand}" IsEnabled="{Binding CanReinstall}" />
+                                  <MenuItem Header="Uninstall" Command="{Binding UninstallCommand}" IsEnabled="{Binding CanUninstall}"
+                                            IsVisible="{Binding !ShowUninstall}" />
+                                  <Separator />
+                                  <MenuItem Header="Open on GitHub" Command="{Binding OpenPageCommand}" />
+                                </MenuFlyout>
+                              </Button.Flyout>
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

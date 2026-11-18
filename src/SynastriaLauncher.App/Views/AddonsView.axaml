@@ -1,0 +1,181 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+             x:Class="SynastriaLauncher.App.Views.AddonsView"
+             x:DataType="vm:AddonsViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="32,28,32,32" MaxWidth="980">
+      <!-- Header -->
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+          <Button Command="{Binding CheckAllCommand}" IsEnabled="{Binding CanCheck}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+              <TextBlock Text="{Binding CheckLabel}" />
+            </StackPanel>
+          </Button>
+          <Button Classes="primary" Content="{Binding UpdateAllLabel}" Command="{Binding UpdateAllCommand}" IsVisible="{Binding HasUpdates}" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Classes="pageTitle" Text="Addons" />
+          <TextBlock Classes="pageSubtitle" Text="{Binding Summary}" />
+        </StackPanel>
+      </DockPanel>
+
+      <!-- Toolbar -->
+      <DockPanel Classes="afterHeader">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <ToggleButton Content="{Binding ShowHiddenLabel}" IsChecked="{Binding ShowHidden}" IsVisible="{Binding HiddenCount, Converter={x:Static vm:Converters.Positive}}" CornerRadius="7" />
+          <Button Command="{Binding ToggleAddingCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconPlus}" Width="14" Height="14" />
+              <TextBlock Text="Add Addon" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+        <TextBox Text="{Binding Filter}" PlaceholderText="Search addons" Margin="0,0,12,0">
+          <TextBox.InnerLeftContent>
+            <PathIcon Data="{StaticResource IconSearch}" Width="15" Height="15" Margin="10,0,0,0" Foreground="{StaticResource Faint}" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </DockPanel>
+
+      <!-- Add panel -->
+      <Border Classes="panel" Margin="0,12,0,0" Padding="16" IsVisible="{Binding IsAdding}">
+        <StackPanel Spacing="8">
+          <TextBlock FontWeight="SemiBold" Text="Add Any Addon from GitHub" />
+          <TextBlock Classes="muted" Text="Type it as owner/repo, or paste the link to its GitHub page. The launcher works out its folders and tracks its updates like the others." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Width="380" Text="{Binding NewRepo}" PlaceholderText="owner/repo or https://github.com/owner/repo" />
+            <Button Classes="primary" Content="Add" Command="{Binding AddRepoCommand}" />
+            <Button Classes="ghost" Content="Cancel" Command="{Binding ToggleAddingCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="panel" Margin="0,12,0,0" Padding="16" IsVisible="{Binding !HasGame}">
+        <TextBlock Classes="muted" Text="Choose your game folder in Settings so the launcher can see which addons are installed." />
+      </Border>
+
+      <!-- Sections -->
+      <ItemsControl ItemsSource="{Binding Sections}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:AddonSectionViewModel">
+            <StackPanel>
+              <Button Classes="sectionToggle" Command="{Binding ToggleCommand}" ToolTip.Tip="{Binding ToggleHint}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconChevron}" Classes.collapsed="{Binding !IsExpanded}" />
+                  <TextBlock Classes="section" Margin="0" Text="{Binding Title}" />
+                  <TextBlock Classes="small" Text="{Binding Count}" />
+                </StackPanel>
+              </Button>
+              <Border Classes="panel" IsVisible="{Binding IsExpanded}">
+                <ItemsControl ItemsSource="{Binding Items}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AddonItemViewModel">
+                      <Border Classes="row compact" Opacity="{Binding IsHidden, Converter={x:Static vm:Converters.HiddenOpacity}}">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                          <DockPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock DockPanel.Dock="Left" Classes="name" Text="{Binding Name}" ToolTip.Tip="{Binding Origin}" Margin="0,0,12,0" />
+                            <TextBlock Classes="muted" FontSize="12.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding Description}" ToolTip.Tip="{Binding DescriptionTip}" />
+                          </DockPanel>
+                          <TextBlock Grid.Column="1" Classes="small" VerticalAlignment="Center" Margin="12,0,0,0" Text="{Binding Versions}" />
+                          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+                            <Border Classes="pill info" IsVisible="{Binding HasEdits}" ToolTip.Tip="{Binding EditsHint}">
+                              <TextBlock Text="Your Changes" />
+                            </Border>
+                            <Border Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}"
+                                    Classes.info="{Binding IsInfo}" Classes.bad="{Binding IsBad}" ToolTip.Tip="{Binding StateHint}"
+                                    IsVisible="{Binding ShowState}">
+                              <TextBlock Text="{Binding StateLabel}" />
+                            </Border>
+                          </StackPanel>
+                          <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Classes="primary" MinWidth="88" HorizontalContentAlignment="Center" Content="{Binding PrimaryLabel}"
+                                    Command="{Binding InstallCommand}" IsVisible="{Binding HasPrimary}" />
+                            <Button Classes="icon" ToolTip.Tip="More">
+                              <PathIcon Data="{StaticResource IconMore}" />
+                              <Button.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                  <MenuItem Header="Update Anyway" Command="{Binding InstallCommand}" IsVisible="{Binding CanUpdateAnyway}" />
+                                  <MenuItem Header="{Binding HoldLabel}" Command="{Binding ToggleHeldCommand}" IsVisible="{Binding CanHold}"
+                                            ToolTip.Tip="Keep your own version: Update All passes a held addon by" />
+                                  <MenuItem Header="Reinstall" Command="{Binding InstallCommand}" IsEnabled="{Binding CanReinstall}" />
+                                  <MenuItem Header="Remove from AddOns" Command="{Binding RemoveCommand}" IsEnabled="{Binding CanRemove}" />
+                                  <Separator />
+                                  <MenuItem Header="Open on GitHub" Command="{Binding OpenPageCommand}" />
+                                  <MenuItem Header="{Binding HideLabel}" Command="{Binding ToggleHiddenCommand}" />
+                                </MenuFlyout>
+                              </Button.Flyout>
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- Not installed yet: cards to browse -->
+      <StackPanel DataContext="{Binding AvailableSection}" x:DataType="vm:AddonSectionViewModel"
+                  IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Button Classes="sectionToggle" Command="{Binding ToggleCommand}" ToolTip.Tip="{Binding ToggleHint}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Data="{StaticResource IconChevron}" Classes.collapsed="{Binding !IsExpanded}" />
+          <TextBlock Classes="section" Margin="0" Text="{Binding Title}" />
+          <TextBlock Classes="small" Text="{Binding Count}" />
+        </StackPanel>
+      </Button>
+      <ItemsControl Classes="tileGrid" ItemsSource="{Binding Items}" IsVisible="{Binding IsExpanded}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Columns="2" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:AddonItemViewModel">
+            <Border Classes="tile" Opacity="{Binding IsHidden, Converter={x:Static vm:Converters.HiddenOpacity}}">
+              <DockPanel>
+                <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                    <Border Classes="pill accent" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" Margin="0,0,4,0">
+                      <TextBlock Text="{Binding StateLabel}" />
+                    </Border>
+                    <Button Classes="primary" MinWidth="88" HorizontalContentAlignment="Center" Content="{Binding PrimaryLabel}"
+                            Command="{Binding InstallCommand}" IsVisible="{Binding HasPrimary}" />
+                    <Button Classes="icon" ToolTip.Tip="More">
+                      <PathIcon Data="{StaticResource IconMore}" />
+                      <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                          <MenuItem Header="Open on GitHub" Command="{Binding OpenPageCommand}" />
+                          <MenuItem Header="{Binding HideLabel}" Command="{Binding ToggleHiddenCommand}" />
+                        </MenuFlyout>
+                      </Button.Flyout>
+                    </Button>
+                  </StackPanel>
+                  <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Classes="small" Text="{Binding Versions}" />
+                    <TextBlock Classes="small" Text="{Binding RequiresLine}" IsVisible="{Binding HasRequiresLine}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </DockPanel>
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Classes="name" FontSize="16" Text="{Binding Name}" ToolTip.Tip="{Binding Origin}" />
+                    <TextBlock Classes="small" VerticalAlignment="Bottom" Margin="0,0,0,1" Text="{Binding ByAuthor}" />
+                  </StackPanel>
+                  <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Description}" IsVisible="{Binding HasDescription}" />
+                </StackPanel>
+              </DockPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

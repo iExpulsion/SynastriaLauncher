@@ -1,0 +1,137 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+        xmlns:v="using:SynastriaLauncher.App.Views"
+        x:Class="SynastriaLauncher.App.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Synastria Launcher"
+        Icon="avares://SynastriaLauncher/Assets/app.ico"
+        Width="1180" Height="760" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Window}">
+  <Grid RowDefinitions="*,Auto" ColumnDefinitions="232,*">
+
+    <!-- Sidebar -->
+    <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="24,26,24,22">
+          <TextBlock Text="SYNASTRIA" FontFamily="{StaticResource DisplayFont}" FontSize="24" FontWeight="Bold" LetterSpacing="2" Foreground="{StaticResource Amber}" />
+          <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,2,0,0">
+            <TextBlock Text="LAUNCHER" FontSize="11" FontWeight="Bold" LetterSpacing="6" Foreground="{StaticResource Frost}" VerticalAlignment="Center" />
+            <Border Classes="pill" Padding="6,0" ToolTip.Tip="Made by players, not by Synastria's team">
+              <TextBlock Text="Unofficial" FontSize="10" Foreground="{StaticResource Faint}" />
+            </Border>
+          </StackPanel>
+        </StackPanel>
+
+        <Button DockPanel.Dock="Bottom" Classes="nav" Classes.selected="{Binding IsSettings}" Margin="10,2,10,16"
+                Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Settings}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <PathIcon Data="{StaticResource IconSettings}" />
+            <TextBlock Classes="navLabel" Text="Settings" />
+          </StackPanel>
+        </Button>
+
+        <StackPanel>
+          <Button Classes="nav" Classes.selected="{Binding IsAddons}"
+                  Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Addons}">
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="badge" IsVisible="{Binding Play.HasAddonBadge}">
+                <TextBlock Text="{Binding Play.AddonUpdates}" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconAddons}" />
+                <TextBlock Classes="navLabel" Text="Addons" />
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button Classes="nav" Classes.selected="{Binding IsPatches}"
+                  Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Patches}">
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="badge" IsVisible="{Binding Play.HasPatchBadge}"
+                      ToolTip.Tip="Changes waiting to be applied">
+                <TextBlock Text="{Binding Play.PatchChanges}" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconPatches}" />
+                <TextBlock Classes="navLabel" Text="Patches" />
+              </StackPanel>
+            </DockPanel>
+          </Button>
+          <Button Classes="nav" Classes.selected="{Binding IsMods}"
+                  Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Mods}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconMods}" />
+              <TextBlock Classes="navLabel" Text="Mods" />
+            </StackPanel>
+          </Button>
+          <TextBlock Text="Third Party" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource Faint}" Margin="24,20,24,4"
+                     ToolTip.Tip="Made by other teams; the launcher installs it from their official downloads" />
+          <Button Classes="nav" Classes.selected="{Binding IsReforged}"
+                  Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Reforged}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconReforged}" />
+              <TextBlock Classes="navLabel" Text="Project Reforged" />
+            </StackPanel>
+          </Button>
+          <Button Classes="nav" Classes.selected="{Binding IsWdm}"
+                  Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Wdm}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconMap}" />
+              <TextBlock Classes="navLabel" Text="WoW Dungeon Maps" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Pages -->
+    <Panel Grid.Row="0" Grid.Column="1">
+      <Panel IsVisible="{Binding IsAddons}"><v:AddonsView DataContext="{Binding Addons}" /></Panel>
+      <Panel IsVisible="{Binding IsPatches}"><v:PatchesView DataContext="{Binding Patches}" /></Panel>
+      <Panel IsVisible="{Binding IsMods}"><v:ModsView DataContext="{Binding Mods}" /></Panel>
+      <Panel IsVisible="{Binding IsReforged}"><v:ReforgedView DataContext="{Binding Reforged}" /></Panel>
+      <Panel IsVisible="{Binding IsWdm}"><v:WdmView DataContext="{Binding Wdm}" /></Panel>
+      <Panel IsVisible="{Binding IsSettings}"><v:SettingsView /></Panel>
+    </Panel>
+
+    <!-- Play bar -->
+    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource PlayBar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0"
+            Padding="24,14">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Classes="primary" Command="{Binding Play.PlayCommand}"
+                Width="200" Height="52" CornerRadius="9" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+          <TextBlock Text="LAUNCH" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="Bold" LetterSpacing="3" Foreground="{StaticResource OnGold}" />
+        </Button>
+
+        <Border DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" IsVisible="{Binding LauncherUpdate, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <Button Command="{Binding UpdateLauncherCommand}" ToolTip.Tip="Download and restart into the new launcher">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconDownload}" Width="16" Height="16" Foreground="{StaticResource Amber}" />
+              <TextBlock Text="{Binding LauncherUpdateStatus}" />
+            </StackPanel>
+          </Button>
+        </Border>
+
+        <Border DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" IsVisible="{Binding WowExt.HasUpdate}">
+          <Button Command="{Binding WowExt.UpdateCommand}" IsEnabled="{Binding WowExt.IsIdle}"
+                  ToolTip.Tip="Synastria's client files: downloads the new version from the link on synastria.org">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconDownload}" Width="16" Height="16" Foreground="{StaticResource Amber}" />
+              <TextBlock Text="{Binding WowExt.UpdateLabel}" />
+            </StackPanel>
+          </Button>
+        </Border>
+
+        <StackPanel VerticalAlignment="Center" Spacing="3">
+          <TextBlock Text="{Binding Play.StatusTitle}" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Play.StatusLine}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+          <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Play.HasWarnings}">
+            <PathIcon Data="{StaticResource IconWarning}" Width="13" Height="13" Foreground="{StaticResource Amber}" />
+            <TextBlock FontSize="12.5" Foreground="{StaticResource Amber}" Text="{Binding Play.Warnings}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

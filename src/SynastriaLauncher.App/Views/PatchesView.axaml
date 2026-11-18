@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+             x:Class="SynastriaLauncher.App.Views.PatchesView"
+             x:DataType="vm:PatchesViewModel">
+  <DockPanel>
+    <!-- Pending changes: only while something is staged -->
+    <Border DockPanel.Dock="Bottom" IsVisible="{Binding ShowFooter}" Background="{StaticResource Card}"
+            BorderBrush="{StaticResource Amber}" BorderThickness="0,2,0,0" Padding="32,12">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button Classes="ghost" Content="Discard" Command="{Binding DiscardCommand}" />
+          <Button Classes="primary" Content="Apply Changes" Command="{Binding ApplyCommand}" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock FontWeight="SemiBold" Text="{Binding PendingSummary}" />
+          <TextBlock FontSize="12.5" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Text="{Binding Problem}"
+                     IsVisible="{Binding Problem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="small" Text="Close the game before applying. Changes take effect the next time you start the game."
+                     IsVisible="{Binding Problem, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer>
+      <StackPanel Margin="32,28,32,32" MaxWidth="980">
+        <!-- Header -->
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" IsVisible="{Binding IsLoaded}">
+            <Button Content="Recommended Setup" Command="{Binding RecommendedSetupCommand}"
+                    ToolTip.Tip="Switches on every patch that fits your game, with recommended settings. Nothing changes until you apply." />
+            <Button Classes="icon" ToolTip.Tip="More">
+              <PathIcon Data="{StaticResource IconMore}" />
+              <Button.Flyout>
+                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                  <MenuItem Header="Restore Original Game" Command="{Binding RestoreCommand}" IsEnabled="{Binding HasBackup}" />
+                  <MenuItem Header="Reload Patch State" Command="{Binding DiscardCommand}" />
+                </MenuFlyout>
+              </Button.Flyout>
+            </Button>
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Classes="pageTitle" Text="Patches" />
+            <TextBlock Classes="pageSubtitle" Text="Tweaks to the game, applied each time it starts. Your WowExt.exe only gets the DLL Loader, and the original is kept." />
+          </StackPanel>
+        </DockPanel>
+
+        <Border Classes="panel afterHeader" Padding="16" IsVisible="{Binding !IsLoaded}">
+          <TextBlock Classes="muted" Text="Choose your game folder in Settings to see the patches." />
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding Groups}" IsVisible="{Binding IsLoaded}" Grid.IsSharedSizeScope="True">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PatchGroupViewModel">
+              <StackPanel>
+                <StackPanel Classes="sectionHeader" Orientation="Horizontal" Spacing="8">
+                  <TextBlock Classes="section" Text="{Binding Name}" />
+                  <TextBlock Classes="small" Text="{Binding OnLabel}" />
+                </StackPanel>
+                <Border Classes="panel">
+                  <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:PatchItemViewModel">
+                        <Border Classes="row" IsEnabled="{Binding IsAvailable}" ToolTip.ShowOnDisabled="True">
+                          <StackPanel>
+                            <Grid>
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Right" />
+                              </Grid.ColumnDefinitions>
+                              <ToggleSwitch Grid.Column="0" IsChecked="{Binding IsOn}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                  <TextBlock Classes="name" Text="{Binding Title}" ToolTip.Tip="{Binding Description}" />
+                                  <Border Classes="pill accent" IsVisible="{Binding Experimental}"
+                                          ToolTip.Tip="A newer patch; if the game acts strange, switch it off">
+                                    <TextBlock Text="Experimental" />
+                                  </Border>
+                                </StackPanel>
+                                <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Summary}" ToolTip.Tip="{Binding Description}" TextWrapping="Wrap" />
+                                <TextBlock Classes="small" Text="{Binding Credit}" IsVisible="{Binding HasCredit}" TextWrapping="Wrap" />
+                                <TextBlock Classes="small" Text="{Binding UsedByLine}" IsVisible="{Binding HasUsedBy}" TextWrapping="Wrap" />
+                              </StackPanel>
+                              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="12,0,0,0">
+                                <Border Classes="pill accent" IsVisible="{Binding HasChange}">
+                                  <TextBlock Text="{Binding ChangeLabel}" />
+                                </Border>
+                                <Border Classes="pill" Classes.accent="{Binding IsPartial}" Classes.bad="{Binding IsBad}"
+                                        IsVisible="{Binding ShowStatus}" ToolTip.Tip="{Binding StatusHint}">
+                                  <TextBlock Text="{Binding StatusLabel}" />
+                                </Border>
+                                <Button Classes="ghost" IsVisible="{Binding HasSettings}" Command="{Binding ToggleExpandedCommand}"
+                                        ToolTip.Tip="Settings" Padding="8,4">
+                                  <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Classes="muted" FontSize="12.5" Text="{Binding SettingSummary}" />
+                                    <PathIcon Data="{StaticResource IconChevron}" Width="14" Height="14" Foreground="{StaticResource Muted}" />
+                                  </StackPanel>
+                                </Button>
+                              </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="52,8,0,0" IsVisible="{Binding HasDependentWarning}">
+                              <PathIcon Data="{StaticResource IconWarning}" Width="13" Height="13" Foreground="{StaticResource Amber}" />
+                              <TextBlock FontSize="12.5" Foreground="{StaticResource Amber}" Text="{Binding DependentWarning}" />
+                            </StackPanel>
+
+                            <!-- Settings, under the switch column -->
+                            <Border IsVisible="{Binding IsExpanded}" Margin="52,12,0,0" Padding="16,12" CornerRadius="8" Background="{StaticResource Window}">
+                              <StackPanel Spacing="12">
+                                <StackPanel IsVisible="{Binding HasDistance}" Spacing="4">
+                                  <TextBlock Classes="muted" Text="{Binding Owner.DistanceLabel}" />
+                                  <Slider Minimum="20" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Distance}" />
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasSpacing}" Spacing="4">
+                                  <TextBlock Classes="muted" Text="{Binding Owner.SpacingLabel}" />
+                                  <Slider Minimum="40" Maximum="150" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Spacing}" />
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasColors}" Spacing="8">
+                                  <TextBlock Classes="muted" Text="A hit at least this big shows in this color. The biggest tier it reaches wins." />
+                                  <ItemsControl ItemsSource="{Binding Owner.ColorTiers}">
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate x:DataType="vm:ColorTierViewModel">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                                          <TextBlock Classes="muted" VerticalAlignment="Center" Text="From" />
+                                          <TextBox Width="84" Text="{Binding Amount}" PlaceholderText="250K" />
+                                          <Border Width="30" Height="30" CornerRadius="6" Background="{Binding Swatch}" BorderBrush="{StaticResource Line}" BorderThickness="1" />
+                                          <TextBox Width="96" Text="{Binding Color}" PlaceholderText="FFD700" FontFamily="Consolas" />
+                                          <Button Classes="icon" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove this tier">
+                                            <PathIcon Data="{StaticResource IconClose}" Width="13" Height="13" />
+                                          </Button>
+                                        </StackPanel>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+                                  <Button Classes="ghost" Command="{Binding Owner.AddTierCommand}" IsEnabled="{Binding Owner.CanAddTier}" Padding="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                      <PathIcon Data="{StaticResource IconPlus}" Width="14" Height="14" Foreground="{StaticResource Amber}" />
+                                      <TextBlock Text="Add Tier" Foreground="{StaticResource Amber}" />
+                                    </StackPanel>
+                                  </Button>
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasFolder}" Spacing="8">
+                                  <TextBlock Classes="muted" Text="The folder inside your game folder that DLL mods load from. The Mods page installs into it." />
+                                  <TextBox Width="260" HorizontalAlignment="Left" Text="{Binding Owner.DllFolderText}" />
+                                </StackPanel>
+                              </StackPanel>
+                            </Border>
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

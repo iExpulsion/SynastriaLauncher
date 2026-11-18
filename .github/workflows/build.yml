@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Compiles wow_optimize.dll from its pinned public source; the launcher embeds it.
+      - name: Build wow-optimize
+        shell: pwsh
+        run: ./tools/build-wow-optimize.ps1
+
+      # Compiles SynastriaLauncher.dll (embedded) and PatcherHost.exe (for the tests) from native/.
+      - name: Build the in-memory patcher
+        shell: pwsh
+        run: ./tools/build-patcher.ps1
+
+      - name: Run tests
+        run: dotnet test --solution SynastriaLauncher.slnx
+
+      - name: Publish
+        id: pkg
+        shell: bash
+        run: |
+          dotnet publish src/SynastriaLauncher.App -c Release -o publish
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/SynastriaLauncher.App/SynastriaLauncher.App.csproj | tr -d '\r')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SynastriaLauncher-${{ steps.pkg.outputs.version }}
+          path: |
+            publish/SynastriaLauncher.exe
+            THIRD-PARTY-NOTICES.txt
+
+      - name: Publish a release if the version is new
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          tag="v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "$tag is already released; raise <Version> in SynastriaLauncher.App.csproj to publish a new one."
+            exit 0
+          fi
+          gh release create "$tag" publish/SynastriaLauncher.exe THIRD-PARTY-NOTICES.txt --target "$GITHUB_SHA" --title "Synastria Launcher $VERSION" --generate-notes

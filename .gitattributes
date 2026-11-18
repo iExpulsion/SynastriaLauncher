@@ -1,0 +1,3 @@
+# Bundled mod files and presets ship byte for byte and are matched by hash, so git must not touch line endings.
+src/SynastriaLauncher.Core/Mods/Bundled/** -text
+src/SynastriaLauncher.Core/Mods/Presets/** -text

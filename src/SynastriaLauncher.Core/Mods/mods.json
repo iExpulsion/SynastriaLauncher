@@ -1,0 +1,129 @@
+{
+  "revision": 10,
+  "minLauncher": "0.1.0",
+  "mods": [
+    {
+      "id": "dxvk",
+      "name": "DXVK",
+      "summary": "Runs the game's graphics through Vulkan, which is usually smoother on modern graphics cards",
+      "details": "Needs a graphics card with Vulkan support. If the game won't start or shows a black screen, switch it off.",
+      "author": "Raz0r1337 (fork of DXVK)",
+      "homepage": "https://github.com/Raz0r1337/DXVK",
+      "version": "v3.1.1",
+      "requires": [ "DllLoader" ],
+      "files": [
+        { "path": "{dlls}/d3d9.dll", "url": "https://github.com/Raz0r1337/DXVK/releases/download/v3.1.1/DXVK-WoW-x86.zip", "entry": "d3d9.dll" },
+        {
+          "path": "WTF/dxvk.conf", "config": true,
+          "presets": [
+            { "id": "default", "name": "Mod Defaults", "description": "No settings file: DXVK uses its own defaults, including a double-size mouse cursor." },
+            { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" },
+            { "id": "luxvelum-msaa", "name": "LuxVelum MSAA Fix", "description": "Reports an AMD graphics card, so LuxVelum keeps antialiasing on NVIDIA and Intel cards; double-size cursor. If odd graphics glitches appear, go back to Mod Defaults.", "file": "dxvk.luxvelum-msaa.conf" },
+            { "id": "luxvelum-msaa-original-cursor", "name": "LuxVelum MSAA Fix, Original Cursor", "description": "The LuxVelum MSAA Fix with the cursor enlargement off.", "file": "dxvk.luxvelum-msaa-original-cursor.conf" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lexara",
+      "name": "Lexara",
+      "summary": "Sharper, cleaner text and fonts",
+      "details": "If text looks wrong, switch it off.",
+      "author": "Stormhand",
+      "homepage": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5",
+      "version": "1.0.3",
+      "requires": [ "DllLoader" ],
+      "files": [
+        { "path": "{dlls}/lexara.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/lexara.dll" },
+        { "path": "{dlls}/skia.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/skia.dll" }
+      ]
+    },
+    {
+      "id": "luxvelum",
+      "name": "LuxVelum",
+      "summary": "Better-looking fog and water",
+      "details": "Press Ctrl+F7 in game for its settings (Insert with the Project Reforged preset). If fog flickers, set Multisampling to 1x in the game's Video options.",
+      "author": "Raz0r1337 (fork of Coa-vFog)",
+      "homepage": "https://github.com/Raz0r1337/LuxVelum",
+      "version": "build-1",
+      "requires": [ "DllLoader" ],
+      "files": [
+        { "path": "{dlls}/LuxVelum.dll", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.dll" },
+        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "fogdata.bin" },
+        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "waterdata.bin" },
+        { "path": "{dlls}/LuxVelum.ini", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini", "config": true,
+          "presets": [
+            { "id": "default", "name": "Mod Defaults", "description": "The settings LuxVelum ships with.", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini" },
+            { "id": "reforged", "name": "Project Reforged", "description": "Project Reforged's recommended settings, downloaded from their site: lighter fog, sun rays and color grading, brighter lamps in the fog, calmer water, and a faster fog quality. Its settings window opens with Insert instead of Ctrl+F7. Its per-region fog for Outland and Northrend needs a newer LuxVelum and is skipped by this one. If fog flickers, set Multisampling to 1x in the game's Video options.", "url": "https://pub-0f05631d243e4046993fc02ca7be9542.r2.dev/Wrath%20of%20the%20Lich%20King/mods/presets/LuxVelum.ini" }
+          ] }
+      ]
+    },
+    {
+      "id": "wow-optimize",
+      "name": "wow-optimize",
+      "summary": "Smoother game performance",
+      "details": "Built by the launcher from its public source at v3.23.1. The official releases add closed code that hides its hooks from server checks; this build leaves it out. It checks GitHub for its own updates and, by default, logs the game's network timing. If the game crashes or acts strange, switch it off.",
+      "author": "suprepupre",
+      "homepage": "https://github.com/suprepupre/wow-optimize/tree/v3.23.1",
+      "builtFromSource": true,
+      "version": "v3.23.1",
+      "requires": [ "DllLoader" ],
+      "files": [
+        { "path": "{dlls}/wow_optimize.dll", "bundled": "wow-optimize/wow_optimize.dll" },
+        { "path": "{dlls}/wow_optimize.sym", "bundled": "wow-optimize/wow_optimize.sym", "optional": true },
+        {
+          "path": "WTF/wow_opt.ini", "config": true,
+          "presets": [
+            { "id": "default", "name": "Mod Defaults", "description": "No settings file: wow-optimize uses its author's tested defaults, including a log file per session (the last 10 are kept in Logs) and network timing diagnostics." },
+            { "id": "fewer-diagnostics", "name": "Fewer Diagnostics", "description": "The author's defaults without the parts that only observe: no session logs, no network timing hook, no code audit, flight recorder or load counters. If something goes wrong, switch back to Mod Defaults so there's a log to look at.", "file": "wow_opt.fewer-diagnostics.ini" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "login-screens",
+      "name": "Login and Character Select",
+      "summary": "A cleaner login screen and a nicer character list you can reorder by dragging",
+      "details": "The optional Remember Password box saves your password as plain text in WTF\\Config.wtf.",
+      "author": "Expulsion",
+      "origin": "synastria",
+      "version": "1",
+      "requires": [ "InterfaceEdit" ],
+      "files": [
+        { "path": "Data/Interface/GlueXML/AccountLogin.lua", "bundled": "login-screens/AccountLogin.lua" },
+        { "path": "Data/Interface/GlueXML/AccountLogin.xml", "bundled": "login-screens/AccountLogin.xml" },
+        { "path": "Data/Interface/GlueXML/CharacterSelect.lua", "bundled": "login-screens/CharacterSelect.lua" },
+        { "path": "Data/Interface/GlueXML/CharacterSelect.xml", "bundled": "login-screens/CharacterSelect.xml" },
+        { "path": "Data/Interface/GlueXML/CharacterSelectReorder.lua", "bundled": "login-screens/CharacterSelectReorder.lua" }
+      ]
+    },
+    {
+      "id": "combat-text",
+      "name": "Short Self Combat Text",
+      "summary": "Big numbers in the combat text around your own character shortened (12.3K, 1.2M)",
+      "details": "Matches the Short Combat Numbers patch, which does the same for numbers over targets.",
+      "author": "Expulsion",
+      "origin": "synastria",
+      "version": "1",
+      "requires": [ "InterfaceEdit" ],
+      "files": [
+        { "path": "Data/Interface/AddOns/Blizzard_CombatText/Blizzard_CombatText.lua", "bundled": "combat-text/Blizzard_CombatText.lua" }
+      ]
+    },
+    {
+      "id": "reforged-fix",
+      "name": "Project Reforged Fix",
+      "summary": "Makes Project Reforged's character creation screen work on Synastria",
+      "details": "Only for clients with Project Reforged installed. Uninstall it if you remove Reforged, or the login screen breaks.",
+      "author": "Expulsion",
+      "origin": "synastria",
+      "onlyWith": "reforged",
+      "version": "1",
+      "requires": [ "InterfaceEdit" ],
+      "files": [
+        { "path": "Data/Interface/GlueXML/GlueXML.toc", "bundled": "reforged-fix/GlueXML.toc" },
+        { "path": "Data/Interface/GlueXML/SynastriaCompat.lua", "bundled": "reforged-fix/SynastriaCompat.lua" }
+      ]
+    }
+  ]
+}

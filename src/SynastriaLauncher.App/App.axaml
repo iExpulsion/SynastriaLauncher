@@ -1,0 +1,368 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SynastriaLauncher.App.App"
+             RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <!-- Frost and Gold: Northrend steel surfaces, ice blue for structure (navigation, headings, switches), gold for
+         actions and attention (Play, Install, Apply, warnings). The "Amber" keys hold the gold. -->
+    <Color x:Key="AmberColor">#E8B04B</Color>
+    <SolidColorBrush x:Key="Amber" Color="#E8B04B" />
+    <SolidColorBrush x:Key="AmberHover" Color="#F2C266" />
+    <SolidColorBrush x:Key="AmberPressed" Color="#C99536" />
+    <SolidColorBrush x:Key="AmberSoft" Color="#2EE8B04B" />
+    <!-- Gold buttons: a polished-metal gradient with a light rim, and bronze text (about 7:1 on the gold). -->
+    <SolidColorBrush x:Key="OnGold" Color="#3B2606" />
+    <SolidColorBrush x:Key="GoldEdge" Color="#F7D98F" />
+    <LinearGradientBrush x:Key="GoldFill" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Offset="0" Color="#F3C566" />
+      <GradientStop Offset="1" Color="#D59D3A" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="GoldFillHover" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Offset="0" Color="#F8D27C" />
+      <GradientStop Offset="1" Color="#E2AC4A" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="GoldFillPressed" StartPoint="0%,0%" EndPoint="0%,100%">
+      <GradientStop Offset="0" Color="#D29A38" />
+      <GradientStop Offset="1" Color="#C08A2C" />
+    </LinearGradientBrush>
+    <Color x:Key="FrostColor">#7CC4F0</Color>
+    <SolidColorBrush x:Key="Frost" Color="#7CC4F0" />
+    <SolidColorBrush x:Key="FrostSoft" Color="#267CC4F0" />
+    <SolidColorBrush x:Key="Window" Color="#0B1220" />
+    <SolidColorBrush x:Key="Sidebar" Color="#0E1728" />
+    <SolidColorBrush x:Key="Card" Color="#121C2E" />
+    <SolidColorBrush x:Key="CardHover" Color="#17243A" />
+    <SolidColorBrush x:Key="Line" Color="#22324A" />
+    <SolidColorBrush x:Key="Text" Color="#E6EEF7" />
+    <SolidColorBrush x:Key="Muted" Color="#9AAABF" />
+    <SolidColorBrush x:Key="Faint" Color="#7E8FA8" />
+    <SolidColorBrush x:Key="Good" Color="#5CC98A" />
+    <SolidColorBrush x:Key="GoodSoft" Color="#225CC98A" />
+    <SolidColorBrush x:Key="Info" Color="#9DB6FF" />
+    <SolidColorBrush x:Key="InfoSoft" Color="#229DB6FF" />
+    <SolidColorBrush x:Key="Bad" Color="#FF6B6B" />
+    <SolidColorBrush x:Key="BadSoft" Color="#22FF6B6B" />
+    <SolidColorBrush x:Key="NeutralSoft" Color="#1B283D" />
+    <LinearGradientBrush x:Key="PlayBar" StartPoint="0%,0%" EndPoint="100%,0%">
+      <GradientStop Offset="0" Color="#0E1728" />
+      <GradientStop Offset="1" Color="#14304A" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Hero" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Offset="0" Color="#14304A" />
+      <GradientStop Offset="0.6" Color="#0E1728" />
+    </LinearGradientBrush>
+    <FontFamily x:Key="DisplayFont">avares://SynastriaLauncher/Assets/Fonts#Cinzel</FontFamily>
+
+    <!-- Fluent's own button and input colors, moved onto the steel palette. -->
+    <SolidColorBrush x:Key="ButtonBackground" Color="#1F2E46" />
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#283B58" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#18263B" />
+    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#162236" />
+    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#E6EEF7" />
+    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#E6EEF7" />
+    <SolidColorBrush x:Key="ComboBoxBackground" Color="#152136" />
+    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1B2A42" />
+    <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#121C2E" />
+    <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#121C2E" />
+    <SolidColorBrush x:Key="TextControlBackground" Color="#101A2B" />
+    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#142034" />
+    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#0E1728" />
+
+    <StreamGeometry x:Key="IconPatches">M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z</StreamGeometry>
+    <StreamGeometry x:Key="IconAddons">M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5C13 2.12 11.88 1 10.5 1S8 2.12 8 3.5V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7 1.49 0 2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z</StreamGeometry>
+    <StreamGeometry x:Key="IconMods">M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z</StreamGeometry>
+    <StreamGeometry x:Key="IconSettings">M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z</StreamGeometry>
+    <StreamGeometry x:Key="IconReforged">M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.81 13.75 7 10 7 10l-6 8h22L14 6z</StreamGeometry>
+    <StreamGeometry x:Key="IconMap">M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z</StreamGeometry>
+    <StreamGeometry x:Key="IconLink">M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z</StreamGeometry>
+    <StreamGeometry x:Key="IconMore">M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z</StreamGeometry>
+    <StreamGeometry x:Key="IconRefresh">M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z</StreamGeometry>
+    <StreamGeometry x:Key="IconChevron">M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z</StreamGeometry>
+    <StreamGeometry x:Key="IconFolder">M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlus">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z</StreamGeometry>
+    <StreamGeometry x:Key="IconSearch">M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z</StreamGeometry>
+    <StreamGeometry x:Key="IconWarning">M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z</StreamGeometry>
+    <StreamGeometry x:Key="IconDownload">M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z</StreamGeometry>
+    <StreamGeometry x:Key="IconClose">M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z</StreamGeometry>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Dark" Accent="#7CC4F0" RegionColor="#0B1220" BaseHigh="#E6EEF7" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Text}" />
+    </Style>
+
+    <!-- Text roles -->
+    <Style Selector="TextBlock.pageTitle">
+      <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+      <Setter Property="FontSize" Value="27" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="LetterSpacing" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource Amber}" />
+    </Style>
+    <Style Selector="TextBlock.pageSubtitle">
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+    <!-- Spacing scale: 4 inside a group, 8 between related items, 12 between blocks, 28 before each section.
+         A section is a heading (alone, or in a .sectionHeader row with a count or badge), an optional .sectionNote,
+         then its content. Headings and notes start at the content's left edge. -->
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontSize" Value="13.5" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{StaticResource Frost}" />
+      <Setter Property="Margin" Value="0,28,0,8" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector=":is(Panel).sectionHeader">
+      <Setter Property="Margin" Value="0,28,0,8" />
+    </Style>
+    <Style Selector=":is(Panel).sectionHeader TextBlock.section">
+      <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector=":is(Panel).sectionHeader TextBlock.small">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- A section heading that folds its content: the whole heading row is the button. -->
+    <Style Selector="Button.sectionToggle">
+      <Setter Property="Margin" Value="0,28,0,8" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.sectionToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.sectionToggle:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.sectionToggle TextBlock.small">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.sectionToggle PathIcon">
+      <Setter Property="Width" Value="12" />
+      <Setter Property="Height" Value="12" />
+      <Setter Property="Foreground" Value="{StaticResource Frost}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.sectionToggle PathIcon.collapsed">
+      <Setter Property="RenderTransform" Value="rotate(-90deg)" />
+    </Style>
+    <Style Selector="TextBlock.sectionNote">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{StaticResource Faint}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,-4,0,12" />
+    </Style>
+    <Style Selector="StackPanel.sectionNote">
+      <Setter Property="Spacing" Value="2" />
+      <Setter Property="Margin" Value="0,-4,0,12" />
+    </Style>
+    <Style Selector="StackPanel.sectionNote TextBlock">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{StaticResource Faint}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <!-- Content right under a page header (toolbars, notices) sits one section gap below it. -->
+    <Style Selector=":is(Control).afterHeader">
+      <Setter Property="Margin" Value="0,28,0,0" />
+    </Style>
+    <Style Selector="TextBlock.name">
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.small">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{StaticResource Faint}" />
+    </Style>
+
+    <!-- Surfaces -->
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="{StaticResource Card}" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Border.row">
+      <Setter Property="Padding" Value="16,12" />
+      <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.row.compact">
+      <Setter Property="Padding" Value="16,7" />
+    </Style>
+    <Style Selector="Border.row:pointerover">
+      <Setter Property="Background" Value="{StaticResource CardHover}" />
+    </Style>
+    <!-- Tiles keep a 12 gap on every side between each other; the grid's -6 margin cancels it at the outer edges. -->
+    <Style Selector="Border.tile">
+      <Setter Property="Background" Value="{StaticResource Card}" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="16" />
+      <Setter Property="Margin" Value="6" />
+    </Style>
+    <Style Selector="ItemsControl.tileGrid">
+      <Setter Property="Margin" Value="-6" />
+    </Style>
+    <Style Selector="Border.tile.synastria">
+      <Setter Property="BorderBrush" Value="#66E8B04B" />
+      <Setter Property="Background" Value="#16202F" />
+    </Style>
+    <Style Selector="Border.avatar">
+      <Setter Property="Width" Value="38" />
+      <Setter Property="Height" Value="38" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="{StaticResource NeutralSoft}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- State pills -->
+    <Style Selector="Border.pill">
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Padding" Value="9,2" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Background" Value="{StaticResource NeutralSoft}" />
+    </Style>
+    <Style Selector="Border.pill TextBlock">
+      <Setter Property="FontSize" Value="11.5" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+    <Style Selector="Border.pill.accent">
+      <Setter Property="Background" Value="{StaticResource AmberSoft}" />
+    </Style>
+    <Style Selector="Border.pill.accent TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Amber}" />
+    </Style>
+    <Style Selector="Border.pill.good">
+      <Setter Property="Background" Value="{StaticResource GoodSoft}" />
+    </Style>
+    <Style Selector="Border.pill.good TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Good}" />
+    </Style>
+    <Style Selector="Border.pill.info">
+      <Setter Property="Background" Value="{StaticResource InfoSoft}" />
+    </Style>
+    <Style Selector="Border.pill.info TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Info}" />
+    </Style>
+    <Style Selector="Border.pill.bad">
+      <Setter Property="Background" Value="{StaticResource BadSoft}" />
+    </Style>
+    <Style Selector="Border.pill.bad TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource Bad}" />
+    </Style>
+
+    <!-- Buttons -->
+    <Style Selector="Button">
+      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Padding" Value="14,7" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{StaticResource GoldFill}" />
+      <Setter Property="BorderBrush" Value="{StaticResource GoldEdge}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource OnGold}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource GoldFillHover}" />
+      <Setter Property="BorderBrush" Value="{StaticResource GoldEdge}" />
+      <Setter Property="Foreground" Value="{StaticResource OnGold}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource GoldFillPressed}" />
+      <Setter Property="BorderBrush" Value="{StaticResource GoldEdge}" />
+      <Setter Property="Foreground" Value="{StaticResource OnGold}" />
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#2A3346" />
+      <Setter Property="Foreground" Value="{StaticResource Faint}" />
+    </Style>
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.icon">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="7" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.icon PathIcon">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+
+    <!-- Sidebar navigation -->
+    <Style Selector="Button.nav">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="Margin" Value="10,2" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Button.nav PathIcon">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+    <Style Selector="Button.nav TextBlock.navLabel">
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+      <Setter Property="FontSize" Value="14.5" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.nav.selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource FrostSoft}" />
+    </Style>
+    <Style Selector="Button.nav.selected PathIcon">
+      <Setter Property="Foreground" Value="{StaticResource Frost}" />
+    </Style>
+    <Style Selector="Button.nav.selected TextBlock.navLabel">
+      <Setter Property="Foreground" Value="{StaticResource Text}" />
+    </Style>
+    <Style Selector="Border.badge">
+      <Setter Property="Background" Value="{StaticResource Amber}" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="MinWidth" Value="20" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="Padding" Value="6,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge TextBlock">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{StaticResource OnGold}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="ToggleSwitch">
+      <Setter Property="OnContent" Value="" />
+      <Setter Property="OffContent" Value="" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="7" />
+    </Style>
+  </Application.Styles>
+</Application>

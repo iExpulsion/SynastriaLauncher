@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpCompress" Version="0.50.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Mods\mods.json" LogicalName="SynastriaLauncher.Core.Mods.mods.json" />
+    <EmbeddedResource Include="Addons\addons.json" LogicalName="SynastriaLauncher.Core.Addons.addons.json" />
+    <EmbeddedResource Include="Mods\Presets\*" LogicalName="SynastriaLauncher.Core.Mods.Presets.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Mods\Bundled\**\*" LogicalName="SynastriaLauncher.Core.Mods.Bundled/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Patching\Native\SynastriaLauncher.dll" Condition="Exists('Patching\Native\SynastriaLauncher.dll')"
+                      LogicalName="SynastriaLauncher.Core.Patching.SynastriaLauncher.dll" />
+    <InternalsVisibleTo Include="SynastriaLauncher.Tests" />
+  </ItemGroup>
+
+</Project>

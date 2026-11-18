@@ -1,0 +1,29 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION @LAUNCHER_VERSION_COMMAS@,0
+PRODUCTVERSION @LAUNCHER_VERSION_COMMAS@,0
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Synastria Launcher"
+            VALUE "FileDescription", "Synastria Launcher: client patches and settings, loaded by the game"
+            VALUE "FileVersion", "@LAUNCHER_VERSION@"
+            VALUE "InternalName", "SynastriaLauncher"
+            VALUE "OriginalFilename", "SynastriaLauncher.dll"
+            VALUE "ProductName", "Synastria Launcher"
+            VALUE "ProductVersion", "@LAUNCHER_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

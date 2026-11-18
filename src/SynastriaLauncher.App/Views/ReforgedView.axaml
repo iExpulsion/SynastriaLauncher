@@ -1,0 +1,168 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+             x:Class="SynastriaLauncher.App.Views.ReforgedView"
+             x:DataType="vm:ReforgedViewModel">
+  <DockPanel>
+    <!-- Running: progress with Cancel -->
+    <Border DockPanel.Dock="Bottom" IsVisible="{Binding IsBusy}" Background="{StaticResource Card}"
+            BorderBrush="{StaticResource Amber}" BorderThickness="0,2,0,0" Padding="32,12">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Content="Stop" Command="{Binding CancelCommand}" IsVisible="{Binding CanCancel}" Margin="12,0,0,0"
+                ToolTip.Tip="Stops after the current chunk; the next Apply picks up where it stopped" />
+        <StackPanel Spacing="8" VerticalAlignment="Center">
+          <TextBlock FontWeight="SemiBold" Text="{Binding BusyText}" TextTrimming="CharacterEllipsis" />
+          <ProgressBar Minimum="0" Maximum="100" Value="{Binding BusyPercent}" Height="6" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Staged changes -->
+    <Border DockPanel.Dock="Bottom" IsVisible="{Binding ShowFooter}" Background="{StaticResource Card}"
+            BorderBrush="{StaticResource Amber}" BorderThickness="0,2,0,0" Padding="32,12">
+      <DockPanel IsEnabled="{Binding IsIdle}">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button Classes="ghost" Content="Discard" Command="{Binding DiscardCommand}" />
+          <Button Classes="primary" Content="Apply" Command="{Binding ApplyCommand}" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Center" Spacing="4">
+          <TextBlock FontWeight="SemiBold" Text="{Binding PlanSummary}" />
+          <TextBlock FontSize="12.5" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Text="{Binding Problem}"
+                     IsVisible="{Binding Problem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="small" Text="Close the game first. Every download is checked against Project Reforged's copy before it replaces anything."
+                     IsVisible="{Binding Problem, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer>
+      <StackPanel Margin="32,28,32,32" MaxWidth="980">
+        <!-- Header -->
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" IsEnabled="{Binding IsIdle}">
+            <Button Content="Core Set" Command="{Binding CoreSetCommand}" IsVisible="{Binding IsLoaded}"
+                    ToolTip.Tip="Switches on the Core parts with HD models. Nothing downloads until you apply." />
+            <Button Command="{Binding CheckCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+                <TextBlock Text="Check for Updates" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Classes="pageTitle" Text="Project Reforged" />
+            <TextBlock Classes="pageSubtitle" Text="{Binding Summary}" />
+          </StackPanel>
+        </DockPanel>
+
+        <!-- Credit -->
+        <Border Classes="panel afterHeader" Padding="16">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <Button Content="Website" Command="{Binding OpenSiteCommand}" />
+              <Button Content="Discord" Command="{Binding OpenDiscordCommand}" />
+              <Button Content="Support Them on Ko-fi" Command="{Binding OpenKoFiCommand}" />
+            </StackPanel>
+            <StackPanel Spacing="4" Margin="0,0,12,0">
+              <TextBlock Classes="name" Text="By the Project Reforged Team" />
+              <TextBlock Classes="muted" Text="A remastered look for 3.3.5a. The launcher installs it from their official downloads; nothing is re-hosted." />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- Patches the chosen parts need, then the ones Reforged recommends -->
+        <Border IsVisible="{Binding HasPatchWarning}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource AmberSoft}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center"
+                    Command="{Binding TurnOnRequiredCommand}" ToolTip.Tip="Switches the patch on in Patches; it's written when you apply there">
+              <TextBlock Text="Turn On" Foreground="{StaticResource Amber}" FontWeight="SemiBold" />
+            </Button>
+            <PathIcon DockPanel.Dock="Left" Data="{StaticResource IconWarning}" Width="14" Height="14" Margin="0,0,8,0"
+                      VerticalAlignment="Center" Foreground="{StaticResource Amber}" />
+            <TextBlock Text="{Binding PatchWarning}" Foreground="{StaticResource Amber}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          </DockPanel>
+        </Border>
+        <Border IsVisible="{Binding HasPatchNote}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource InfoSoft}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center"
+                    Command="{Binding TurnOnRecommendedCommand}" ToolTip.Tip="Switches the patches on in Patches; they're written when you apply there">
+              <TextBlock Text="Turn On" Foreground="{StaticResource Info}" FontWeight="SemiBold" />
+            </Button>
+            <TextBlock Text="{Binding PatchNote}" Foreground="{StaticResource Info}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          </DockPanel>
+        </Border>
+
+        <Border IsVisible="{Binding HasMapsNote}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource InfoSoft}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center" Command="{Binding OpenWdmCommand}">
+              <TextBlock Text="Open WoW Dungeon Maps" Foreground="{StaticResource Info}" FontWeight="SemiBold" />
+            </Button>
+            <TextBlock Text="{Binding MapsNote}" Foreground="{StaticResource Info}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          </DockPanel>
+        </Border>
+
+        <Border Classes="panel" Margin="0,12,0,0" Padding="16" IsVisible="{Binding !HasGame}">
+          <TextBlock Classes="muted" Text="Choose your game folder in Settings first." />
+        </Border>
+
+        <!-- Parts -->
+        <ItemsControl ItemsSource="{Binding Sections}" IsEnabled="{Binding IsIdle}" Grid.IsSharedSizeScope="True">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ReforgedSectionViewModel">
+              <StackPanel>
+                <TextBlock Classes="section" Text="{Binding Title}" />
+                <Border Classes="panel">
+                  <ItemsControl ItemsSource="{Binding Parts}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ReforgedPartViewModel">
+                        <Border Classes="row">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="Auto" />
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="Auto" SharedSizeGroup="Variant" />
+                              <ColumnDefinition Width="Auto" SharedSizeGroup="State" />
+                            </Grid.ColumnDefinitions>
+                            <ToggleSwitch Grid.Column="0" IsChecked="{Binding IsOn}" IsEnabled="{Binding CanChange}"
+                                          VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                              <TextBlock Classes="name" Text="{Binding Name}" />
+                              <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Description}" />
+                              <TextBlock Classes="small" Text="{Binding Details}" />
+                              <TextBlock Classes="small" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}"
+                                      IsVisible="{Binding HasVariants}" IsEnabled="{Binding CanChangeVariant}"
+                                      ToolTip.Tip="{Binding VariantHint}" ToolTip.ShowOnDisabled="True"
+                                      MinWidth="140" Margin="12,0,0,0" VerticalAlignment="Center" CornerRadius="7">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VariantOption">
+                                  <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0"
+                                        VerticalAlignment="Center" HorizontalAlignment="Right">
+                              <Border Classes="pill accent" IsVisible="{Binding HasChange}">
+                                <TextBlock Text="{Binding ChangeLabel}" />
+                              </Border>
+                              <Border Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}" Classes.info="{Binding IsInfo}"
+                                      IsVisible="{Binding !HasChange}"
+                                      ToolTip.Tip="Linked parts point to a shared folder: updates go there (the link stays), and switching one off removes only the link">
+                                <TextBlock Text="{Binding StateLabel}" />
+                              </Border>
+                            </StackPanel>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

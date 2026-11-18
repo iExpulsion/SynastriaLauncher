@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SynastriaLauncher.App.ViewModels"
+             x:Class="SynastriaLauncher.App.Views.SettingsView"
+             x:DataType="vm:MainViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="32,28,32,32" MaxWidth="980">
+      <TextBlock Classes="pageTitle" Text="Settings" />
+
+      <TextBlock Classes="section" Text="Game" />
+      <Border Classes="panel">
+        <StackPanel>
+          <Border Classes="row">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Open" Command="{Binding OpenGameFolderCommand}" IsEnabled="{Binding HasGameFolder}" />
+                <Button Classes="primary" Content="Change" Command="{Binding ChooseGameFolderCommand}" />
+              </StackPanel>
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Game Folder" />
+                <TextBlock Classes="muted" Text="{Binding GameFolderLabel}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+          <Border Classes="row" BorderThickness="0" IsVisible="{Binding HasGameFolder}">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsEnabled="{Binding WowExt.IsIdle}">
+                <Button Content="Check for Updates" Command="{Binding WowExt.CheckCommand}" />
+                <Button Classes="primary" Content="Update" Command="{Binding WowExt.UpdateCommand}" IsVisible="{Binding WowExt.HasUpdate}" />
+                <Button Classes="icon" ToolTip.Tip="More">
+                  <PathIcon Data="{StaticResource IconMore}" />
+                  <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                      <MenuItem Header="Install from a Downloaded Zip" Command="{Binding WowExt.InstallFromZipCommand}" />
+                      <MenuItem Header="Open Download Page" Command="{Binding WowExt.OpenDownloadPageCommand}" />
+                    </MenuFlyout>
+                  </Button.Flyout>
+                </Button>
+              </StackPanel>
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="{Binding WowExt.Installed}" />
+                <TextBlock Classes="muted" Text="Synastria's client files (WowExt.exe, WoWExt.dll and its data), updated from the download on synastria.org." TextWrapping="Wrap" />
+                <TextBlock Classes="small" Text="{Binding WowExt.Status}" TextWrapping="Wrap" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <TextBlock Classes="section" Text="Addons" />
+      <Border Classes="panel">
+        <StackPanel>
+          <Border Classes="row" BorderThickness="0">
+            <DockPanel>
+              <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding KeepAddonBackups}" VerticalAlignment="Center" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Keep the Previous Version" />
+                <TextBlock Classes="muted" Text="When an addon updates, keep the old copy as a .bak folder in AddOns." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <TextBlock Classes="section" Text="Backups" />
+      <Border Classes="panel">
+        <Border Classes="row" BorderThickness="0">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="Clean Up" Command="{Binding CleanUpBackupsCommand}" IsEnabled="{Binding HasBackups}"
+                    VerticalAlignment="Center" ToolTip.Tip="Lists them first; they go to the Recycle Bin" />
+            <StackPanel Spacing="4" Margin="0,0,12,0">
+              <TextBlock Classes="name" Text="Old Backups" />
+              <TextBlock Classes="muted" Text="{Binding BackupSummary}" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </Border>
+
+      <TextBlock Classes="section" Text="Launcher" />
+      <Border Classes="panel">
+        <StackPanel>
+          <Border Classes="row">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Check for Updates" Command="{Binding CheckLauncherUpdateCommand}" />
+                <Button Classes="primary" Content="Update" Command="{Binding UpdateLauncherCommand}"
+                        IsVisible="{Binding LauncherUpdate, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              </StackPanel>
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Synastria Launcher" />
+                <TextBlock Classes="muted" Text="{Binding Version}" />
+                <TextBlock Classes="small" Text="{Binding LauncherUpdateStatus}" />
+                <TextBlock Classes="small" TextWrapping="Wrap" Text="Unofficial: made by players, not by Synastria's team." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+          <Border Classes="row" BorderThickness="0">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Open" Command="{Binding OpenDataFolderCommand}" VerticalAlignment="Center" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Launcher Data" />
+                <TextBlock Classes="muted" Text="Where the launcher keeps its settings and install records." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

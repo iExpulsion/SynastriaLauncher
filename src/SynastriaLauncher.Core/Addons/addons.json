@@ -1,0 +1,187 @@
+{
+  "revision": 2,
+  "minLauncher": "0.1.0",
+  "addons": [
+    {
+      "repo": "iExpulsion/InstanceGPS",
+      "name": "InstanceGPS",
+      "folders": ["InstanceGPS"],
+      "toc": "InstanceGPS/InstanceGPS.toc",
+      "description": "Guides you through every dungeon and raid by the shortest route to each boss."
+    },
+    {
+      "repo": "iExpulsion/InstanceGPS-Synastria",
+      "name": "InstanceGPS: Synastria",
+      "folders": ["InstanceGPS_Synastria"],
+      "toc": "InstanceGPS_Synastria/InstanceGPS_Synastria.toc",
+      "description": "Synastria's boss changes and boss loot for InstanceGPS.",
+      "requires": ["iExpulsion/InstanceGPS"]
+    },
+    {
+      "repo": "iExpulsion/RotationAssist",
+      "name": "Rotation Assist",
+      "folders": ["RotationAssist"],
+      "toc": "RotationAssist/RotationAssist.toc",
+      "description": "One-button rotations: each press casts the first ready spell on your list."
+    },
+    {
+      "repo": "iExpulsion/RotationAssist-Synastria",
+      "name": "Rotation Assist: Synastria",
+      "folders": ["RotationAssist_Synastria"],
+      "toc": "RotationAssist_Synastria/RotationAssist_Synastria.toc",
+      "description": "Synastria's classes, specs and spells for Rotation Assist.",
+      "requires": ["iExpulsion/RotationAssist"]
+    },
+    {
+      "repo": "iExpulsion/SynastriaBuildSuite",
+      "name": "Synastria Build Suite",
+      "folders": ["SynastriaBuildSuite"],
+      "toc": "SynastriaBuildSuite/SynastriaBuildSuite.toc",
+      "description": "Save, share and apply whole builds: perks, talents, glyphs and gear."
+    },
+    {
+      "repo": "iExpulsion/SynastriaCompanion",
+      "name": "Synastria Companion",
+      "folders": ["SynastriaCompanion"],
+      "toc": "SynastriaCompanion/SynastriaCompanion.toc",
+      "description": "Cleaner replacements for Synastria's own windows, plus your friends' attunes."
+    },
+    {
+      "repo": "RedeemedRiku/LootPop",
+      "name": "LootPop",
+      "folders": ["LootPop"],
+      "toc": "src/LootPop/LootPop.toc",
+      "description": "A small, clean loot popup."
+    },
+    {
+      "repo": "RosemyneH/OmniInv-Syn",
+      "name": "Omni Inventory - Synastria",
+      "folders": ["OmniInventory"],
+      "toc": "OmniInventory/OmniInventory.toc",
+      "description": "An all-in-one bag, bank and inventory manager."
+    },
+    {
+      "repo": "RosemyneH/TheJournal",
+      "name": "The Journal",
+      "folders": ["TheJournal"],
+      "toc": "src/TheJournal/TheJournal.toc",
+      "description": "Dungeons, raids, attunements, friends and loot in one journal."
+    },
+    {
+      "repo": "scoufman/synastria_ah_buyer",
+      "name": "Synastria AH Buyer",
+      "folders": ["synastria_ah_buyer"],
+      "toc": "synastria_ah_buyer/synastria_ah_buyer.toc",
+      "description": "Instant Buy and Bid buttons on every Auction House row."
+    },
+    {
+      "repo": "Sablinova-WoW/Gear-Mover",
+      "name": "Gear Mover",
+      "folders": ["Gear Mover"],
+      "toc": "Gear Mover.toc",
+      "description": "Deposits and withdraws gear from your banks for you."
+    },
+    {
+      "repo": "Sablinova-WoW/Soul-Forge",
+      "name": "Soul Forge",
+      "folders": ["Soul Forge"],
+      "toc": "Soul Forge.toc",
+      "description": "Boss and rare kill counts, account titles and shared leaderboards."
+    },
+    {
+      "repo": "suprepupre/LuaBoost",
+      "name": "LuaBoost",
+      "folders": ["!LuaBoost"],
+      "toc": "!LuaBoost/!LuaBoost.toc",
+      "description": "Garbage collection control and quieter loading screens; pairs with wow-optimize."
+    },
+    {
+      "repo": "SynScoots/ScootsCraft",
+      "name": "Scoots Craft",
+      "folders": ["ScootsCraft"],
+      "toc": "src/ScootsCraft/ScootsCraft.toc",
+      "description": "A complete overhaul of the professions window.",
+      "requires": ["SynScoots/ScootsLibOptions"]
+    },
+    {
+      "repo": "SynScoots/ScootsSpeedrun",
+      "name": "Scoots Speedrun",
+      "folders": ["ScootsSpeedrun"],
+      "toc": "src/ScootsSpeedrun/ScootsSpeedrun.toc",
+      "description": "Instantly takes care of many repetitive actions around the game.",
+      "requires": ["SynScoots/ScootsLibOptions"]
+    },
+    {
+      "repo": "SynScoots/ScootsStats",
+      "name": "Scoots Stats",
+      "folders": ["ScootsStats"],
+      "toc": "src/ScootsStats/ScootsStats.toc",
+      "description": "A full stat panel on your character window."
+    },
+    {
+      "repo": "SynScoots/ScootsUITweaks",
+      "name": "Scoots UI Tweaks",
+      "folders": ["ScootsUITweaks"],
+      "toc": "src/ScootsUITweaks/ScootsUITweaks.toc",
+      "description": "A collection of small interface tweaks."
+    },
+    {
+      "repo": "SynScoots/ScootsVendor",
+      "name": "Scoots Vendor",
+      "folders": ["ScootsVendor"],
+      "toc": "src/ScootsVendor/ScootsVendor.toc",
+      "description": "A vendor window remade from the ground up."
+    },
+    {
+      "repo": "SynScoots/ScootsWarpMap",
+      "name": "Scoots Warp Map",
+      "folders": ["ScootsWarpMap"],
+      "toc": "src/ScootsWarpMap/ScootsWarpMap.toc",
+      "description": "An alternative window for warping."
+    },
+    {
+      "repo": "speedyrulz/AttuneNext",
+      "name": "AttuneNext",
+      "folders": ["AttuneNext"],
+      "toc": "AttuneNext.toc",
+      "description": "Recommends what to attune next, by expansion, content, zone, currency or profession."
+    },
+    {
+      "repo": "RosemyneH/ResourceBankViewer",
+      "name": "ResourceBankViewer",
+      "folders": ["ResourceBankViewer"],
+      "toc": "ResourceBankViewer/ResourceBankViewer.toc",
+      "description": "A movable window for browsing your Resource Bank."
+    },
+    {
+      "repo": "SynScoots/MehTrajectory",
+      "name": "Meh Trajectory",
+      "folders": ["MehTrajectory"],
+      "toc": "src/MehTrajectory/MehTrajectory.toc",
+      "description": "Draws a line on the world map showing where you're heading."
+    },
+    {
+      "repo": "SynScoots/ScootsProgressBar",
+      "name": "Scoots Progress Bar",
+      "folders": ["ScootsProgressBar"],
+      "toc": "src/ScootsProgressBar/ScootsProgressBar.toc",
+      "description": "A configurable display for a range of progress statistics.",
+      "requires": ["SynScoots/ScootsLibOptions"]
+    },
+    {
+      "repo": "SynScoots/ScootsRares",
+      "name": "Scoots Rares",
+      "folders": ["ScootsRares"],
+      "toc": "src/ScootsRares/ScootsRares.toc",
+      "description": "Puts a chat link near a rare that runs .findnpc for you."
+    },
+    {
+      "repo": "SynScoots/ScootsLibOptions",
+      "name": "Scoots Options Library",
+      "folders": ["ScootsLibOptions"],
+      "toc": "src/ScootsLibOptions/ScootsLibOptions.toc",
+      "description": "Shared options code that some Scoots addons need.",
+      "library": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SynastriaLauncher.App/SynastriaLauncher.App.csproj" />
+    <Project Path="src/SynastriaLauncher.Core/SynastriaLauncher.Core.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SynastriaLauncher.Tests/SynastriaLauncher.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Screens/Screens.csproj" />
+  </Folder>
+</Solution>
