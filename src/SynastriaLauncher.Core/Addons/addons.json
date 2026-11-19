@@ -1,5 +1,5 @@
 {
-  "revision": 2,
+  "revision": 3,
   "minLauncher": "0.1.0",
   "addons": [
     {
@@ -80,6 +80,21 @@
       "folders": ["Gear Mover"],
       "toc": "Gear Mover.toc",
       "description": "Deposits and withdraws gear from your banks for you."
+    },
+    {
+      "repo": "bkader/Skada-WoTLK",
+      "name": "Skada",
+      "folders": ["Skada", "SkadaImprovement", "SkadaStorage"],
+      "toc": "Skada/Skada.toc",
+      "description": "A damage and healing meter with per-spell breakdowns for every fight."
+    },
+    {
+      "repo": "Bunny67/Details-WotLK",
+      "name": "Details! Damage Meter",
+      "folders": ["Details", "Details_3DModelsPaths", "Details_ChartViewer", "Details_DataStorage", "Details_DeathGraphs",
+        "Details_EncounterDetails", "Details_SunderCount", "Details_TimeLine", "Details_TinyThreat"],
+      "toc": "Details/Details.toc",
+      "description": "A damage, healing and threat meter with charts, death logs and encounter breakdowns."
     },
     {
       "repo": "Sablinova-WoW/Soul-Forge",
