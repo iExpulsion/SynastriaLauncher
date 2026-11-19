@@ -17,48 +17,60 @@ jobs:
         with:
           fetch-depth: 0
 
+      # A push to main builds only when <Version> has no release yet; list and docs changes need no build.
+      # Pull requests and manual runs always build.
+      - name: Check for a new version
+        id: check
+        shell: bash
+        run: |
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/SynastriaLauncher.App/SynastriaLauncher.App.csproj | tr -d '\r')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "v$version is already released; raise <Version> in SynastriaLauncher.App.csproj to build and publish a new one."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-dotnet@v4
+        if: steps.check.outputs.build == 'true'
         with:
           dotnet-version: "10.0.x"
 
       # Compiles wow_optimize.dll from its pinned public source; the launcher embeds it.
       - name: Build wow-optimize
+        if: steps.check.outputs.build == 'true'
         shell: pwsh
         run: ./tools/build-wow-optimize.ps1
 
       # Compiles SynastriaLauncher.dll (embedded) and PatcherHost.exe (for the tests) from native/.
       - name: Build the in-memory patcher
+        if: steps.check.outputs.build == 'true'
         shell: pwsh
         run: ./tools/build-patcher.ps1
 
       - name: Run tests
+        if: steps.check.outputs.build == 'true'
         run: dotnet test --solution SynastriaLauncher.slnx
 
       - name: Publish
-        id: pkg
+        if: steps.check.outputs.build == 'true'
         shell: bash
-        run: |
-          dotnet publish src/SynastriaLauncher.App -c Release -o publish
-          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/SynastriaLauncher.App/SynastriaLauncher.App.csproj | tr -d '\r')
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+        run: dotnet publish src/SynastriaLauncher.App -c Release -o publish
 
       - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.build == 'true'
         with:
-          name: SynastriaLauncher-${{ steps.pkg.outputs.version }}
+          name: SynastriaLauncher-${{ steps.check.outputs.version }}
           path: |
             publish/SynastriaLauncher.exe
             THIRD-PARTY-NOTICES.txt
 
-      - name: Publish a release if the version is new
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Publish the release
+        if: steps.check.outputs.build == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.pkg.outputs.version }}
+          VERSION: ${{ steps.check.outputs.version }}
         run: |
-          tag="v$VERSION"
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "$tag is already released; raise <Version> in SynastriaLauncher.App.csproj to publish a new one."
-            exit 0
-          fi
-          gh release create "$tag" publish/SynastriaLauncher.exe THIRD-PARTY-NOTICES.txt --target "$GITHUB_SHA" --title "Synastria Launcher $VERSION" --generate-notes
+          gh release create "v$VERSION" publish/SynastriaLauncher.exe THIRD-PARTY-NOTICES.txt --target "$GITHUB_SHA" --title "Synastria Launcher $VERSION" --generate-notes
