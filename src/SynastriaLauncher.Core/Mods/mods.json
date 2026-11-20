@@ -1,5 +1,5 @@
 {
-  "revision": 10,
+  "revision": 11,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -12,7 +12,8 @@
       "version": "v3.1.1",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/d3d9.dll", "url": "https://github.com/Raz0r1337/DXVK/releases/download/v3.1.1/DXVK-WoW-x86.zip", "entry": "d3d9.dll" },
+        { "path": "{dlls}/d3d9.dll", "url": "https://github.com/Raz0r1337/DXVK/releases/download/v3.1.1/DXVK-WoW-x86.zip", "entry": "d3d9.dll",
+          "sha256": "78de4c3907ee7cb3dd62aea3fc16fc48b0dc0ca5acad823daee728485e125e71" },
         {
           "path": "WTF/dxvk.conf", "config": true,
           "presets": [
@@ -34,8 +35,10 @@
       "version": "1.0.3",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/lexara.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/lexara.dll" },
-        { "path": "{dlls}/skia.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/skia.dll" }
+        { "path": "{dlls}/lexara.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/lexara.dll",
+          "sha256": "adc146433bb333f9c7ab968c024a953147962a8672c91d3f0fe44049e2b7e450" },
+        { "path": "{dlls}/skia.dll", "url": "https://github.com/Stormhand-dev/Lexara---HD-Font-Renderer-for-WoW-3.3.5/releases/download/1.0.3/skia.dll",
+          "sha256": "ef23addd3f27c748f5ef07608da2c71c3551454debdcb8d4d40141b6e9a057d4" }
       ]
     },
     {
@@ -48,9 +51,12 @@
       "version": "build-1",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/LuxVelum.dll", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.dll" },
-        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "fogdata.bin" },
-        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "waterdata.bin" },
+        { "path": "{dlls}/LuxVelum.dll", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.dll",
+          "sha256": "2a40107e1692d6f8b80ea21621e1e05b01749c60b687aa1c69b68b7c9b7a7d3c" },
+        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "fogdata.bin",
+          "sha256": "4276f4b8511ae78c854faebaea7931ff9c57439179623ad7ffd64284e78d160a" },
+        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "waterdata.bin",
+          "sha256": "6e09ad128d0d73c94231e76b4491a8bbac1a27fad9c1aaa54c846f04ad72d99c" },
         { "path": "{dlls}/LuxVelum.ini", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini", "config": true,
           "presets": [
             { "id": "default", "name": "Mod Defaults", "description": "The settings LuxVelum ships with.", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini" },

@@ -276,6 +276,12 @@ public sealed class ModTests : IDisposable
     public void ManifestHasNoProxyLoaders() =>
         Assert.DoesNotContain(ModManifest.Embedded().Mods.SelectMany(m => m.Files), ModInstaller.IsProxy);
 
+    // Every downloaded file other than a settings file has a pinned hash, so a changed upstream file is refused.
+    [Fact]
+    public void DownloadedFilesArePinned() =>
+        Assert.All(ModManifest.Embedded().Mods.SelectMany(m => m.Files).Where(f => f.Url is not null && !f.Config),
+            f => Assert.Matches("^[0-9a-f]{64}$", f.Sha256 ?? ""));
+
     // A manifest entry that would install a proxy loader is refused before anything is written.
     [Fact]
     public async Task RefusesProxyLoaders()
