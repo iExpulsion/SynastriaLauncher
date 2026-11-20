@@ -164,14 +164,17 @@ public sealed partial class MainViewModel : ObservableObject
             try
             {
                 LauncherUpdateStatus = "Downloading the Update";
-                await SelfUpdate.ApplyAsync(GitHub, LauncherUpdate, exe);
-                GameProcess.Start(exe);
+                var incoming = await SelfUpdate.DownloadAsync(GitHub, LauncherUpdate, exe);
+                GameProcess.Start(incoming, SelfUpdate.FinishArgs(exe, Environment.ProcessId));
                 Environment.Exit(0);
             }
-            catch (Exception e) when (e is HttpRequestException or IOException or UnauthorizedAccessException)
+            catch (Exception e) when (e is HttpRequestException or IOException or UnauthorizedAccessException
+                or InvalidDataException or System.ComponentModel.Win32Exception)
             {
                 LauncherUpdateStatus = "Update Failed";
-                await Dialogs.AlertAsync("Update Failed", e.Message);
+                App.LogCrash(e);
+                await Dialogs.AlertAsync("Update Failed",
+                    $"{(string.IsNullOrWhiteSpace(e.Message) ? e.GetType().Name : e.Message)}\n\nThe details were saved to {App.CrashLogPath}.");
             }
         }
     }

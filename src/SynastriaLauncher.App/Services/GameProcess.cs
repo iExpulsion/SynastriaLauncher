@@ -11,6 +11,16 @@ public static class GameProcess
     public static void Start(string exePath) =>
         Process.Start(new ProcessStartInfo(exePath) { WorkingDirectory = Path.GetDirectoryName(exePath)!, UseShellExecute = true });
 
+    public static void Start(string exePath, IEnumerable<string> arguments)
+    {
+        var info = new ProcessStartInfo(exePath) { WorkingDirectory = Path.GetDirectoryName(exePath)!, UseShellExecute = false };
+        foreach (var argument in arguments)
+        {
+            info.ArgumentList.Add(argument);
+        }
+        Process.Start(info)?.Dispose();
+    }
+
     // Starts the launcher again with administrator rights (Windows asks first) and reports whether it did.
     public static bool RestartAsAdmin()
     {
