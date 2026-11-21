@@ -1,5 +1,5 @@
 {
-  "revision": 5,
+  "revision": 6,
   "minLauncher": "0.1.0",
   "addons": [
     {
@@ -45,6 +45,13 @@
       "folders": ["SynastriaCompanion"],
       "toc": "SynastriaCompanion/SynastriaCompanion.toc",
       "description": "Cleaner replacements for Synastria's own windows, plus your friends' attunes."
+    },
+    {
+      "repo": "iExpulsion/AddonTraffic",
+      "name": "AddonTraffic",
+      "folders": ["!AddonTraffic"],
+      "toc": "!AddonTraffic/!AddonTraffic.toc",
+      "description": "Shows which addons send messages, how many a second and minute, and what was sent before a chat mute."
     },
     {
       "repo": "RedeemedRiku/LootPop",
