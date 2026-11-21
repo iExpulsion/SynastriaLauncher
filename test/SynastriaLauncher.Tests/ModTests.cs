@@ -111,6 +111,16 @@ public sealed class ModTests : IDisposable
         Assert.Equal(ModState.OtherVersion, ModInstaller.Detect(mod, Game, "DLLs", record));
     }
 
+    // Every fix that follows a Reforged part names a real part, and the character creation fix follows Interface,
+    // whose patch-I.mpq holds the files its GlueXML.toc loads.
+    [Fact]
+    public void ReforgedFixesFollowRealParts()
+    {
+        var followers = ModManifest.Embedded().Mods.Where(m => m.FollowsReforged).ToList();
+        Assert.All(followers, m => Assert.Contains(SynastriaLauncher.Core.Reforged.ReforgedCatalog.Parts, p => p.Id == m.FollowsPart));
+        Assert.Equal("interface", Assert.Single(followers, m => m.Id == "reforged-fix").FollowsPart);
+    }
+
     // Project Reforged is detected by its lettered patches; the stock client's numbered ones don't count.
     [Fact]
     public void DetectsReforged()

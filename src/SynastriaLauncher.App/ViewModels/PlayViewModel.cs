@@ -36,7 +36,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
     public void Refresh()
     {
         var patchesOn = main.Patches.AppliedIds().Count;
-        var mods = main.Mods.Items.Count(m => m.State is ModState.Installed or ModState.OtherVersion);
+        var mods = main.Mods.Items.Count(m => !m.Mod.FollowsReforged && m.State is ModState.Installed or ModState.OtherVersion);
         AddonUpdates = main.Addons.UpdateCount;
         PatchChanges = main.Patches.PendingCount;
         StatusTitle = !main.HasGameFolder ? "Choose Your Game Folder" : "Ready to Play";
@@ -48,7 +48,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
                 AddonUpdates == 0 ? "Addons Up to Date" : Plural(AddonUpdates, "Addon Update", "Addon Updates"));
         main.RefreshBackups();
         Warnings = string.Join("   ", main.Mods.Items
-            .Where(m => m.State is not (ModState.NotInstalled or ModState.Disabled) && m.HasRequirement)
+            .Where(m => !m.Mod.FollowsReforged && m.State is not (ModState.NotInstalled or ModState.Disabled) && m.HasRequirement)
             .Select(m => $"{m.Name}: {m.Requirement}")
             .Append(main.Reforged.InstalledWarning.Length > 0 ? $"Project Reforged's {main.Reforged.InstalledWarning}" : "")
             .Append(main.GameFolder is { } game && WdmService.ReforgedConflicts(game, WdmCatalog.Locale(game)).Count > 0
@@ -73,6 +73,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         else if (exe is not null)
         {
             await main.SyncGameFilesAsync();
+            await main.Mods.SyncReforgedFixesAsync();
             GameProcess.Start(exe.ExePath);
         }
         else

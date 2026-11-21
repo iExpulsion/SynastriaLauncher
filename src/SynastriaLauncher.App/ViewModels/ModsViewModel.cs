@@ -6,6 +6,7 @@ using SynastriaLauncher.App.Services;
 using SynastriaLauncher.Core;
 using SynastriaLauncher.Core.Mods;
 using SynastriaLauncher.Core.Patching;
+using SynastriaLauncher.Core.Reforged;
 
 namespace SynastriaLauncher.App.ViewModels;
 
@@ -218,10 +219,12 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
         _ = FetchPresetsAsync();
     }
 
-    // A mod for something this client lacks (Project Reforged) is listed only while it's still installed.
+    // A mod for something this client lacks (Project Reforged) is listed only while it's still installed. Fixes that
+    // follow a Reforged part aren't listed: the part's switch on the Project Reforged page handles them.
     private void RefreshLists(string? game)
     {
-        var shown = Items.Where(i => game is not null && ClientFeatures.Has(i.Mod.OnlyWith, game) || i.State != ModState.NotInstalled).ToList();
+        var shown = Items.Where(i => !i.Mod.FollowsReforged
+            && (game is not null && ClientFeatures.Has(i.Mod.OnlyWith, game) || i.State != ModState.NotInstalled)).ToList();
         Sync(SynastriaItems, shown.Where(i => i.Mod.IsSynastria).ToList());
         Sync(CommunityItems, shown.Where(i => !i.Mod.IsSynastria).ToList());
     }
@@ -314,9 +317,11 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
         }
     }
 
-    // Installed mods (switched on) that need the patch, for the Patches page's warnings.
+    // Installed mods (switched on) that need the patch, for the Patches page's warnings. A fix that follows a Reforged
+    // part is covered by Project Reforged's own entry.
     public IReadOnlyList<string> ModsUsing(string patchId) =>
-        Items.Where(m => m.State is ModState.Installed or ModState.OtherVersion or ModState.Partial && m.Mod.Requires.Contains(patchId))
+        Items.Where(m => !m.Mod.FollowsReforged && m.State is ModState.Installed or ModState.OtherVersion or ModState.Partial
+                && m.Mod.Requires.Contains(patchId))
             .Select(m => m.Name).ToList();
 
     public async Task InstallAsync(ModItemViewModel item)
@@ -358,6 +363,41 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
             item.IsBusy = false;
             Refresh();
             item.ActiveChanged();
+        }
+    }
+
+    // Fixes that follow a Reforged part: installed while all of the part's files are in Data, removed otherwise.
+    // Skipped while the game runs; the next launcher start or Launch catches up.
+    public async Task SyncReforgedFixesAsync()
+    {
+        var game = main.GameFolder;
+        if (game is not null && !GameProcess.IsRunning())
+        {
+            Refresh();
+            foreach (var item in Items.Where(i => i.Mod.FollowsReforged))
+            {
+                var part = ReforgedCatalog.Get(item.Mod.FollowsPart!);
+                var on = part.Files.All(f => File.Exists(Path.Combine(ReforgedService.DataFolder(game), f)));
+                try
+                {
+                    if (on && item.State != ModState.Installed)
+                    {
+                        main.Data.Mods[item.Mod.Id] = await ModInstaller.InstallAsync(main.GitHub, item.Mod, game, DllFolderName());
+                        main.Data.Save();
+                    }
+                    else if (!on && item.State != ModState.NotInstalled)
+                    {
+                        ModInstaller.Uninstall(item.Mod, game, DllFolderName());
+                        main.Data.Mods.Remove(item.Mod.Id);
+                        main.Data.Save();
+                    }
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException or HttpRequestException)
+                {
+                    App.LogCrash(e);
+                }
+            }
+            Refresh();
         }
     }
 

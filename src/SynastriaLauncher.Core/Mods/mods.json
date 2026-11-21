@@ -1,5 +1,5 @@
 {
-  "revision": 11,
+  "revision": 12,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -124,6 +124,7 @@
       "author": "Expulsion",
       "origin": "synastria",
       "onlyWith": "reforged",
+      "followsPart": "interface",
       "version": "1",
       "requires": [ "InterfaceEdit" ],
       "files": [

@@ -245,11 +245,12 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         }
         else if (row.IsOn && game is not null && row.Part.Id == "interface")
         {
-            var mod = main.Mods.Items.FirstOrDefault(m => m.Mod.Id == "reforged-fix");
-            var installed = mod?.State is ModState.Installed or ModState.OtherVersion;
-            fix = installed
-                ? new SynastriaFix(false, $"{mod!.Name} on the Mods page makes this part's character creation screen work on Synastria.")
-                : new SynastriaFix(true, $"Install {mod?.Name ?? "Project Reforged Fix"} on the Mods page, or this part's character creation screen won't work on Synastria.");
+            var mod = main.Mods.Items.FirstOrDefault(m => m.Mod.FollowsPart == row.Part.Id);
+            fix = mod?.State == ModState.Installed
+                ? new SynastriaFix(false, "The launcher adds a fix to Data\\Interface\\GlueXML so this part's character creation screen "
+                    + "works on Synastria. It goes away when this part is switched off.")
+                : new SynastriaFix(true, "The launcher couldn't add its fix for this part's character creation screen yet. It tries again "
+                    + "the next time it starts or you press Launch with the game closed.");
         }
         return fix;
     }
@@ -443,17 +444,8 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         }
     }
 
-    // On Synastria, Reforged's character creation needs the Project Reforged Fix, so it comes along automatically.
-    private async Task AfterInstallAsync()
-    {
-        var fix = main.Mods.Items.FirstOrDefault(m => m.Mod.Id == "reforged-fix");
-        var reforged = main.GameFolder is { } game && ClientFeatures.HasReforged(game);
-        if (fix is not null && reforged && fix.State == ModState.NotInstalled)
-        {
-            await main.Mods.InstallAsync(fix);
-        }
-        main.Mods.Refresh();
-    }
+    // On Synastria, Reforged's character creation needs the Project Reforged Fix, so it follows the Interface part.
+    private async Task AfterInstallAsync() => await main.Mods.SyncReforgedFixesAsync();
 
     [RelayCommand]
     private void Cancel() => _cancel?.Cancel();

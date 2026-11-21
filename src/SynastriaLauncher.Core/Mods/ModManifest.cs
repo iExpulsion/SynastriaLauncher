@@ -46,8 +46,13 @@ public sealed record ModDefinition(
     [property: JsonPropertyName("files")] IReadOnlyList<ModFile> Files,
     [property: JsonPropertyName("origin")] string? Origin = null,
     [property: JsonPropertyName("onlyWith")] string? OnlyWith = null,
-    [property: JsonPropertyName("builtFromSource")] bool BuiltFromSource = false)
+    [property: JsonPropertyName("builtFromSource")] bool BuiltFromSource = false,
+    [property: JsonPropertyName("followsPart")] string? FollowsPart = null)
 {
+    // A fix for a Project Reforged part: not listed on the Mods page, installed while that part is on and removed
+    // when it's off. Older launchers ignore the field and list it as a normal mod.
+    public bool FollowsReforged => FollowsPart is not null;
+
     // Made for Synastria and shipped inside the launcher, versus a community mod downloaded from its author.
     public bool IsSynastria => Origin == "synastria";
 }

@@ -117,6 +117,7 @@ public sealed partial class MainViewModel : ObservableObject
         await SyncGameFilesAsync();
         Patches.Load();
         await Mods.LoadAsync();
+        await Mods.SyncReforgedFixesAsync();
         await Addons.CheckAllAsync();
         Play.Refresh();
     }

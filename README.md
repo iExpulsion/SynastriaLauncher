@@ -91,7 +91,6 @@ Optional extras that run inside the game:
 - **Made for Synastria**, included with the launcher:
   - **Login and Character Select:** a cleaner login screen and a character list you can reorder by dragging.
   - **Short Self Combat Text:** big numbers around your own character shortened, like Short Combat Numbers.
-  - **Project Reforged Fix:** makes Project Reforged's character creation screen work on Synastria.
 - **Community mods**, downloaded from their authors' own releases:
   - **DXVK:** runs the game's graphics through Vulkan, usually smoother on modern graphics cards.
   - **Lexara:** sharper, cleaner text.
@@ -121,12 +120,12 @@ If your parts are linked to a shared folder (for example, one copy of Reforged f
 launcher works with the links: updates go into the shared folder, switching a part off moves only its link, and a
 new part is put in the shared folder and linked.
 
-Two parts need a fix to work on Synastria, and the page marks each with a **Synastria Fix** badge (amber if the
-fix is missing). **Interface**'s character creation screen needs the **Project Reforged Fix** mod, which installs
-along with Reforged. **Spell Particle Effects** gets `patch-Z.mpq` in your Data folder: Reforged's new spell effects
-and Synastria's own would otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no
-effect. The launcher makes this file from your copy of Reforged's patch, rebuilds it when Reforged updates, and
-removes it when Spell Particle Effects is switched off.
+Two parts need a fix to work on Synastria. The launcher adds each fix while its part is on and removes it when the
+part is switched off, and the page marks both parts with a **Synastria Fix** badge (amber if the fix is missing).
+**Interface** gets a fix in `Data\Interface\GlueXML` that makes its character creation screen work. **Spell
+Particle Effects** gets `patch-Z.mpq` in your Data folder: Reforged's new spell effects and Synastria's own would
+otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no effect. The launcher makes this
+file from your copy of Reforged's patch and rebuilds it when Reforged updates.
 
 ![Project Reforged: 8 of 10 parts installed, each with a switch, its version, size and files, and the HD Models choice for Player Characters and NPCs](docs/images/reforged.png)
 
