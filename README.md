@@ -123,7 +123,7 @@ new part is put in the shared folder and linked.
 Two parts need a fix to work on Synastria. The launcher adds each fix while its part is on and removes it when the
 part is switched off, and the page marks both parts with a **Synastria Fix** badge (amber if the fix is missing).
 **Interface** gets a fix in `Data\Interface\GlueXML` that makes its character creation screen work. **Spell
-Particle Effects** gets `patch-Z.mpq` in your Data folder: Reforged's new spell effects and Synastria's own would
+Particle Effects** gets `patch-V.mpq` in your Data folder: Reforged's new spell effects and Synastria's own would
 otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no effect. The launcher makes this
 file from your copy of Reforged's patch and rebuilds it when Reforged updates.
 

@@ -15,12 +15,13 @@ public enum SpellEffectsFixState
 
 // Spell Particle Effects (patch-P.mpq) adds spell visual rows past the stock client's highest IDs, the same IDs the
 // game client gives the visual rows it adds while running, so both claim them and spells lose their effects. The fix
-// is patch-Z.mpq, which loads after Reforged's patches: Reforged's visual tables with every row it added past the
+// is patch-V.mpq (after every letter Reforged uses, A to U, so it wins over patch-P.mpq; Z is common among other
+// patches): Reforged's visual tables with every row it added past the
 // stock IDs moved to an unused ID within the stock range, and every reference to those rows changed to match. It's
 // built from the player's own patch-P.mpq, so nothing of Reforged's is re-hosted.
 public static class SpellEffectsFix
 {
-    public const string FileName = "patch-Z.mpq";
+    public const string FileName = "patch-V.mpq";
     public const string SourceName = "patch-P.mpq";
     public const string MarkerName = "SynastriaLauncher\\SpellEffectsFix.txt";
 
@@ -149,7 +150,7 @@ public static class SpellEffectsFix
             : MpqWriter.Write(fixedTables.Select(t => (DbcPath(t.Key), t.Value.Write())).Append((MarkerName, Marker)).ToList());
     }
 
-    // The launcher's marker file in a patch-Z.mpq, or null when it isn't the launcher's.
+    // The launcher's marker file in a patch-V.mpq, or null when it isn't the launcher's.
     private static byte[]? ReadMarker(string path)
     {
         byte[]? marker = null;
@@ -170,8 +171,8 @@ public static class SpellEffectsFix
     private static DateTime WrittenUtc(string path) =>
         (new FileInfo(path).ResolveLinkTarget(returnFinalTarget: true) as FileInfo ?? new FileInfo(path)).LastWriteTimeUtc;
 
-    // Brings patch-Z.mpq in line with patch-P.mpq: built or rebuilt while Spell Particle Effects is installed and
-    // needs it, removed otherwise. A patch-Z.mpq the launcher didn't make is never touched. A fix newer than
+    // Brings patch-V.mpq in line with patch-P.mpq: built or rebuilt while Spell Particle Effects is installed and
+    // needs it, removed otherwise. A patch-V.mpq the launcher didn't make is never touched. A fix newer than
     // patch-P.mpq and made by this version of the launcher is taken as current without rebuilding it.
     public static SpellEffectsFixState Sync(string gameFolder)
     {

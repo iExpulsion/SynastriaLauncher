@@ -49,7 +49,7 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     public bool IsAccent => Status is { State: ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial, Parked: false };
     public bool IsInfo => Status is { Linked: true, State: ReforgedPartState.Current, Parked: false };
 
-    // A part that needs a Synastria fix to work there: Spell Particle Effects (patch-Z.mpq) and Interface (the
+    // A part that needs a Synastria fix to work there: Spell Particle Effects (patch-V.mpq) and Interface (the
     // Project Reforged Fix mod). Amber when the fix is missing.
     private SynastriaFix? Fix => owner.FixFor(this);
     public bool HasFix => Fix is not null;

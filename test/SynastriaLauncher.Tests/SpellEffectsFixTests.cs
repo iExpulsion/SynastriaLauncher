@@ -1,5 +1,5 @@
 // Covers the Spell Particle Effects fix: MPQ and client table round trips, moving Reforged's added visual rows into
-// unused stock IDs with their references, and keeping patch-Z.mpq in line with patch-P.mpq. The real-client check
+// unused stock IDs with their references, and keeping patch-V.mpq in line with patch-P.mpq. The real-client check
 // skips unless SYNASTRIA_TEST_GAME points at a game folder with patch-P.mpq installed.
 
 using SynastriaLauncher.Core.Mpq;
@@ -150,7 +150,7 @@ public sealed class SpellEffectsFixTests : IDisposable
         return game;
     }
 
-    // With patch-P.mpq installed, patch-Z.mpq is written once, holds the fixed tables, and is then left as it is.
+    // With patch-P.mpq installed, patch-V.mpq is written once, holds the fixed tables, and is then left as it is.
     [Fact]
     public void SyncWritesTheFixOnce()
     {
@@ -194,7 +194,7 @@ public sealed class SpellEffectsFixTests : IDisposable
         Assert.True(archive.Contains(DbcPath(Kit)));
     }
 
-    // Once patch-P.mpq is gone, the launcher's patch-Z.mpq goes too.
+    // Once patch-P.mpq is gone, the launcher's patch-V.mpq goes too.
     [Fact]
     public void SyncRemovesTheFixWithReforged()
     {
@@ -206,7 +206,7 @@ public sealed class SpellEffectsFixTests : IDisposable
         Assert.Equal(SpellEffectsFixState.NotNeeded, Sync(game));
     }
 
-    // A patch-Z.mpq from something else is never overwritten or removed.
+    // A patch-V.mpq from something else is never overwritten or removed.
     [Fact]
     public void SyncLeavesSomeoneElsesPatchZ()
     {
