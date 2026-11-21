@@ -12,6 +12,8 @@ public sealed partial class WdmPartViewModel(WdmPart part, WdmViewModel owner) :
     public string Name => Part.Name;
     public string Description => Part.Description;
     public bool IsPreRelease => Part.PreRelease;
+    public string Warning => Part.Warning ?? "";
+    public bool HasWarning => Warning.Length > 0;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(ShowState), nameof(IsGood), nameof(IsAccent), nameof(IsInfo), nameof(PrimaryLabel),

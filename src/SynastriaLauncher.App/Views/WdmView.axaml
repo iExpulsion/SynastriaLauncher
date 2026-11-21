@@ -70,6 +70,9 @@
                                       ToolTip.Tip="Trimitor publishes this one as a pre-release">
                                 <TextBlock Text="Pre-Release" />
                               </Border>
+                              <PathIcon Data="{StaticResource IconWarning}" Width="14" Height="14" VerticalAlignment="Center"
+                                        Foreground="{StaticResource Amber}" Background="Transparent"
+                                        IsVisible="{Binding HasWarning}" ToolTip.Tip="{Binding Warning}" />
                             </StackPanel>
                             <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" Text="{Binding Description}" />
                             <TextBlock Classes="small" TextWrapping="Wrap" Text="{Binding DetailsLine}" />

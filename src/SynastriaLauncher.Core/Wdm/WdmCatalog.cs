@@ -20,7 +20,8 @@ public sealed record WdmPart(
     IReadOnlyList<string> Folders,
     bool PreRelease = false,
     IReadOnlyList<string>? Needs = null,
-    string? Requirement = null)
+    string? Requirement = null,
+    string? Warning = null)
 {
     public IReadOnlyList<string> NeededParts => Needs ?? [];
 
@@ -53,7 +54,8 @@ public static partial class WdmCatalog
         new(Addon, "WDM", "Dungeon level names, flight masters, dungeon entrances and zone levels on the map.",
             WdmKind.Addon, AddonRepo, ["WDM.zip"], ["WDM"]),
         new("mapster", "Mapster", "Nevcairiel's world map addon, with the new maps added to its lists.",
-            WdmKind.Addon, AddonRepo, ["Mapster.zip"], ["Mapster"]),
+            WdmKind.Addon, AddonRepo, ["Mapster.zip"], ["Mapster"],
+            Warning: "Doesn't work well with Synastria's tracker menu on the world map. Uninstall it if the menu goes missing or misbehaves."),
         new("gathermate", "GatherMate", "Nevcairiel's gathering node tracker, with data for the cave maps.",
             WdmKind.Addon, AddonRepo, ["GatherMate.zip"], ["GatherMate"]),
         new("questhelper", "QuestHelper", "QuestHelper, with data for the cave maps.",
