@@ -23,6 +23,9 @@ publisher. Choose **More info**, then **Run anyway**.
 
 Everything the launcher changes can be undone, and nothing changes until you press Apply, Install or Update.
 
+A warning icon next to a patch, mod or part means it's heavy on some computers or clashes with something on
+Synastria. Hover over it to see why.
+
 ## What It Does
 
 ### Launch
@@ -48,6 +51,9 @@ Improvements to the game client, each with its own switch:
 | Nameplate Sorting | Nearer nameplates draw over farther ones, with your target always on top. |
 | Nameplate Stacking | Nameplates move apart instead of piling on top of each other. |
 | Interface Edit | Lets the game load modified interface files, which some mods need. |
+
+**Recommended Setup** switches on the everyday patches: No Auto AFK, No Mail Refresh Delay, Short Combat Numbers,
+Damage Number Colors and Interface Edit. Pick any others yourself.
 
 ![Patches: the Combat Text and Nameplates switches, with Damage Number Colors open on its three color tiers](docs/images/patches-settings.png)
 
@@ -118,7 +124,8 @@ needs no download unless Reforged has updated it since. To free the space for go
 
 If your parts are linked to a shared folder (for example, one copy of Reforged for several game installs), the
 launcher works with the links: updates go into the shared folder, switching a part off moves only its link, and a
-new part is put in the shared folder and linked.
+new part is put in the shared folder and linked. Switching between HD and SD models changes the shared copy, so
+every game install using it switches too; the launcher asks first.
 
 Two parts need a fix to work on Synastria. The launcher adds each fix while its part is on and removes it when the
 part is switched off, and the page marks both parts with a **Synastria Fix** badge (amber if the fix is missing).
