@@ -23,7 +23,8 @@ public sealed record ReforgedPart(
     IReadOnlyList<ReforgedVariant> Variants,
     bool DefaultOn,
     IReadOnlyList<string>? Requires = null,
-    string? Requirement = null)
+    string? Requirement = null,
+    string? Warning = null)
 {
     // Launcher patches the part doesn't work without.
     public IReadOnlyList<string> Needs => Requires ?? [];
@@ -50,7 +51,8 @@ public static class ReforgedCatalog
             with { Requirement = "Needs Player Characters and NPCs" },
         new("world", "Buildings, Doodads and Environment", "The world set: buildings, props and terrain, which only work together.",
             ReforgedSection.Core, ["patch-B.mpq", "patch-D.mpq", "patch-E.mpq"],
-            [new("on", "World", ["patches/patch-B.mpq", "patches/patch-D.mpq", "patches/patch-E.mpq"])], true),
+            [new("on", "World", ["patches/patch-B.mpq", "patches/patch-D.mpq", "patches/patch-E.mpq"])], true,
+            Warning: "Heavy on AMD graphics cards: expect lower frame rates, and set Texture Resolution to Low if the game crashes"),
         Single("gear", "Gear and Weapons", "Remade armor and weapon models.", ReforgedSection.Core, 'G', true),
         Single("interface", "Interface", "Interface visuals and UI enhancements, with new login and character screens.",
             ReforgedSection.Core, 'I', true) with { Requires = [PatchIds.InterfaceEdit], Requirement = "Needs the Interface Edit patch" },

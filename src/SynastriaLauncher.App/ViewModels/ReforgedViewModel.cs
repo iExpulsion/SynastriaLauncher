@@ -22,6 +22,8 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     public string Description => Part.Description;
     public string Requirement => Part.Requirement ?? "";
     public bool HasRequirement => Requirement.Length > 0;
+    public string Warning => Part.Warning ?? "";
+    public bool HasWarning => Warning.Length > 0;
     public bool HasVariants => Part.Variants.Count > 1;
     public IReadOnlyList<VariantOption> Variants { get; } = part.Variants.Select(v => new VariantOption(v.Id, v.Name)).ToList();
 

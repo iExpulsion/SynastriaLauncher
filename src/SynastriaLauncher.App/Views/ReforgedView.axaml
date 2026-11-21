@@ -130,6 +130,11 @@
                               <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Description}" />
                               <TextBlock Classes="small" Text="{Binding Details}" />
                               <TextBlock Classes="small" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
+                              <DockPanel IsVisible="{Binding HasWarning}">
+                                <PathIcon DockPanel.Dock="Left" Data="{StaticResource IconWarning}" Width="12" Height="12" Margin="0,2,6,0"
+                                          VerticalAlignment="Top" Foreground="{StaticResource Amber}" />
+                                <TextBlock Classes="small" Foreground="{StaticResource Amber}" TextWrapping="Wrap" Text="{Binding Warning}" />
+                              </DockPanel>
                             </StackPanel>
                             <ComboBox Grid.Column="2" ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}"
                                       IsVisible="{Binding HasVariants}" IsEnabled="{Binding CanChangeVariant}"
