@@ -36,6 +36,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (value == LauncherPage.Reforged)
         {
+            Reforged.RefreshFixes();
             _ = Reforged.EnsureLoadedAsync();
         }
         else if (value == LauncherPage.Wdm)

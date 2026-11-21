@@ -121,11 +121,12 @@ If your parts are linked to a shared folder (for example, one copy of Reforged f
 launcher works with the links: updates go into the shared folder, switching a part off moves only its link, and a
 new part is put in the shared folder and linked.
 
-With **Spell Particle Effects** on, the launcher also adds a Synastria compatibility layer, `patch-Z.mpq`, to your
-Data folder, and the page notes it under that part. Reforged's new spell effects and Synastria's own would
-otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no effect. The launcher makes this
-file from your copy of Reforged's patch, rebuilds it when Reforged updates, and removes it when Spell Particle
-Effects is switched off.
+Two parts need a fix to work on Synastria, and the page marks each with a **Synastria Fix** badge (amber if the
+fix is missing). **Interface**'s character creation screen needs the **Project Reforged Fix** mod, which installs
+along with Reforged. **Spell Particle Effects** gets `patch-Z.mpq` in your Data folder: Reforged's new spell effects
+and Synastria's own would otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no
+effect. The launcher makes this file from your copy of Reforged's patch, rebuilds it when Reforged updates, and
+removes it when Spell Particle Effects is switched off.
 
 ![Project Reforged: 8 of 10 parts installed, each with a switch, its version, size and files, and the HD Models choice for Player Characters and NPCs](docs/images/reforged.png)
 

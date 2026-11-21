@@ -13,6 +13,8 @@ namespace SynastriaLauncher.App.ViewModels;
 
 public sealed record VariantOption(string Id, string Name);
 
+public sealed record SynastriaFix(bool Missing, string Tip);
+
 public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedViewModel owner) : ObservableObject
 {
     public ReforgedPart Part { get; } = part;
@@ -47,9 +49,13 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     public bool IsAccent => Status is { State: ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial, Parked: false };
     public bool IsInfo => Status is { Linked: true, State: ReforgedPartState.Current, Parked: false };
 
-    // Spell Particle Effects needs the launcher's compatibility layer on Synastria (SpellEffectsFix).
-    public string Note => owner.NoteFor(this);
-    public bool HasNote => Note.Length > 0;
+    // A part that needs a Synastria fix to work there: Spell Particle Effects (patch-Z.mpq) and Interface (the
+    // Project Reforged Fix mod). Amber when the fix is missing.
+    private SynastriaFix? Fix => owner.FixFor(this);
+    public bool HasFix => Fix is not null;
+    public string FixLabel => Fix?.Missing == true ? "Synastria Fix Missing" : "Synastria Fix";
+    public string FixTip => Fix?.Tip ?? "";
+    public bool FixMissing => Fix?.Missing == true;
 
     public string StateLabel => Status switch
     {
@@ -75,8 +81,10 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     public void Refresh()
     {
         OnPropertyChanged(nameof(Details));
-        OnPropertyChanged(nameof(Note));
-        OnPropertyChanged(nameof(HasNote));
+        OnPropertyChanged(nameof(HasFix));
+        OnPropertyChanged(nameof(FixLabel));
+        OnPropertyChanged(nameof(FixTip));
+        OnPropertyChanged(nameof(FixMissing));
     }
 }
 
@@ -222,13 +230,37 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         return $"{version}{size}   ·   {files}";
     }
 
-    public string NoteFor(ReforgedPartViewModel row)
+    public SynastriaFix? FixFor(ReforgedPartViewModel row)
     {
-        var fix = main.GameFolder is { } game ? Path.Combine(ReforgedService.DataFolder(game), SpellEffectsFix.FileName) : null;
-        var blocked = fix is not null && File.Exists(fix) && !SpellEffectsFix.IsOurs(fix);
-        return row.Part.Id != "particles" || !row.IsOn ? ""
-            : blocked ? $"Synastria compatibility layer missing: your Data folder already has a {SpellEffectsFix.FileName} the launcher didn't make, so some spells show no effect."
-            : $"Uses the launcher's Synastria compatibility layer ({SpellEffectsFix.FileName}), so Reforged's spell effects and Synastria's own both show.";
+        var game = main.GameFolder;
+        SynastriaFix? fix = null;
+        if (row.IsOn && game is not null && row.Part.Id == "particles")
+        {
+            var path = Path.Combine(ReforgedService.DataFolder(game), SpellEffectsFix.FileName);
+            fix = File.Exists(path) && !SpellEffectsFix.IsOurs(path)
+                ? new SynastriaFix(true, $"Your Data folder already has a {SpellEffectsFix.FileName} that the launcher didn't make, so it can't add "
+                    + "its fix, and some spells show no effect. Move that file out of Data to let the launcher add it.")
+                : new SynastriaFix(false, $"The launcher adds {SpellEffectsFix.FileName}, made from this part, so Reforged's spell effects and "
+                    + "Synastria's own both show. It's kept up to date and goes away when this part is switched off.");
+        }
+        else if (row.IsOn && game is not null && row.Part.Id == "interface")
+        {
+            var mod = main.Mods.Items.FirstOrDefault(m => m.Mod.Id == "reforged-fix");
+            var installed = mod?.State is ModState.Installed or ModState.OtherVersion;
+            fix = installed
+                ? new SynastriaFix(false, $"{mod!.Name} on the Mods page makes this part's character creation screen work on Synastria.")
+                : new SynastriaFix(true, $"Install {mod?.Name ?? "Project Reforged Fix"} on the Mods page, or this part's character creation screen won't work on Synastria.");
+        }
+        return fix;
+    }
+
+    // The Mods page can change whether a fix is installed, so rows look again when this page opens.
+    public void RefreshFixes()
+    {
+        foreach (var row in Parts)
+        {
+            row.Refresh();
+        }
     }
 
     // Checks lazily, the first time the page opens: the first check hashes every installed file (~20 GB).
