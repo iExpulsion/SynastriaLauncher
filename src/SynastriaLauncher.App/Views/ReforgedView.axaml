@@ -126,15 +126,15 @@
                             <ToggleSwitch Grid.Column="0" IsChecked="{Binding IsOn}" IsEnabled="{Binding CanChange}"
                                           VerticalAlignment="Center" Margin="0,0,12,0" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                              <TextBlock Classes="name" Text="{Binding Name}" />
+                              <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Classes="name" Text="{Binding Name}" />
+                                <PathIcon Data="{StaticResource IconWarning}" Width="14" Height="14" VerticalAlignment="Center"
+                                          Foreground="{StaticResource Amber}" Background="Transparent"
+                                          IsVisible="{Binding HasWarning}" ToolTip.Tip="{Binding Warning}" />
+                              </StackPanel>
                               <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Description}" />
                               <TextBlock Classes="small" Text="{Binding Details}" />
                               <TextBlock Classes="small" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
-                              <DockPanel IsVisible="{Binding HasWarning}">
-                                <PathIcon DockPanel.Dock="Left" Data="{StaticResource IconWarning}" Width="12" Height="12" Margin="0,2,6,0"
-                                          VerticalAlignment="Top" Foreground="{StaticResource Amber}" />
-                                <TextBlock Classes="small" Foreground="{StaticResource Amber}" TextWrapping="Wrap" Text="{Binding Warning}" />
-                              </DockPanel>
                             </StackPanel>
                             <ComboBox Grid.Column="2" ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}"
                                       IsVisible="{Binding HasVariants}" IsEnabled="{Binding CanChangeVariant}"

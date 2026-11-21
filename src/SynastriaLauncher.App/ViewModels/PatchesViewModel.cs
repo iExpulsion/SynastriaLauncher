@@ -13,6 +13,8 @@ public sealed partial class PatchItemViewModel(PatchDefinition patch, PatchesVie
     public string Title => Patch.Title;
     public string Description => Patch.Description;
     public bool Experimental => Patch.Experimental;
+    public string Warning => Patch.Warning ?? "";
+    public bool HasWarning => Warning.Length > 0;
     public bool HasDistance => Patch.Id == PatchIds.NameplateDistance;
     public bool HasSpacing => Patch.Id == PatchIds.NameplateStack;
     public bool HasColors => Patch.Id == PatchIds.DamageColors;

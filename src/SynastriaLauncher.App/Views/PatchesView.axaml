@@ -77,6 +77,9 @@
                                           ToolTip.Tip="A newer patch; if the game acts strange, switch it off">
                                     <TextBlock Text="Experimental" />
                                   </Border>
+                                  <PathIcon Data="{StaticResource IconWarning}" Width="14" Height="14" VerticalAlignment="Center"
+                                            Foreground="{StaticResource Amber}" Background="Transparent"
+                                            IsVisible="{Binding HasWarning}" ToolTip.Tip="{Binding Warning}" />
                                 </StackPanel>
                                 <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Summary}" ToolTip.Tip="{Binding Description}" TextWrapping="Wrap" />
                                 <TextBlock Classes="small" Text="{Binding Credit}" IsVisible="{Binding HasCredit}" TextWrapping="Wrap" />

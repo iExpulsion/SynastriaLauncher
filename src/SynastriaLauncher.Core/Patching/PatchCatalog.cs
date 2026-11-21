@@ -31,7 +31,8 @@ public sealed record PatchDefinition(
     IReadOnlyList<Routine> Routines,
     bool Hidden = false,
     string? Credit = null,
-    bool MemoryOnly = false);
+    bool MemoryOnly = false,
+    string? Warning = null);
 
 public static class PatchIds
 {
@@ -143,7 +144,8 @@ public static class PatchCatalog
                     "A0 57 9F 00 BC F3 A3 00 38 F4 A3 00 60 F4 A3 00 00 00 00 00 00 D0 1A 45 00 00 20 40 00 00 7A 43",
                     "00 00 80 43"),
             ],
-            Credit: St0ny),
+            Credit: St0ny,
+            Warning: "Heavy with Project Reforged: higher view distances load much more of the world, which can cut frame rates or crash the game, especially on AMD graphics cards. Keep the sliders low if that happens."),
         new(PatchIds.NoZoomFade, "No Zoom Transparency", PatchGroup.Visuals,
             "Your character no longer turns see-through when zoomed in close",
             "Keeps your character from turning see-through when the camera is zoomed in close.",
