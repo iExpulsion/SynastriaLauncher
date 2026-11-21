@@ -1,5 +1,5 @@
 {
-  "revision": 3,
+  "revision": 4,
   "minLauncher": "0.1.0",
   "addons": [
     {
@@ -95,6 +95,13 @@
         "Details_EncounterDetails", "Details_SunderCount", "Details_TimeLine", "Details_TinyThreat"],
       "toc": "Details/Details.toc",
       "description": "A damage, healing and threat meter with charts, death logs and encounter breakdowns."
+    },
+    {
+      "repo": "Bunny67/WeakAuras-WotLK",
+      "name": "WeakAuras",
+      "folders": ["WeakAuras", "WeakAurasArchive", "WeakAurasModelPaths", "WeakAurasOptions"],
+      "toc": "WeakAuras/WeakAuras.toc",
+      "description": "Custom on-screen alerts and bars for buffs, debuffs, cooldowns and procs."
     },
     {
       "repo": "Sablinova-WoW/Soul-Forge",
