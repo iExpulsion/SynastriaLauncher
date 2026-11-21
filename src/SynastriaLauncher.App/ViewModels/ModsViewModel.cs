@@ -17,6 +17,8 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
     public string Summary => Mod.Summary;
     public string Details => Mod.Details ?? "";
     public bool IsSynastria => Mod.IsSynastria;
+    public string Warning => Mod.Warning ?? "";
+    public bool HasWarning => Warning.Length > 0;
     public string Credit => Mod.IsSynastria ? $"By {Mod.Author}   ·   Included with the launcher"
         : Mod.BuiltFromSource ? $"By {Mod.Author}   ·   Version {Mod.Version}, built from source"
         : Mod.Author is null ? $"Version {Mod.Version}" : $"By {Mod.Author}   ·   Version {Mod.Version}";

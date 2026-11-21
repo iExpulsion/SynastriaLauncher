@@ -47,7 +47,8 @@ public sealed record ModDefinition(
     [property: JsonPropertyName("origin")] string? Origin = null,
     [property: JsonPropertyName("onlyWith")] string? OnlyWith = null,
     [property: JsonPropertyName("builtFromSource")] bool BuiltFromSource = false,
-    [property: JsonPropertyName("followsPart")] string? FollowsPart = null)
+    [property: JsonPropertyName("followsPart")] string? FollowsPart = null,
+    [property: JsonPropertyName("warning")] string? Warning = null)
 {
     // A fix for a Project Reforged part: not listed on the Mods page, installed while that part is on and removed
     // when it's off. Older launchers ignore the field and list it as a normal mod.

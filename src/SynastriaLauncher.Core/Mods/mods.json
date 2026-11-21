@@ -1,5 +1,5 @@
 {
-  "revision": 12,
+  "revision": 13,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -48,6 +48,7 @@
       "details": "Press Ctrl+F7 in game for its settings (Insert with the Project Reforged preset). If fog flickers, set Multisampling to 1x in the game's Video options.",
       "author": "Raz0r1337 (fork of Coa-vFog)",
       "homepage": "https://github.com/Raz0r1337/LuxVelum",
+      "warning": "Heavy on performance: its fog and water effects can cut frame rates noticeably, more so alongside Project Reforged. Switch it off if the game runs slowly.",
       "version": "build-1",
       "requires": [ "DllLoader" ],
       "files": [

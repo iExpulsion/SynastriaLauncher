@@ -71,7 +71,12 @@
                   <TextBlock Text="{Binding StateLabel}" />
                 </StackPanel>
               </Border>
-              <TextBlock Classes="name" FontSize="17" Text="{Binding Name}" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="name" FontSize="17" Text="{Binding Name}" />
+                <PathIcon Data="{StaticResource IconWarning}" Width="14" Height="14" VerticalAlignment="Center"
+                          Foreground="{StaticResource Amber}" Background="Transparent"
+                          IsVisible="{Binding HasWarning}" ToolTip.Tip="{Binding Warning}" />
+              </StackPanel>
             </DockPanel>
             <TextBlock TextWrapping="Wrap" Text="{Binding Summary}" />
             <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Details}" />
