@@ -186,8 +186,8 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
 
     // What changing to the selection takes. Switching a part off parks its files (a link moves, never what it points
     // to) and switching it on brings them back, downloading only what's missing or outdated. A linked file is updated
-    // where it points, and a linked part's variant is never switched. A new part follows the shared folder the other
-    // parts link to: a copy already there is linked, anything else is downloaded there and then linked.
+    // or switched to another variant where it points. A new part follows the shared folder the other parts link to: a
+    // copy already there is linked, anything else is downloaded there and then linked.
     public static ReforgedPlan Plan(ReforgedStatus status, IReadOnlyDictionary<string, string?> selection)
     {
         var downloads = new List<ReforgedDownload>();
@@ -197,9 +197,8 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
         foreach (var part in status.Parts)
         {
             var wanted = selection.GetValueOrDefault(part.Part.Id);
-            var keepVariant = part.Linked && wanted is not null ? part.InstalledVariant ?? wanted : wanted;
-            var variant = keepVariant is null ? null : part.Part.Variants.First(v => v.Id == keepVariant);
-            var sameVariant = part.InstalledVariant == keepVariant;
+            var variant = wanted is null ? null : part.Part.Variants.First(v => v.Id == wanted);
+            var sameVariant = part.InstalledVariant == wanted;
             for (var i = 0; i < part.Part.Files.Count; i++)
             {
                 var file = part.Part.Files[i];

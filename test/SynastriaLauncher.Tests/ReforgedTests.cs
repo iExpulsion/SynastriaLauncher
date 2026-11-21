@@ -387,17 +387,20 @@ public sealed class ReforgedTests : IDisposable
         Assert.True(File.Exists(shared));
     }
 
-    // A linked part's variant isn't switched: asking for SD over a linked HD file plans nothing for it.
+    // A linked part's variant switches where the link points: SD over a linked HD file downloads into the shared copy.
     [Fact]
-    public async Task KeepsLinkedVariant()
+    public async Task SwitchesLinkedVariantInSharedFolder()
     {
         var (service, bucket, client) = Setup();
         using var _c = client;
-        LinkShared("patch-A.mpq", bucket.Files["patches/patch-A.mpq"]);
+        var shared = LinkShared("patch-A.mpq", bucket.Files["patches/patch-A.mpq"]);
         var status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
         var sd = status.CurrentSelection();
         sd["characters"] = "sd";
-        Assert.DoesNotContain(ReforgedService.Plan(status, sd).Downloads, d => d.File == "patch-A.mpq");
+        var download = Assert.Single(ReforgedService.Plan(status, sd).Downloads, d => d.File == "patch-A.mpq");
+        Assert.Equal("patches/extras/patch-A.mpq", download.BucketPath);
+        Assert.Equal(Path.GetFullPath(shared), Path.GetFullPath(download.Target!));
+        Assert.False(download.CreateLink);
     }
 
     // The Interface part needs Interface Edit; with it off that's the one requirement, and the recommended patches

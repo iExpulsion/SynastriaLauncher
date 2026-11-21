@@ -137,8 +137,7 @@
                               <TextBlock Classes="small" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
                             </StackPanel>
                             <ComboBox Grid.Column="2" ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}"
-                                      IsVisible="{Binding HasVariants}" IsEnabled="{Binding CanChangeVariant}"
-                                      ToolTip.Tip="{Binding VariantHint}" ToolTip.ShowOnDisabled="True"
+                                      IsVisible="{Binding HasVariants}" ToolTip.Tip="{Binding VariantHint}"
                                       MinWidth="140" Margin="12,0,0,0" VerticalAlignment="Center" CornerRadius="7">
                               <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="vm:VariantOption">

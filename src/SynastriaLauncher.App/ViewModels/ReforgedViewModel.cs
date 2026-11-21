@@ -29,7 +29,7 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(IsGood), nameof(IsAccent), nameof(IsInfo), nameof(CanChange),
-        nameof(CanChangeVariant), nameof(Details), nameof(VariantHint))]
+        nameof(Details), nameof(VariantHint))]
     public partial PartStatus? Status { get; set; }
 
     [ObservableProperty]
@@ -45,8 +45,7 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     public bool CanChange => true;
 
     // A linked part's file is shared with other clients, so switching it to the other variant is left to its folder.
-    public bool CanChangeVariant => Status is null or { Linked: false };
-    public string VariantHint => CanChangeVariant ? "" : "Linked to a shared folder: switch the variant there, since it changes every client using it";
+    public string VariantHint => Status is { Linked: true } ? "Linked to a shared folder: switching changes the shared copy, so every client using it switches too" : "";
     public bool IsGood => Status is { State: ReforgedPartState.Current, Parked: false };
     public bool IsAccent => Status is { State: ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial, Parked: false };
     public bool IsInfo => Status is { Linked: true, State: ReforgedPartState.Current, Parked: false };
@@ -407,7 +406,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         var notes = new List<string>();
         if (shared.Count > 0)
         {
-            notes.Add($"Update the shared copies in {string.Join(", ", shared.Select(Path.GetDirectoryName).Distinct())}. Every client linked to them gets the update.");
+            notes.Add($"Change the shared copies in {string.Join(", ", shared.Select(Path.GetDirectoryName).Distinct())}. Every client linked to them gets the change.");
         }
         var confirmed = notes.Count == 0 || await main.Dialogs.ConfirmAsync("Change Project Reforged",
             string.Join("\n\n", notes), "Go Ahead");
