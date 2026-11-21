@@ -55,7 +55,7 @@ public static partial class WdmCatalog
             WdmKind.Addon, AddonRepo, ["WDM.zip"], ["WDM"]),
         new("mapster", "Mapster", "Nevcairiel's world map addon, with the new maps added to its lists.",
             WdmKind.Addon, AddonRepo, ["Mapster.zip"], ["Mapster"],
-            Warning: "Doesn't work well with Synastria's tracker menu on the world map. Uninstall it if the menu goes missing or misbehaves."),
+            Warning: "Doesn't fit well on Synastria: the world map's search panel on the right overlaps Mapster's own controls."),
         new("gathermate", "GatherMate", "Nevcairiel's gathering node tracker, with data for the cave maps.",
             WdmKind.Addon, AddonRepo, ["GatherMate.zip"], ["GatherMate"]),
         new("questhelper", "QuestHelper", "QuestHelper, with data for the cave maps.",
