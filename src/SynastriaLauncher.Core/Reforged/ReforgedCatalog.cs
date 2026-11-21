@@ -44,7 +44,7 @@ public static class ReforgedCatalog
 
     public static IReadOnlyList<ReforgedPart> Parts { get; } =
     [
-        new("characters", "Player Characters and NPCs", "Remade character and NPC models.", ReforgedSection.Core,
+        new("characters", "Player Characters and NPCs", "Remade character and NPC models, the base several other parts build on.", ReforgedSection.Core,
             ["patch-A.mpq"],
             [new("hd", "HD Models", ["patches/patch-A.mpq"]), new("sd", "SD Models", ["patches/extras/patch-A.mpq"])], true),
         Single("creatures", "Creatures", "Remade creature models.", ReforgedSection.Core, 'C', true)
@@ -59,9 +59,9 @@ public static class ReforgedCatalog
         Single("maps", "Maps and Loading Screens", "New maps and loading screens.", ReforgedSection.Optional, 'M', false),
         Single("nights", "Darker Nights", "Darker nighttime lighting.", ReforgedSection.Optional, 'N', false),
         Single("particles", "Spell Particle Effects", "Remade spell effects.", ReforgedSection.Optional, 'P', false),
-        Single("orcs", "Upright Orcs", "Orcs stand up straight.", ReforgedSection.Optional, 'U', false)
+        Single("orcs", "Upright Orcs", "Orc player characters and some NPCs stand upright instead of hunched.", ReforgedSection.Optional, 'U', false)
             with { Requirement = "Needs Player Characters and NPCs, and Creatures" },
-        new("sounds", "Sounds and Music", "New sounds and music.",
+        new("sounds", "Sounds and Music", "New sounds and music, with new music tracks for many regions.",
             ReforgedSection.Audio, ["patch-S.mpq"],
             [new("standard", "Standard", ["patches/patch-S.mpq"]), new("standalone", "Standalone", ["patches/extras/patch-S.mpq"])], false,
             Requirement: "The Standard version needs Maps and Loading Screens"),
