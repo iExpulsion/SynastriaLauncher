@@ -37,9 +37,18 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      # wow_optimize.dll changes only with its pinned commit (in the build script) or the stub, so a build is reused.
+      - name: Restore wow-optimize
+        id: wow_optimize
+        if: steps.check.outputs.build == 'true'
+        uses: actions/cache@v6
+        with:
+          path: src/SynastriaLauncher.Core/Mods/Bundled/wow-optimize
+          key: wow-optimize-${{ hashFiles('tools/build-wow-optimize.ps1', 'tools/wow-optimize-stub/**') }}
+
       # Compiles wow_optimize.dll from its pinned public source; the launcher embeds it.
       - name: Build wow-optimize
-        if: steps.check.outputs.build == 'true'
+        if: steps.check.outputs.build == 'true' && steps.wow_optimize.outputs.cache-hit != 'true'
         shell: pwsh
         run: ./tools/build-wow-optimize.ps1
 
@@ -62,9 +71,7 @@ jobs:
         if: steps.check.outputs.build == 'true'
         with:
           name: SynastriaLauncher-${{ steps.check.outputs.version }}
-          path: |
-            publish/SynastriaLauncher.exe
-            THIRD-PARTY-NOTICES.txt
+          path: publish/SynastriaLauncher.exe
 
       - name: Publish the release
         if: steps.check.outputs.build == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -73,4 +80,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.check.outputs.version }}
         run: |
-          gh release create "v$VERSION" publish/SynastriaLauncher.exe THIRD-PARTY-NOTICES.txt --target "$GITHUB_SHA" --title "Synastria Launcher $VERSION" --generate-notes
+          gh release create "v$VERSION" publish/SynastriaLauncher.exe --target "$GITHUB_SHA" --title "Synastria Launcher $VERSION" --generate-notes
