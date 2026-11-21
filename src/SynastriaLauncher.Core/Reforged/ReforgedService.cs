@@ -12,17 +12,20 @@ public enum ReforgedPartState
 }
 
 // InstalledVariant is the variant whose files are all there (current or not), or the one last installed. Targets
-// maps each of the part's files to where its bytes live: the file in Data, or what a link there points to.
+// maps each of the part's linked files to what the link points to. Parked parts were switched off: their files (or
+// links) wait in Data\_Disabled, where the game doesn't load them, and State describes those files.
 public sealed record PartStatus(ReforgedPart Part, ReforgedPartState State, string? InstalledVariant, bool Linked,
-    IReadOnlyDictionary<string, bool> CurrentFiles, IReadOnlyDictionary<string, string>? Targets = null)
+    IReadOnlyDictionary<string, bool> CurrentFiles, IReadOnlyDictionary<string, string>? Targets = null, bool Parked = false)
 {
-    public string TargetOf(string file, string data) => Targets?.GetValueOrDefault(file) ?? Path.Combine(data, file);
+    public bool IsOn => State != ReforgedPartState.NotInstalled && !Parked;
 }
 
+// SharedFolder is the one folder every linked part points into, when there is one.
 public sealed record ReforgedStatus(
     IReadOnlyList<PartStatus> Parts,
     IReadOnlyDictionary<string, RemoteFile> Remote,
-    IReadOnlyDictionary<string, string> Versions)
+    IReadOnlyDictionary<string, string> Versions,
+    string? SharedFolder = null)
 {
     public PartStatus Get(string id) => Parts.First(p => p.Part.Id == id);
 
@@ -30,24 +33,27 @@ public sealed record ReforgedStatus(
 
     public bool AnyInstalled => Parts.Any(p => p.State != ReforgedPartState.NotInstalled);
 
-    // Selection matching what's installed now: each part's installed variant, null when it's not there.
+    // Selection matching what's on now: each part's installed variant, null when it's missing or switched off.
     public Dictionary<string, string?> CurrentSelection() =>
-        Parts.ToDictionary(p => p.Part.Id, p => p.State == ReforgedPartState.NotInstalled ? null : p.InstalledVariant);
+        Parts.ToDictionary(p => p.Part.Id, p => p.IsOn ? p.InstalledVariant : null);
 }
 
-// Target is where the downloaded file goes: Data, or the shared file a link in Data points to (the link stays).
-public sealed record ReforgedDownload(string File, string BucketPath, RemoteFile Remote, string? Target = null)
+// Target is where the downloaded file goes: Data, or a file in the shared folder (the link in Data stays, or with
+// CreateLink is made once the file is there).
+public sealed record ReforgedDownload(string File, string BucketPath, RemoteFile Remote, string? Target = null, bool CreateLink = false)
 {
     public bool ThroughLink => Target is not null;
 }
 
-// Removals are file names in Data; Unlinks are links in Data whose shared files stay where they are.
-public sealed record ReforgedPlan(IReadOnlyList<ReforgedDownload> Downloads, IReadOnlyList<string> Removals,
-    IReadOnlyList<string>? Unlinks = null)
+// A link to make in Data for a file the shared folder already has.
+public sealed record ReforgedLink(string File, string Target);
+
+// Parks move files (or links) from Data into Data\_Disabled; Unparks move them back. Nothing is ever deleted.
+public sealed record ReforgedPlan(IReadOnlyList<ReforgedDownload> Downloads, IReadOnlyList<string> Parks, IReadOnlyList<string> Unparks,
+    IReadOnlyList<ReforgedLink> Links)
 {
-    public IReadOnlyList<string> UnlinkFiles => Unlinks ?? [];
     public long DownloadBytes => Downloads.Sum(d => d.Remote.Size);
-    public bool IsEmpty => Downloads.Count == 0 && Removals.Count == 0 && UnlinkFiles.Count == 0;
+    public bool IsEmpty => Downloads.Count == 0 && Parks.Count == 0 && Unparks.Count == 0 && Links.Count == 0;
 }
 
 public sealed record ReforgedProgress(string File, string Phase, long Done, long Total, int Index, int Count);
@@ -62,6 +68,11 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
     public static string DefaultCachePath => Path.Combine(LauncherData.DefaultFolder, "reforged.json");
 
     public static string DataFolder(string gameFolder) => Path.Combine(gameFolder, "Data");
+
+    public const string DisabledFolderName = "_Disabled";
+
+    // The client loads only the archives directly in Data (and its locale folder), so files here are off.
+    public static string DisabledFolder(string gameFolder) => Path.Combine(DataFolder(gameFolder), DisabledFolderName);
 
     public static bool IsLink(string path) => File.Exists(path) && new FileInfo(path).LinkTarget is not null;
 
@@ -130,13 +141,15 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
         }
         var versions = await client.GetVersionsAsync(cancel);
         var cache = LoadCache();
-        var data = DataFolder(gameFolder);
         var parts = new List<PartStatus>();
         var index = 0;
         foreach (var part in ReforgedCatalog.Parts)
         {
             index++;
-            var present = part.Files.Where(f => File.Exists(Path.Combine(data, f))).ToList();
+            var inData = part.Files.Where(f => File.Exists(Path.Combine(DataFolder(gameFolder), f))).ToList();
+            var parked = inData.Count == 0 && part.Files.Any(f => File.Exists(Path.Combine(DisabledFolder(gameFolder), f)));
+            var data = parked ? DisabledFolder(gameFolder) : DataFolder(gameFolder);
+            var present = parked ? part.Files.Where(f => File.Exists(Path.Combine(data, f))).ToList() : inData;
             var linked = present.Any(f => IsLink(Path.Combine(data, f)));
             string? matchedVariant = null;
             var currentFiles = new Dictionary<string, bool>();
@@ -164,19 +177,23 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
                 : present.Count < part.Files.Count ? ReforgedPartState.Partial
                 : ReforgedPartState.UpdateAvailable;
             var targets = present.Where(f => IsLink(Path.Combine(data, f))).ToDictionary(f => f, f => Resolve(Path.Combine(data, f)));
-            parts.Add(new PartStatus(part, state, present.Count == 0 ? null : installedVariant, linked, currentFiles, targets));
+            parts.Add(new PartStatus(part, state, present.Count == 0 ? null : installedVariant, linked, currentFiles, targets, parked));
         }
         SaveCache(cache);
-        return new ReforgedStatus(parts, remote, versions);
+        var sharedFolders = parts.SelectMany(p => p.Targets?.Values ?? []).Select(Path.GetDirectoryName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        return new ReforgedStatus(parts, remote, versions, sharedFolders.Count == 1 ? sharedFolders[0] : null);
     }
 
-    // What changing to the selection takes. A linked file is updated where it points, a linked part switched off loses
-    // only its links, and a linked part's variant is never switched.
+    // What changing to the selection takes. Switching a part off parks its files (a link moves, never what it points
+    // to) and switching it on brings them back, downloading only what's missing or outdated. A linked file is updated
+    // where it points, and a linked part's variant is never switched. A new part follows the shared folder the other
+    // parts link to: a copy already there is linked, anything else is downloaded there and then linked.
     public static ReforgedPlan Plan(ReforgedStatus status, IReadOnlyDictionary<string, string?> selection)
     {
         var downloads = new List<ReforgedDownload>();
-        var removals = new List<string>();
-        var unlinks = new List<string>();
+        var parks = new List<string>();
+        var unparks = new List<string>();
+        var links = new List<ReforgedLink>();
         foreach (var part in status.Parts)
         {
             var wanted = selection.GetValueOrDefault(part.Part.Id);
@@ -187,26 +204,32 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
             {
                 var file = part.Part.Files[i];
                 var link = part.Targets?.GetValueOrDefault(file);
-                if (variant is null && part.State != ReforgedPartState.NotInstalled && link is not null)
+                var shared = part.State == ReforgedPartState.NotInstalled && status.SharedFolder is { } folder ? Path.Combine(folder, file) : null;
+                if (variant is null && part.IsOn)
                 {
-                    unlinks.Add(file);
+                    parks.Add(file);
                 }
-                else if (variant is null && part.State != ReforgedPartState.NotInstalled)
+                else if (variant is not null && part.Parked)
                 {
-                    removals.Add(file);
+                    unparks.Add(file);
+                }
+                if (variant is not null && shared is not null && File.Exists(shared))
+                {
+                    links.Add(new ReforgedLink(file, shared));
                 }
                 else if (variant is not null && !(sameVariant && part.CurrentFiles.GetValueOrDefault(file)))
                 {
-                    downloads.Add(new ReforgedDownload(file, variant.BucketPaths[i], status.Remote[variant.BucketPaths[i]], link));
+                    downloads.Add(new ReforgedDownload(file, variant.BucketPaths[i], status.Remote[variant.BucketPaths[i]], link ?? shared,
+                        CreateLink: shared is not null));
                 }
             }
         }
-        return new ReforgedPlan(downloads, removals, unlinks);
+        return new ReforgedPlan(downloads, parks, unparks, links);
     }
 
-    // Downloads every file to <name>.part beside where it goes (Data, or the shared folder a link points to), checks it
-    // against the bucket's ETag, then moves it into place; removals and unlinks happen after all downloads succeeded.
-    // Space is checked first, on each drive the downloads go to.
+    // Downloads every file to <name>.part beside where it goes (Data, or the shared folder), checks it against the
+    // bucket's ETag, then moves it into place; parking, unparking and linking happen only after all downloads
+    // succeeded. Space is checked first, on each drive the downloads go to.
     public async Task ApplyAsync(string gameFolder, ReforgedPlan plan, IReadOnlyDictionary<string, string?> selection,
         IProgress<ReforgedProgress>? progress = null, CancellationToken cancel = default, Func<bool>? gameRunning = null)
     {
@@ -249,6 +272,11 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
             {
                 throw new IOException("The game was started during the download. Close it and press Apply again; the downloaded files are kept.");
             }
+            var disabled = DisabledFolder(gameFolder);
+            foreach (var file in plan.Unparks.Where(f => File.Exists(Path.Combine(disabled, f))))
+            {
+                Move(Path.Combine(disabled, file), Path.Combine(data, file), cache);
+            }
             foreach (var download in plan.Downloads)
             {
                 var target = TargetOf(download);
@@ -257,6 +285,14 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
                 var owner = ReforgedCatalog.Parts.First(p => p.Files.Contains(download.File));
                 cache[info.FullName] = new CacheEntry(info.Length, info.LastWriteTimeUtc.Ticks, download.Remote.ETag,
                     selection.GetValueOrDefault(owner.Id));
+                if (download.CreateLink)
+                {
+                    LinkOrCopy(Path.Combine(data, download.File), target);
+                }
+            }
+            foreach (var link in plan.Links)
+            {
+                LinkOrCopy(Path.Combine(data, link.File), link.Target);
             }
             SaveCache(cache);
             var downloading = plan.Downloads.Select(d => d.File).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -264,18 +300,40 @@ public sealed class ReforgedService(ReforgedClient client, string cachePath)
             {
                 File.Delete(Path.Combine(data, leftover + ".part"));
             }
-            foreach (var file in plan.Removals.Select(f => Path.Combine(data, f)).Where(f => !IsLink(f)))
+            if (plan.Parks.Count > 0)
             {
-                File.Delete(file);
-                File.Delete(file + ".part");
-                cache.Remove(file);
+                Directory.CreateDirectory(disabled);
             }
-            // Deleting a symbolic link removes the link only; the shared file it pointed to stays.
-            foreach (var link in plan.UnlinkFiles.Select(f => Path.Combine(data, f)).Where(IsLink))
+            foreach (var file in plan.Parks.Where(f => File.Exists(Path.Combine(data, f))))
             {
-                File.Delete(link);
+                Move(Path.Combine(data, file), Path.Combine(disabled, file), cache);
             }
             SaveCache(cache);
+        }
+    }
+
+    // Moving a link moves the link itself; the shared file stays where it is. A plain file's hash result follows it.
+    private static void Move(string from, string to, Dictionary<string, CacheEntry> cache)
+    {
+        var linked = IsLink(from);
+        File.Move(from, to, overwrite: true);
+        if (!linked && cache.Remove(Path.GetFullPath(from), out var entry))
+        {
+            cache[Path.GetFullPath(to)] = entry;
+        }
+    }
+
+    // A symbolic link needs Developer Mode or admin rights; without them Data gets a copy of the shared file instead.
+    private static void LinkOrCopy(string path, string target)
+    {
+        File.Delete(path);
+        try
+        {
+            File.CreateSymbolicLink(path, target);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            File.Copy(target, path, overwrite: true);
         }
     }
 

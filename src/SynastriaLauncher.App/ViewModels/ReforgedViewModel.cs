@@ -43,13 +43,19 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     // A linked part's file is shared with other clients, so switching it to the other variant is left to its folder.
     public bool CanChangeVariant => Status is null or { Linked: false };
     public string VariantHint => CanChangeVariant ? "" : "Linked to a shared folder: switch the variant there, since it changes every client using it";
-    public bool IsGood => Status?.State == ReforgedPartState.Current;
-    public bool IsAccent => Status?.State is ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial;
-    public bool IsInfo => Status is { Linked: true, State: ReforgedPartState.Current };
+    public bool IsGood => Status is { State: ReforgedPartState.Current, Parked: false };
+    public bool IsAccent => Status is { State: ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial, Parked: false };
+    public bool IsInfo => Status is { Linked: true, State: ReforgedPartState.Current, Parked: false };
+
+    // Spell Particle Effects needs the launcher's compatibility layer on Synastria (SpellEffectsFix).
+    public string Note => owner.NoteFor(this);
+    public bool HasNote => Note.Length > 0;
 
     public string StateLabel => Status switch
     {
         null => "Checking",
+        { Parked: true, Linked: true } => "Linked   ·   Switched Off",
+        { Parked: true } => "Switched Off",
         { Linked: true, State: ReforgedPartState.Current } => "Linked   ·   Up to Date",
         { Linked: true } => "Linked   ·   Update Available",
         { State: ReforgedPartState.Current } => "Installed",
@@ -66,7 +72,12 @@ public sealed partial class ReforgedPartViewModel(ReforgedPart part, ReforgedVie
     partial void OnVariantChanged(VariantOption? value) => owner.SelectionChanged();
     partial void OnChangeLabelChanged(string value) => OnPropertyChanged(nameof(HasChange));
 
-    public void Refresh() => OnPropertyChanged(nameof(Details));
+    public void Refresh()
+    {
+        OnPropertyChanged(nameof(Details));
+        OnPropertyChanged(nameof(Note));
+        OnPropertyChanged(nameof(HasNote));
+    }
 }
 
 public sealed record ReforgedSectionViewModel(string Title, IReadOnlyList<ReforgedPartViewModel> Parts);
@@ -211,6 +222,15 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         return $"{version}{size}   ·   {files}";
     }
 
+    public string NoteFor(ReforgedPartViewModel row)
+    {
+        var fix = main.GameFolder is { } game ? Path.Combine(ReforgedService.DataFolder(game), SpellEffectsFix.FileName) : null;
+        var blocked = fix is not null && File.Exists(fix) && !SpellEffectsFix.IsOurs(fix);
+        return row.Part.Id != "particles" || !row.IsOn ? ""
+            : blocked ? $"Synastria compatibility layer missing: your Data folder already has a {SpellEffectsFix.FileName} the launcher didn't make, so some spells show no effect."
+            : $"Uses the launcher's Synastria compatibility layer ({SpellEffectsFix.FileName}), so Reforged's spell effects and Synastria's own both show.";
+    }
+
     // Checks lazily, the first time the page opens: the first check hashes every installed file (~20 GB).
     public async Task EnsureLoadedAsync()
     {
@@ -275,10 +295,12 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
             Sections.Add(new ReforgedSectionViewModel(title, rows));
         }
         var installed = status.Parts.Count(p => p.State != ReforgedPartState.NotInstalled);
+        var on = status.Parts.Count(p => p.IsOn);
         var updates = status.Parts.Count(p => p.State is ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial);
         var linked = status.Parts.Count(p => p.Linked);
         Summary = installed == 0 ? "Not installed. Pick the parts you want, or start with the Core set."
-            : $"{installed} of {status.Parts.Count} Parts Installed   ·   {StatusText.Updates(updates)}"
+            : $"{on} of {status.Parts.Count} Parts On   ·   {StatusText.Updates(updates)}"
+              + (installed > on ? $"   ·   {installed - on} Switched Off, Kept for Later" : "")
               + (linked > 0 ? $"   ·   {linked} Linked to a Shared Folder" : "");
         SelectionChanged();
     }
@@ -295,20 +317,24 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
             foreach (var row in Parts)
             {
                 var downloads = plan.Downloads.Where(d => row.Part.Files.Contains(d.File)).ToList();
-                var removes = plan.Removals.Any(row.Part.Files.Contains);
-                var unlinks = plan.UnlinkFiles.Any(row.Part.Files.Contains);
-                row.ChangeLabel = removes ? "Will Remove"
-                    : unlinks ? "Will Unlink"
+                var parks = plan.Parks.Any(row.Part.Files.Contains);
+                var links = plan.Links.Any(l => row.Part.Files.Contains(l.File));
+                var unparks = plan.Unparks.Any(row.Part.Files.Contains);
+                row.ChangeLabel = parks ? "Will Switch Off"
+                    : downloads.Any(d => d.CreateLink) ? "Will Download to Shared Folder"
+                    : links ? "Will Link Shared Copy"
                     : downloads.Any(d => d.ThroughLink) ? "Will Update Shared Copy"
                     : downloads.Count > 0 && row.Status?.State == ReforgedPartState.NotInstalled ? "Will Download"
                     : downloads.Count > 0 ? "Will Update"
+                    : unparks ? "Will Switch On"
                     : "";
                 row.Refresh();
             }
+            var on = plan.Unparks.Count + plan.Links.Count;
             var parts = new List<string>();
             if (plan.Downloads.Count > 0) parts.Add($"Download {plan.Downloads.Count} File{(plan.Downloads.Count == 1 ? "" : "s")}, {ReforgedService.Format(plan.DownloadBytes)}");
-            if (plan.Removals.Count > 0) parts.Add($"Remove {plan.Removals.Count} File{(plan.Removals.Count == 1 ? "" : "s")}");
-            if (plan.UnlinkFiles.Count > 0) parts.Add($"Unlink {plan.UnlinkFiles.Count}");
+            if (on > 0) parts.Add($"Switch On {on} File{(on == 1 ? "" : "s")}");
+            if (plan.Parks.Count > 0) parts.Add($"Switch Off {plan.Parks.Count} File{(plan.Parks.Count == 1 ? "" : "s")}");
             PlanSummary = parts.Count == 0 ? "No Changes" : string.Join(", ", parts);
             Problem = string.Join("; ", problems);
             CanApply = !plan.IsEmpty && problems.Count == 0;
@@ -342,16 +368,8 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         var game = main.GameFolder!;
         var selection = Selection();
         var plan = ReforgedService.Plan(_status!, selection);
-        var shared = plan.Downloads.Where(d => d.ThroughLink).Select(d => d.Target!).ToList();
+        var shared = plan.Downloads.Where(d => d.ThroughLink && !d.CreateLink).Select(d => d.Target!).ToList();
         var notes = new List<string>();
-        if (plan.Removals.Count > 0)
-        {
-            notes.Add($"Delete {string.Join(", ", plan.Removals)} from your Data folder.");
-        }
-        if (plan.UnlinkFiles.Count > 0)
-        {
-            notes.Add($"Remove the links {string.Join(", ", plan.UnlinkFiles)} from your Data folder. The shared files they point to stay where they are.");
-        }
         if (shared.Count > 0)
         {
             notes.Add($"Update the shared copies in {string.Join(", ", shared.Select(Path.GetDirectoryName).Distinct())}. Every client linked to them gets the update.");

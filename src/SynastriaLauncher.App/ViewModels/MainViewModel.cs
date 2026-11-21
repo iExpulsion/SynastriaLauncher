@@ -206,7 +206,7 @@ public sealed partial class MainViewModel : ObservableObject
     public string BackupSummary => BackupItems.Count switch
     {
         0 => "Nothing to clean up. The original WowExt.exe backup is always kept for Restore Original Game.",
-        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files and old WowExt files. "
+        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files, old WowExt files and switched-off Project Reforged parts. "
             + "The original WowExt.exe backup is always kept.",
     };
 

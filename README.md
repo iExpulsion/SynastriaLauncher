@@ -113,10 +113,19 @@ it left off.
 
 Some parts need a patch switched on; the page tells you which and can do it for you.
 
-With **Spell Particle Effects** installed, the launcher also adds `patch-Z.mpq` to your Data folder. Reforged's new
-spell effects and Synastria's own would otherwise claim the same slots, leaving spells like Thunder Clap and Charge
-with no effect. The launcher makes this file from your copy of Reforged's patch, rebuilds it when Reforged updates,
-and removes it along with Spell Particle Effects.
+Switching a part off moves its files to `Data\_Disabled`, where the game doesn't load them, so switching it back on
+needs no download unless Reforged has updated it since. To free the space for good, use **Clean Up** under
+**Backups** in Settings.
+
+If your parts are linked to a shared folder (for example, one copy of Reforged for several game installs), the
+launcher works with the links: updates go into the shared folder, switching a part off moves only its link, and a
+new part is put in the shared folder and linked.
+
+With **Spell Particle Effects** on, the launcher also adds a Synastria compatibility layer, `patch-Z.mpq`, to your
+Data folder, and the page notes it under that part. Reforged's new spell effects and Synastria's own would
+otherwise claim the same slots, leaving spells like Thunder Clap and Charge with no effect. The launcher makes this
+file from your copy of Reforged's patch, rebuilds it when Reforged updates, and removes it when Spell Particle
+Effects is switched off.
 
 ![Project Reforged: 8 of 10 parts installed, each with a switch, its version, size and files, and the HD Models choice for Player Characters and NPCs](docs/images/reforged.png)
 

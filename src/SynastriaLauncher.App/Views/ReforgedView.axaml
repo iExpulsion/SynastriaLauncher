@@ -130,6 +130,7 @@
                               <TextBlock Classes="muted" FontSize="12.5" Text="{Binding Description}" />
                               <TextBlock Classes="small" Text="{Binding Details}" />
                               <TextBlock Classes="small" Text="{Binding Requirement}" IsVisible="{Binding HasRequirement}" />
+                              <TextBlock Classes="small" Text="{Binding Note}" IsVisible="{Binding HasNote}" TextWrapping="Wrap" />
                             </StackPanel>
                             <ComboBox Grid.Column="2" ItemsSource="{Binding Variants}" SelectedItem="{Binding Variant}"
                                       IsVisible="{Binding HasVariants}" IsEnabled="{Binding CanChangeVariant}"
@@ -148,7 +149,7 @@
                               </Border>
                               <Border Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}" Classes.info="{Binding IsInfo}"
                                       IsVisible="{Binding !HasChange}"
-                                      ToolTip.Tip="Linked parts point to a shared folder: updates go there (the link stays), and switching one off removes only the link">
+                                      ToolTip.Tip="Switched-off parts wait in Data\_Disabled, so switching them back on needs no download. Linked parts point to a shared folder: updates go there, and switching one off moves only the link">
                                 <TextBlock Text="{Binding StateLabel}" />
                               </Border>
                             </StackPanel>

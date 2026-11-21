@@ -180,6 +180,13 @@ foreach (var page in Enum.GetValues<LauncherPage>())
     Shot(page.ToString().ToLowerInvariant());
 }
 
+// Reforged's Optional parts, where Spell Particle Effects notes the compatibility layer.
+model.Page = LauncherPage.Reforged;
+Pump(TimeSpan.FromMilliseconds(600));
+var particles = model.Reforged.Sections.SelectMany(s => s.Parts).First(p => p.Part.Id == "particles");
+ScrollTo(window.GetVisualDescendants().OfType<Avalonia.Controls.Border>().First(b => b.DataContext == particles), 160);
+Shot("reforged-optional");
+
 // Full-height pages, then Patches with staged changes and settings open.
 window.Height = 1500;
 foreach (var page in new[] { LauncherPage.Addons, LauncherPage.Mods, LauncherPage.Wdm })

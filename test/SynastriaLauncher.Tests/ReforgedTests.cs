@@ -181,9 +181,9 @@ public sealed class ReforgedTests : IDisposable
         Assert.Equal(full, await File.ReadAllBytesAsync(Path.Combine(data, "patch-I.mpq"), TestContext.Current.CancellationToken));
     }
 
-    // Switching Characters from HD to SD downloads the other file; turning a part off removes only its files.
+    // Switching Characters from HD to SD downloads the other file; switching a part off parks only its files.
     [Fact]
-    public async Task SwitchesVariantsAndRemoves()
+    public async Task SwitchesVariantsAndParks()
     {
         var (service, bucket, client) = Setup();
         using var _c = client;
@@ -195,12 +195,62 @@ public sealed class ReforgedTests : IDisposable
         status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
         var plan = ReforgedService.Plan(status, sd);
         Assert.Equal(["patch-A.mpq"], plan.Downloads.Select(d => d.File));
-        Assert.Equal(["patch-G.mpq"], plan.Removals);
+        Assert.Equal(["patch-G.mpq"], plan.Parks);
         await service.ApplyAsync(Game, plan, sd, cancel: TestContext.Current.CancellationToken);
         Assert.Equal(bucket.Files["patches/extras/patch-A.mpq"], await File.ReadAllBytesAsync(Path.Combine(Game, "Data", "patch-A.mpq"), TestContext.Current.CancellationToken));
         Assert.False(File.Exists(Path.Combine(Game, "Data", "patch-G.mpq")));
+        Assert.True(File.Exists(Path.Combine(Game, "Data", "_Disabled", "patch-G.mpq")));
         status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
         Assert.Equal("sd", status.Get("characters").InstalledVariant);
+        Assert.True(status.Get("gear").Parked);
+        Assert.Null(status.CurrentSelection()["gear"]);
+    }
+
+    // Switching a parked part back on moves its file back without downloading anything, and it reads current.
+    [Fact]
+    public async Task SwitchesBackOnWithoutDownloading()
+    {
+        var (service, bucket, client) = Setup();
+        using var _c = client;
+        var status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, Core()), Core(), cancel: TestContext.Current.CancellationToken);
+        var off = Core();
+        off["gear"] = null;
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, off), off, cancel: TestContext.Current.CancellationToken);
+        bucket.Requests.Clear();
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        var plan = ReforgedService.Plan(status, Core());
+        Assert.Empty(plan.Downloads);
+        Assert.Equal(["patch-G.mpq"], plan.Unparks);
+        await service.ApplyAsync(Game, plan, Core(), cancel: TestContext.Current.CancellationToken);
+        Assert.DoesNotContain(bucket.Requests, r => r.StartsWith("GET"));
+        Assert.Equal(bucket.Files["patches/patch-G.mpq"], await File.ReadAllBytesAsync(Path.Combine(Game, "Data", "patch-G.mpq"), TestContext.Current.CancellationToken));
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        Assert.Equal(ReforgedPartState.Current, status.Get("gear").State);
+        Assert.False(status.Get("gear").Parked);
+    }
+
+    // A parked part that Reforged updated meanwhile is moved back and then brought up to date.
+    [Fact]
+    public async Task SwitchesBackOnAndUpdates()
+    {
+        var (service, bucket, client) = Setup();
+        using var _c = client;
+        var status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, Core()), Core(), cancel: TestContext.Current.CancellationToken);
+        var off = Core();
+        off["gear"] = null;
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, off), off, cancel: TestContext.Current.CancellationToken);
+        bucket.Set("patches/patch-G.mpq", Random(800, 4));
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        Assert.Equal(ReforgedPartState.UpdateAvailable, status.Get("gear").State);
+        var plan = ReforgedService.Plan(status, Core());
+        Assert.Equal(["patch-G.mpq"], plan.Downloads.Select(d => d.File));
+        await service.ApplyAsync(Game, plan, Core(), cancel: TestContext.Current.CancellationToken);
+        Assert.Equal(bucket.Files["patches/patch-G.mpq"], await File.ReadAllBytesAsync(Path.Combine(Game, "Data", "patch-G.mpq"), TestContext.Current.CancellationToken));
+        Assert.False(File.Exists(Path.Combine(Game, "Data", "_Disabled", "patch-G.mpq")));
     }
 
     // A download that doesn't match the server's ETag is discarded and the old file stays.
@@ -258,9 +308,10 @@ public sealed class ReforgedTests : IDisposable
         Assert.Equal(ReforgedPartState.Current, status.Get("gear").State);
     }
 
-    // Switching a linked part off removes only the link; the shared file stays for the other clients.
+    // Switching a linked part off parks only the link, which still points at the shared file; switching it on moves
+    // the link back.
     [Fact]
-    public async Task UnlinksWithoutDeletingSharedFiles()
+    public async Task ParksLinksNotSharedFiles()
     {
         var (service, bucket, client) = Setup();
         using var _c = client;
@@ -269,10 +320,70 @@ public sealed class ReforgedTests : IDisposable
         var off = status.CurrentSelection();
         off["gear"] = null;
         var plan = ReforgedService.Plan(status, off);
-        Assert.Equal(["patch-G.mpq"], plan.UnlinkFiles);
-        Assert.Empty(plan.Removals);
+        Assert.Equal(["patch-G.mpq"], plan.Parks);
         await service.ApplyAsync(Game, plan, off, cancel: TestContext.Current.CancellationToken);
+        var parked = Path.Combine(Game, "Data", "_Disabled", "patch-G.mpq");
         Assert.False(File.Exists(Path.Combine(Game, "Data", "patch-G.mpq")));
+        Assert.True(ReforgedService.IsLink(parked));
+        Assert.Equal(bucket.Files["patches/patch-G.mpq"], await File.ReadAllBytesAsync(shared, TestContext.Current.CancellationToken));
+        status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        Assert.True(status.Get("gear") is { Parked: true, Linked: true });
+        var on = status.CurrentSelection();
+        on["gear"] = "on";
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, on), on, cancel: TestContext.Current.CancellationToken);
+        Assert.True(ReforgedService.IsLink(Path.Combine(Game, "Data", "patch-G.mpq")));
+    }
+
+    // With the other parts linked to a shared folder, a new part whose file is already there is linked, not downloaded.
+    [Fact]
+    public async Task LinksANewPartFromTheSharedFolder()
+    {
+        var (service, bucket, client) = Setup();
+        using var _c = client;
+        var gear = LinkShared("patch-G.mpq", bucket.Files["patches/patch-G.mpq"]);
+        var particles = Path.Combine(Path.GetDirectoryName(gear)!, "patch-P.mpq");
+        await File.WriteAllBytesAsync(particles, bucket.Files["patches/patch-P.mpq"], TestContext.Current.CancellationToken);
+        var status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        var on = status.CurrentSelection();
+        on["particles"] = "on";
+        var plan = ReforgedService.Plan(status, on);
+        Assert.Empty(plan.Downloads);
+        Assert.Equal([new ReforgedLink("patch-P.mpq", particles)], plan.Links);
+        await service.ApplyAsync(Game, plan, on, cancel: TestContext.Current.CancellationToken);
+        Assert.Equal(particles, new FileInfo(Path.Combine(Game, "Data", "patch-P.mpq")).LinkTarget);
+    }
+
+    // A new part missing from the shared folder is downloaded there and then linked into Data.
+    [Fact]
+    public async Task DownloadsANewPartToTheSharedFolder()
+    {
+        var (service, bucket, client) = Setup();
+        using var _c = client;
+        var gear = LinkShared("patch-G.mpq", bucket.Files["patches/patch-G.mpq"]);
+        var status = await service.CheckAsync(Game, cancel: TestContext.Current.CancellationToken);
+        var on = status.CurrentSelection();
+        on["interface"] = "on";
+        var download = Assert.Single(ReforgedService.Plan(status, on).Downloads);
+        var shared = Path.Combine(Path.GetDirectoryName(gear)!, "patch-I.mpq");
+        Assert.Equal(shared, download.Target);
+        Assert.True(download.CreateLink);
+        await service.ApplyAsync(Game, ReforgedService.Plan(status, on), on, cancel: TestContext.Current.CancellationToken);
+        Assert.Equal(bucket.Files["patches/patch-I.mpq"], await File.ReadAllBytesAsync(shared, TestContext.Current.CancellationToken));
+        Assert.Equal(shared, new FileInfo(Path.Combine(Game, "Data", "patch-I.mpq")).LinkTarget);
+    }
+
+    // Clean Up lists a switched-off part, and removing a parked link leaves the shared file alone.
+    [Fact]
+    public void CleanUpListsParkedPartsAndKeepsSharedFiles()
+    {
+        var shared = LinkShared("patch-G.mpq", Random(300, 2));
+        var disabled = Directory.CreateDirectory(Path.Combine(Game, "Data", "_Disabled")).FullName;
+        File.Move(Path.Combine(Game, "Data", "patch-G.mpq"), Path.Combine(disabled, "patch-G.mpq"));
+        File.WriteAllBytes(Path.Combine(disabled, "patch-P.mpq"), Random(200, 5));
+        var items = SynastriaLauncher.Core.Backups.Find(Game, [], "DLLs");
+        Assert.Equal(2, items.Count);
+        SynastriaLauncher.Core.Backups.Recycle(items.Where(i => i.Path.EndsWith("patch-G.mpq")));
+        Assert.False(File.Exists(Path.Combine(disabled, "patch-G.mpq")));
         Assert.True(File.Exists(shared));
     }
 

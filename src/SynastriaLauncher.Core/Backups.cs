@@ -6,7 +6,8 @@ namespace SynastriaLauncher.Core;
 public sealed record BackupItem(string Path, string Label, long Bytes);
 
 // Backups the launcher leaves behind: old addon versions (AddOns\<name>.bak, when Keep the Previous Version is on),
-// settings files a preset replaced (<config>.bak) and the files a WowExt update replaced (_WowExtBackups\<version>). WowExt.exe.bak is never listed: Restore Original Game needs it.
+// settings files a preset replaced (<config>.bak), the files a WowExt update replaced (_WowExtBackups\<version>) and
+// Project Reforged parts switched off (Data\_Disabled). WowExt.exe.bak is never listed: Restore Original Game needs it.
 public static class Backups
 {
     public static IReadOnlyList<BackupItem> Find(string gameFolder, IEnumerable<ModDefinition> mods, string dllFolder)
@@ -33,18 +34,31 @@ public static class Backups
             ? Directory.EnumerateDirectories(wowExt)
                 .Select(d => new BackupItem(d, $"WowExt files from {Path.GetFileName(d)}", FolderSize(d)))
             : [];
-        return addonBackups.Concat(configBackups).Concat(wowExtBackups).OrderBy(b => b.Label, StringComparer.OrdinalIgnoreCase).ToList();
+        var parked = Reforged.ReforgedService.DisabledFolder(gameFolder);
+        var reforged = Reforged.ReforgedCatalog.Parts
+            .SelectMany(p => p.Files.Select(f => (Part: p, Path: System.IO.Path.Combine(parked, f))))
+            .Where(f => File.Exists(f.Path))
+            .Select(f => Reforged.ReforgedService.IsLink(f.Path)
+                ? new BackupItem(f.Path, $"Link to {Path.GetFileName(f.Path)} for Project Reforged's {f.Part.Name}, switched off (the shared file stays)", 0)
+                : new BackupItem(f.Path, $"{Path.GetFileName(f.Path)} for Project Reforged's {f.Part.Name}, switched off", new FileInfo(f.Path).Length));
+        return addonBackups.Concat(configBackups).Concat(wowExtBackups).Concat(reforged)
+            .OrderBy(b => b.Label, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private static long FolderSize(string folder) =>
         Directory.EnumerateFiles(folder, "*", System.IO.SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
 
-    // To the Recycle Bin, so a cleanup can still be undone.
+    // To the Recycle Bin, so a cleanup can still be undone. A link is just deleted: that removes the link only, never
+    // the shared file it points to.
     public static void Recycle(IEnumerable<BackupItem> items)
     {
         foreach (var item in items)
         {
-            if (Directory.Exists(item.Path))
+            if (File.Exists(item.Path) && new FileInfo(item.Path).LinkTarget is not null)
+            {
+                File.Delete(item.Path);
+            }
+            else if (Directory.Exists(item.Path))
             {
                 FileSystem.DeleteDirectory(item.Path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
