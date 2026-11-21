@@ -419,7 +419,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
                 try
                 {
                     var progress = new Progress<ReforgedProgress>(p => ShowProgress(p, null));
-                    await Service.ApplyAsync(game, plan, selection, progress, cancel.Token, GameProcess.IsRunning);
+                    await Service.ApplyAsync(game, plan, selection, progress, cancel.Token, () => GameProcess.IsRunning(game));
                     finished = true;
                     if (await Task.Run(() => SpellEffectsFix.Sync(game)) == SpellEffectsFixState.Blocked)
                     {

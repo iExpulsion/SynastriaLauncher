@@ -5,8 +5,7 @@ namespace SynastriaLauncher.App.Services;
 
 public static class GameProcess
 {
-    public static bool IsRunning() =>
-        Process.GetProcessesByName("WowExt").Concat(Process.GetProcessesByName("Wow")).Any();
+    public static bool IsRunning(string? gameFolder) => SynastriaLauncher.Core.GameProcesses.IsRunning(gameFolder);
 
     public static void Start(string exePath) =>
         Process.Start(new ProcessStartInfo(exePath) { WorkingDirectory = Path.GetDirectoryName(exePath)!, UseShellExecute = true });

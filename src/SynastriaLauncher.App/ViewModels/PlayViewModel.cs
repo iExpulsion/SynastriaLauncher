@@ -62,7 +62,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
     private async Task PlayAsync()
     {
         var exe = main.Exe;
-        if (exe is not null && GameProcess.IsRunning())
+        if (exe is not null && GameProcess.IsRunning(main.GameFolder))
         {
             await main.Dialogs.AlertAsync("Already Running", "The game is already running.");
         }

@@ -130,7 +130,7 @@ public sealed partial class MainViewModel : ObservableObject
     // outside the launcher included). While the game runs the files are in use, so this waits.
     public async Task SyncGameFilesAsync()
     {
-        if (GameFolder is { } game && !GameProcess.IsRunning())
+        if (GameFolder is { } game && !GameProcess.IsRunning(game))
         {
             try
             {
@@ -277,7 +277,7 @@ public sealed partial class MainViewModel : ObservableObject
     public async Task<bool> RunGameWriteAsync(string what, Func<Task> write)
     {
         var done = false;
-        if (GameProcess.IsRunning())
+        if (GameProcess.IsRunning(GameFolder))
         {
             await Dialogs.AlertAsync("Close the Game First", $"The game is running, so the launcher can't {what}. Close it and try again.");
         }

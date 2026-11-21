@@ -378,7 +378,7 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
     public async Task SyncReforgedFixesAsync()
     {
         var game = main.GameFolder;
-        if (game is not null && !GameProcess.IsRunning())
+        if (game is not null && !GameProcess.IsRunning(game))
         {
             Refresh();
             foreach (var item in Items.Where(i => i.Mod.FollowsReforged))
