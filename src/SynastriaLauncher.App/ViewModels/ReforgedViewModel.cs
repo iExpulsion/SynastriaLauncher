@@ -369,6 +369,12 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
                     var progress = new Progress<ReforgedProgress>(p => ShowProgress(p, null));
                     await Service.ApplyAsync(game, plan, selection, progress, cancel.Token, GameProcess.IsRunning);
                     finished = true;
+                    if (await Task.Run(() => SpellEffectsFix.Sync(game)) == SpellEffectsFixState.Blocked)
+                    {
+                        await main.Dialogs.AlertAsync("Spell Effects Fix Not Added",
+                            $"Your Data folder already has a {SpellEffectsFix.FileName} that the launcher didn't make, so it left that file alone. "
+                            + "Without the fix, some spells show no effect with Spell Particle Effects on Synastria.");
+                    }
                 }
                 catch (OperationCanceledException)
                 {

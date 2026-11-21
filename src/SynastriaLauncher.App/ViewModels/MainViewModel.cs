@@ -117,6 +117,24 @@ public sealed partial class MainViewModel : ObservableObject
         await Mods.LoadAsync();
         await Addons.CheckAllAsync();
         Play.Refresh();
+        await SyncSpellEffectsFixAsync();
+    }
+
+    // Catches up with Reforged updates made outside the launcher. While the game runs the file is in use, so this
+    // waits for the next start.
+    private async Task SyncSpellEffectsFixAsync()
+    {
+        if (GameFolder is { } game && !GameProcess.IsRunning())
+        {
+            try
+            {
+                await Task.Run(() => Core.Reforged.SpellEffectsFix.Sync(game));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
+            {
+                App.LogCrash(e);
+            }
+        }
     }
 
     [RelayCommand]

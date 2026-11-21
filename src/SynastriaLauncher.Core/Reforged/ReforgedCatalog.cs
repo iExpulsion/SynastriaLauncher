@@ -56,7 +56,9 @@ public static class ReforgedCatalog
             ReforgedSection.Core, 'I', true) with { Requires = [PatchIds.InterfaceEdit], Requirement = "Needs the Interface Edit patch" },
         Single("maps", "Maps and Loading Screens", "New maps and loading screens.", ReforgedSection.Optional, 'M', false),
         Single("nights", "Darker Nights", "Darker nighttime lighting.", ReforgedSection.Optional, 'N', false),
-        Single("particles", "Spell Particle Effects", "Remade spell effects.", ReforgedSection.Optional, 'P', false),
+        Single("particles", "Spell Particle Effects",
+            "Remade spell effects. The launcher adds patch-Z.mpq so they work alongside Synastria's own spell effects.",
+            ReforgedSection.Optional, 'P', false),
         Single("orcs", "Upright Orcs", "Orcs stand up straight.", ReforgedSection.Optional, 'U', false)
             with { Requirement = "Needs Player Characters and NPCs, and Creatures" },
         new("sounds", "Sounds and Music", "New sounds and music.",

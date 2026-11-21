@@ -113,6 +113,11 @@ it left off.
 
 Some parts need a patch switched on; the page tells you which and can do it for you.
 
+With **Spell Particle Effects** installed, the launcher also adds `patch-Z.mpq` to your Data folder. Reforged's new
+spell effects and Synastria's own would otherwise claim the same slots, leaving spells like Thunder Clap and Charge
+with no effect. The launcher makes this file from your copy of Reforged's patch, rebuilds it when Reforged updates,
+and removes it along with Spell Particle Effects.
+
 ![Project Reforged: 8 of 10 parts installed, each with a switch, its version, size and files, and the HD Models choice for Player Characters and NPCs](docs/images/reforged.png)
 
 ### WoW Dungeon Maps
