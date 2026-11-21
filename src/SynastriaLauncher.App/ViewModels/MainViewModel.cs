@@ -113,22 +113,27 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task ReloadAllAsync()
     {
+        await SyncGameFilesAsync();
         Patches.Load();
         await Mods.LoadAsync();
         await Addons.CheckAllAsync();
         Play.Refresh();
-        await SyncSpellEffectsFixAsync();
     }
 
-    // Catches up with Reforged changes made outside the launcher, at launcher start and before the game starts. While
-    // the game runs the file is in use, so this waits.
-    public async Task SyncSpellEffectsFixAsync()
+    // Keeps the launcher's own files in the game folder in step, at launcher start and before the game starts:
+    // SynastriaLauncher.dll with this launcher's build, and the spell effects fix with Reforged's patch (changes made
+    // outside the launcher included). While the game runs the files are in use, so this waits.
+    public async Task SyncGameFilesAsync()
     {
         if (GameFolder is { } game && !GameProcess.IsRunning())
         {
             try
             {
-                await Task.Run(() => Core.Reforged.SpellEffectsFix.Sync(game));
+                await Task.Run(() =>
+                {
+                    new GameExe(game).RefreshPatcherDll(PatcherConfig.EmbeddedDll());
+                    Core.Reforged.SpellEffectsFix.Sync(game);
+                });
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
             {

@@ -95,6 +95,22 @@ public sealed class ModTests : IDisposable
         Assert.Equal(ModState.Installed, ModInstaller.Detect(mod, Game, "DLLs", null));
     }
 
+    // A bundled file an earlier launcher wrote for the same version (rebuilt, so its bytes differ) reads as installed;
+    // for another version, or a file nobody recorded, it reads as a different version.
+    [Fact]
+    public async Task EarlierLauncherBuildOfABundledModIsInstalled()
+    {
+        var mod = ModManifest.Embedded().Mods.Single(m => m.Id == "login-screens");
+        var record = await ModInstaller.InstallAsync(_github, mod, Game, "DLLs", TestContext.Current.CancellationToken);
+        var file = mod.Files.First(f => f.Bundled is not null && !f.Config && !f.Optional);
+        var path = ModInstaller.ResolvePath(Game, "DLLs", file.Path);
+        File.AppendAllText(path, "\n-- an earlier build\n");
+        var earlier = record with { Hashes = new Dictionary<string, string>(record.Hashes) { [file.Path] = ModInstaller.Sha256Of(path) } };
+        Assert.Equal(ModState.Installed, ModInstaller.Detect(mod, Game, "DLLs", earlier));
+        Assert.Equal(ModState.OtherVersion, ModInstaller.Detect(mod, Game, "DLLs", earlier with { Version = "older" }));
+        Assert.Equal(ModState.OtherVersion, ModInstaller.Detect(mod, Game, "DLLs", record));
+    }
+
     // Project Reforged is detected by its lettered patches; the stock client's numbered ones don't count.
     [Fact]
     public void DetectsReforged()

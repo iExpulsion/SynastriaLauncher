@@ -72,7 +72,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         }
         else if (exe is not null)
         {
-            await main.SyncSpellEffectsFixAsync();
+            await main.SyncGameFilesAsync();
             GameProcess.Start(exe.ExePath);
         }
         else

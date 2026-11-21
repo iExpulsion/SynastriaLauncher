@@ -49,4 +49,22 @@ public sealed class GameFolderTests : IDisposable
     [Fact]
     public void FindReturnsNullWhenNoneMatch() =>
         Assert.Null(GameFolder.Find([null, MakeFolder("none", withExe: false)]));
+
+    // An installed SynastriaLauncher.dll from another launcher build is replaced with this one's, its settings file
+    // stays, and a game without the DLL doesn't get one.
+    [Fact]
+    public void RefreshesThePatcherDllOnlyWhenInstalled()
+    {
+        var game = MakeFolder("game", withExe: true);
+        var exe = new SynastriaLauncher.Core.Patching.GameExe(game);
+        byte[] current = [1, 2, 3];
+        Assert.False(exe.RefreshPatcherDll(current));
+        Assert.False(File.Exists(exe.DllPath));
+        File.WriteAllBytes(exe.DllPath, [9, 9]);
+        File.WriteAllText(exe.IniPath, "[Patches]\n");
+        Assert.True(exe.RefreshPatcherDll(current));
+        Assert.Equal(current, File.ReadAllBytes(exe.DllPath));
+        Assert.Equal("[Patches]\n", File.ReadAllText(exe.IniPath));
+        Assert.False(exe.RefreshPatcherDll(current));
+    }
 }

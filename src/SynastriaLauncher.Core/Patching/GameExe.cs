@@ -100,6 +100,18 @@ public sealed class GameExe(string gameFolder)
     public bool HasPatcherDll(byte[]? dll) =>
         dll is not null && File.Exists(DllPath) && File.ReadAllBytes(DllPath).AsSpan().SequenceEqual(dll);
 
+    // Brings an installed SynastriaLauncher.dll up to this launcher's build. It carries the launcher's version, so each
+    // launcher update brings a new one; its settings file stays as it is. Returns whether it was written.
+    public bool RefreshPatcherDll(byte[]? dll)
+    {
+        var stale = dll is not null && File.Exists(DllPath) && !HasPatcherDll(dll);
+        if (stale)
+        {
+            WriteAtomic(DllPath, dll!);
+        }
+        return stale;
+    }
+
     // Puts the patches in memory: the exe keeps only Large Address Aware and the DLL Loader (rebuilt from the
     // original once if it still carries patches on disk), SynastriaLauncher.dll goes next to it, and the switches and
     // settings go into SynastriaLauncher.ini. With the loader off and no patches on, the DLL and its files are removed.

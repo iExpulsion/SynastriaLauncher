@@ -24,7 +24,8 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(PrimaryLabel), nameof(HasPrimary), nameof(CanRemove), nameof(CanReinstall),
-        nameof(ShowSwitch), nameof(IsActive), nameof(IsGood), nameof(IsAccent), nameof(ShowState), nameof(ShowUninstall), nameof(HasMenu))]
+        nameof(ShowSwitch), nameof(IsActive), nameof(IsGood), nameof(IsAccent), nameof(ShowState), nameof(ShowUninstall), nameof(HasMenu),
+        nameof(CrowdedActions))]
     public partial ModState State { get; set; }
 
     [ObservableProperty]
@@ -46,13 +47,16 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(HasPrimary), nameof(CanRemove), nameof(CanReinstall), nameof(ShowState),
-        nameof(ShowUninstall), nameof(HasMenu))]
+        nameof(ShowUninstall), nameof(HasMenu), nameof(CrowdedActions))]
     public partial bool IsBusy { get; set; }
 
     partial void OnIsBusyChanged(bool value) => owner.BusyChanged();
 
     // The More menu shows only when something in it can be used.
     public bool HasMenu => CanReinstall || CanRemove && !ShowUninstall || HasHomepage;
+
+    // Presets plus an action button fill the card's bottom row.
+    public bool CrowdedActions => HasPrimary && ShowPresets;
 
     // The Install button already says a mod isn't installed, and the Uninstall button or Enabled switch that it is.
     public bool ShowState => IsBusy || State is not (ModState.NotInstalled or ModState.Installed);
@@ -68,6 +72,7 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
     public partial PresetOption? SelectedPreset { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CrowdedActions))]
     public partial bool ShowPresets { get; set; }
 
     public string PresetHint => SelectedPreset?.Description ?? "";

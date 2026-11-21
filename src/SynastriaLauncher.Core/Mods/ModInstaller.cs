@@ -68,17 +68,20 @@ public static class ModInstaller
         return Convert.ToHexStringLower(SHA256.HashData(stream));
     }
 
-    // Installed when every required file is there and matches the pinned hash or what the launcher installed;
-    // OtherVersion when they're all there but differ (installed by hand or by the friend pack, or an older one).
+    // Installed when every required file is there and matches the pinned hash, this launcher's bundled copy, or what
+    // the launcher wrote for this version (bundled DLLs are compiled again for each launcher release, so an earlier
+    // launcher's build of the same source differs byte for byte); OtherVersion when they're all there but differ
+    // (installed by hand or by the friend pack, or an older version).
     public static ModState Detect(ModDefinition mod, string gameFolder, string dllFolder, ModRecord? record)
     {
         var files = mod.Files.Where(f => !f.Config && !f.Optional).ToList();
         var present = files.Where(f => File.Exists(ResolvePath(gameFolder, dllFolder, f.Path))).ToList();
         var matches = present.Count == files.Count && files.All(f =>
         {
-            var expected = f.Sha256 ?? (f.Bundled is not null ? BundledFiles.Sha256(f.Bundled) : null) ??
-                (record?.Version == mod.Version ? record.Hashes.GetValueOrDefault(f.Path) : null);
-            return expected is not null && Sha256Of(ResolvePath(gameFolder, dllFolder, f.Path)) == expected;
+            var expected = f.Sha256 ?? (f.Bundled is not null ? BundledFiles.Sha256(f.Bundled) : null);
+            var recorded = record?.Version == mod.Version ? record.Hashes.GetValueOrDefault(f.Path) : null;
+            var actual = Sha256Of(ResolvePath(gameFolder, dllFolder, f.Path));
+            return actual == expected || actual == recorded;
         });
         var parked = CanDisable(mod) && files.All(f => File.Exists(DisabledPath(gameFolder, dllFolder, f.Path)));
         return present.Count == 0 && parked ? ModState.Disabled

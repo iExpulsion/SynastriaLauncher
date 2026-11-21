@@ -15,7 +15,7 @@
           <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
               <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" IsVisible="{Binding ShowPresets}" IsEnabled="{Binding !IsBusy}"
-                        MinWidth="170" CornerRadius="7" Margin="0,0,4,0" VerticalAlignment="Center" ToolTip.Tip="{Binding PresetHint}">
+                        MinWidth="150" CornerRadius="7" Margin="0,0,4,0" VerticalAlignment="Center" ToolTip.Tip="{Binding PresetHint}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:PresetOption">
                     <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding Description}" />
@@ -38,7 +38,8 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowSwitch}" VerticalAlignment="Center">
               <ToggleSwitch IsChecked="{Binding IsActive}" IsEnabled="{Binding !IsBusy}" />
-              <TextBlock Classes="muted" VerticalAlignment="Center" Text="Enabled" />
+              <!-- Left out beside an action button and presets, which would otherwise cover it -->
+              <TextBlock Classes="muted" VerticalAlignment="Center" Text="Enabled" IsVisible="{Binding !CrowdedActions}" />
             </StackPanel>
           </DockPanel>
 
