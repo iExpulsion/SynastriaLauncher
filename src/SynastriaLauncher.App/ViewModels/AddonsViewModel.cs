@@ -20,16 +20,17 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(PrimaryLabel), nameof(HasPrimary), nameof(CanReinstall), nameof(CanRemove),
         nameof(Versions), nameof(NeedsUpdate), nameof(HasUpdate), nameof(IsGood), nameof(IsAccent), nameof(IsInfo), nameof(IsBad),
-        nameof(StateHint), nameof(HasEdits), nameof(EditsHint), nameof(CanUpdateAnyway), nameof(CanHold), nameof(ShowState))]
+        nameof(StateHint), nameof(HasEdits), nameof(EditsHint), nameof(CanUpdateAnyway), nameof(CanHold), nameof(ShowState), nameof(IsWorking))]
     public partial AddonCheck? Check { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(HasPrimary), nameof(CanReinstall), nameof(CanRemove), nameof(CanUpdateAnyway),
-        nameof(ShowState))]
+        nameof(ShowState), nameof(IsWorking))]
     public partial bool IsBusy { get; set; }
 
     // Up to Date and Not Installed go without saying; only states that need a look get a pill.
     public bool ShowState => IsBusy || State is not (AddonState.NotInstalled or AddonState.UpToDate);
+    public bool IsWorking => IsBusy || State is null;
 
     // Under the description: the libraries that come with it, or what an install brings along.
     [ObservableProperty]
@@ -169,6 +170,9 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     public partial bool IsChecking { get; set; }
 
     [ObservableProperty]
+    public partial bool IsLoadingList { get; set; }
+
+    [ObservableProperty]
     public partial bool IsAdding { get; set; }
 
     [ObservableProperty]
@@ -262,6 +266,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
         var path = AddOnsPath;
         Items.Clear();
         IsChecking = true;
+        IsLoadingList = true;
+        Summary = "Loading the Addon List";
         _curated = (await AddonCatalog.LoadAsync(main.GitHub, Path.Combine(LauncherData.DefaultFolder, "addons.json"),
             SelfUpdate.CurrentVersion)).Sources;
         foreach (var source in main.Data.AddonSources(_curated))
@@ -273,6 +279,7 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
             });
         }
         IsChecking = path is not null;
+        IsLoadingList = false;
         RefreshVisible();
         if (path is not null)
         {

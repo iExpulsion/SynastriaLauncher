@@ -63,6 +63,14 @@ public static class PatchCatalog
     internal const string NameplateDistanceAnchor = "2E 74 01 37 00 00 C8 43";
     private const string St0ny = "From St0ny's AIO WoW EXE Patcher";
 
+    // What Recommended Setup switches on: the safe everyday patches, without view distances, nameplates or ground
+    // target macros.
+    public static IReadOnlyList<string> RecommendedSetup { get; } =
+    [
+        PatchIds.NoAutoAfk, PatchIds.NoMailDelay, PatchIds.InterfaceEdit, PatchIds.DllLoader,
+        PatchIds.ShortNumbers, PatchIds.DamageColors,
+    ];
+
     public static IReadOnlyList<PatchDefinition> All { get; } =
     [
         new(PatchIds.InterfaceEdit, "Interface Edit", PatchGroup.Advanced,

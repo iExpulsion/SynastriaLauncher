@@ -326,13 +326,13 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
         UpdateSummary();
     }
 
-    // Stages every patch that fits this exe with the recommended settings; Apply writes them.
+    // Stages the recommended patches that fit this exe, and only those, with the recommended settings; Apply writes them.
     [RelayCommand]
     private void RecommendedSetup()
     {
         foreach (var item in Items.Where(i => i.Status != PatchStatus.Unavailable))
         {
-            item.IsOn = true;
+            item.IsOn = PatchCatalog.RecommendedSetup.Contains(item.Patch.Id);
         }
         ResetSettings(new CurrentSettings(PatchSettings.DefaultNameplateDistance, PatchSettings.DefaultStackSpacing,
             DamageColors.Default, DllFolder.Default));

@@ -133,6 +133,33 @@ if (args.Length > 1 && args[1] == "--readme")
     return;
 }
 
+// --loading: the pages' loading and checking states, forced on, with their spinning icons.
+if (args.Length > 1 && args[1] == "--loading")
+{
+    model.Page = LauncherPage.Addons;
+    model.Addons.IsChecking = true;
+    model.Addons.IsLoadingList = true;
+    Shot("addons-loading");
+    model.Addons.IsLoadingList = false;
+    foreach (var addon in model.Addons.Items.Take(3))
+    {
+        addon.Check = null;
+    }
+    model.Addons.ShowHidden = !model.Addons.ShowHidden;
+    model.Addons.ShowHidden = !model.Addons.ShowHidden;
+    Shot("addons-checking");
+
+    model.Page = LauncherPage.Mods;
+    model.Mods.IsChecking = true;
+    model.Mods.IsLoadingList = true;
+    Shot("mods-loading");
+
+    model.Page = LauncherPage.Settings;
+    model.IsCheckingLauncher = true;
+    Shot("settings-checking");
+    return;
+}
+
 // The open page's scroll area.
 Avalonia.Controls.ScrollViewer PageScroller() =>
     window.GetVisualDescendants().OfType<Avalonia.Controls.ScrollViewer>().Where(s => s.IsEffectivelyVisible)

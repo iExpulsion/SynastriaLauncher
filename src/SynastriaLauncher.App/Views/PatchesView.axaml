@@ -28,7 +28,7 @@
         <DockPanel>
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" IsVisible="{Binding IsLoaded}">
             <Button Content="Recommended Setup" Command="{Binding RecommendedSetupCommand}"
-                    ToolTip.Tip="Switches on every patch that fits your game, with recommended settings. Nothing changes until you apply." />
+                    ToolTip.Tip="Switches on the everyday patches (No Auto AFK, No Mail Refresh Delay, the combat numbers, Interface Edit and the DLL Loader) and switches the rest off. Nothing changes until you apply." />
             <Button Classes="icon" ToolTip.Tip="More">
               <PathIcon Data="{StaticResource IconMore}" />
               <Button.Flyout>

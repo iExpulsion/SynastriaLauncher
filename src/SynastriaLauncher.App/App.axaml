@@ -269,6 +269,31 @@
       <Setter Property="Foreground" Value="{StaticResource Bad}" />
     </Style>
 
+    <!-- Spinning icon while something loads or checks -->
+    <Style Selector="PathIcon.spin">
+      <Setter Property="RenderTransform">
+        <RotateTransform />
+      </Setter>
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="INFINITE">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.pill PathIcon">
+      <Setter Property="Width" Value="11" />
+      <Setter Property="Height" Value="11" />
+      <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+    <Style Selector="Border.pill.accent PathIcon">
+      <Setter Property="Foreground" Value="{StaticResource Amber}" />
+    </Style>
+
     <!-- Buttons -->
     <Style Selector="Button">
       <Setter Property="CornerRadius" Value="7" />

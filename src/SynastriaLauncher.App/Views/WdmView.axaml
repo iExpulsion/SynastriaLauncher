@@ -9,7 +9,7 @@
       <DockPanel>
         <Button DockPanel.Dock="Right" Command="{Binding CheckCommand}" IsEnabled="{Binding IsIdle}" VerticalAlignment="Top">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" Classes.spin="{Binding IsBusy}" />
             <TextBlock Text="Check for Updates" />
           </StackPanel>
         </Button>
@@ -79,7 +79,10 @@
                           </StackPanel>
                           <Border Grid.Column="1" Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}" Classes.info="{Binding IsInfo}"
                                   IsVisible="{Binding ShowState}" Margin="12,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding StateLabel}" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                              <PathIcon Classes="spin" Data="{StaticResource IconRefresh}" IsVisible="{Binding IsBusy}" />
+                              <TextBlock Text="{Binding StateLabel}" />
+                            </StackPanel>
                           </Border>
                           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                             <Button Classes="primary" MinWidth="88" HorizontalContentAlignment="Center" Content="{Binding PrimaryLabel}"

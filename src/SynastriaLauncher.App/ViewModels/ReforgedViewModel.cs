@@ -185,7 +185,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         PatchWarning = Requirement(required);
         PatchNote = recommended.Count == 0 ? ""
             : $"Project Reforged also recommends the {string.Join(" and ", recommended.Select(PatchTitle))} patch{(recommended.Count == 1 ? "" : "es")}" +
-              ": higher view distance limits for its scenery, and no see-through character up close.";
+              ", so your character doesn't turn see-through up close.";
         InstalledWarning = Requirement(ReforgedCatalog.MissingPatches(_installed, applied).Required);
         var wdmAddon = main.GameFolder is { } folder && WdmService.IsInstalled(WdmCatalog.Get(WdmCatalog.Addon), folder, WdmCatalog.Locale(folder));
         MapsNote = chosen.Any(p => p.Id == "maps") && !wdmAddon

@@ -70,6 +70,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string LauncherUpdateStatus { get; set; } = "";
 
+    [ObservableProperty]
+    public partial bool IsCheckingLauncher { get; set; }
+
     public bool HasGameFolder => GameFolder is not null;
     public string GameFolderLabel => GameFolder ?? "No game folder chosen";
     public string Version => $"Version {SelfUpdate.CurrentVersion.ToString(3)}";
@@ -169,6 +172,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task CheckLauncherUpdateAsync()
     {
         LauncherUpdateStatus = "Checking for Launcher Updates";
+        IsCheckingLauncher = true;
         try
         {
             LauncherUpdate = await SelfUpdate.CheckAsync(GitHub, SelfUpdate.CurrentVersion);
@@ -177,6 +181,10 @@ public sealed partial class MainViewModel : ObservableObject
         catch (HttpRequestException)
         {
             LauncherUpdateStatus = "Couldn't Check for Launcher Updates";
+        }
+        finally
+        {
+            IsCheckingLauncher = false;
         }
     }
 

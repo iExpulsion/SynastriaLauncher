@@ -193,6 +193,9 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
     [NotifyPropertyChangedFor(nameof(CheckLabel), nameof(CanCheck))]
     public partial bool IsChecking { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsLoadingList { get; set; }
+
     public string CheckLabel => IsChecking ? "Checking..." : "Check for Updates";
 
     // Not while a mod installs or uninstalls, so the list can't change under it.
@@ -205,6 +208,7 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
     public async Task LoadAsync()
     {
         IsChecking = true;
+        IsLoadingList = Items.Count == 0;
         var manifest = await ModManifest.LoadAsync(main.GitHub, Path.Combine(LauncherData.DefaultFolder, "mods.json"),
             SelfUpdate.CurrentVersion);
         Items.Clear();
@@ -215,6 +219,7 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
             Items.Add(new ModItemViewModel(mod, this));
         }
         IsChecking = false;
+        IsLoadingList = false;
         Refresh();
         _ = FetchPresetsAsync();
     }

@@ -66,7 +66,10 @@
           <StackPanel Spacing="4">
             <DockPanel Margin="0,0,0,4">
               <Border DockPanel.Dock="Right" Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}" IsVisible="{Binding ShowState}">
-                <TextBlock Text="{Binding StateLabel}" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Classes="spin" Data="{StaticResource IconRefresh}" IsVisible="{Binding IsBusy}" />
+                  <TextBlock Text="{Binding StateLabel}" />
+                </StackPanel>
               </Border>
               <TextBlock Classes="name" FontSize="17" Text="{Binding Name}" />
             </DockPanel>
@@ -84,7 +87,7 @@
         <Button DockPanel.Dock="Right" VerticalAlignment="Top" Command="{Binding LoadCommand}" IsEnabled="{Binding CanCheck}"
                 ToolTip.Tip="Gets the latest list of mods and their versions">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+            <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" Classes.spin="{Binding IsChecking}" />
             <TextBlock Text="{Binding CheckLabel}" />
           </StackPanel>
         </Button>
@@ -93,6 +96,13 @@
           <TextBlock Classes="pageSubtitle" Text="Optional extras that run inside the game. If the game acts strange after adding one, switch it off." />
         </StackPanel>
       </DockPanel>
+
+      <Border Classes="panel afterHeader" Padding="16" IsVisible="{Binding IsLoadingList}">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <PathIcon Classes="spin" Data="{StaticResource IconRefresh}" Width="16" Height="16" Foreground="{StaticResource Amber}" />
+          <TextBlock Classes="muted" Text="Getting the mod list..." VerticalAlignment="Center" />
+        </StackPanel>
+      </Border>
 
       <StackPanel Classes="sectionHeader" Orientation="Horizontal" Spacing="8">
         <TextBlock Classes="section" Text="Made for Synastria" />

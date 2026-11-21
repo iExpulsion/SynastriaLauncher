@@ -25,7 +25,12 @@
           <Border Classes="row" BorderThickness="0" IsVisible="{Binding HasGameFolder}">
             <DockPanel>
               <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsEnabled="{Binding WowExt.IsIdle}">
-                <Button Content="Check for Updates" Command="{Binding WowExt.CheckCommand}" />
+                <Button Command="{Binding WowExt.CheckCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" Classes.spin="{Binding WowExt.IsBusy}" />
+                    <TextBlock Text="Check for Updates" />
+                  </StackPanel>
+                </Button>
                 <Button Classes="primary" Content="Update" Command="{Binding WowExt.UpdateCommand}" IsVisible="{Binding WowExt.HasUpdate}" />
                 <Button Classes="icon" ToolTip.Tip="More">
                   <PathIcon Data="{StaticResource IconMore}" />
@@ -82,7 +87,12 @@
           <Border Classes="row">
             <DockPanel>
               <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Content="Check for Updates" Command="{Binding CheckLauncherUpdateCommand}" />
+                <Button Command="{Binding CheckLauncherUpdateCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" Classes.spin="{Binding IsCheckingLauncher}" />
+                    <TextBlock Text="Check for Updates" />
+                  </StackPanel>
+                </Button>
                 <Button Classes="primary" Content="Update" Command="{Binding UpdateLauncherCommand}"
                         IsVisible="{Binding LauncherUpdate, Converter={x:Static ObjectConverters.IsNotNull}}" />
               </StackPanel>

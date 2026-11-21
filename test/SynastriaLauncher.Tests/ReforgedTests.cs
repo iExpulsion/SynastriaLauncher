@@ -406,11 +406,11 @@ public sealed class ReforgedTests : IDisposable
     public void ListsMissingPatches()
     {
         var interfacePart = ReforgedCatalog.Get("interface");
-        var (required, recommended) = ReforgedCatalog.MissingPatches([ReforgedCatalog.Get("characters"), interfacePart], [PatchIds.NoZoomFade]);
+        var (required, recommended) = ReforgedCatalog.MissingPatches([ReforgedCatalog.Get("characters"), interfacePart], []);
         var only = Assert.Single(required);
         Assert.Equal(PatchIds.InterfaceEdit, only.Patch);
         Assert.Equal([interfacePart], only.Parts);
-        Assert.Equal([PatchIds.GraphicsLimits], recommended);
+        Assert.Equal([PatchIds.NoZoomFade], recommended);
     }
 
     // Nothing is missing once the patches are on, and nothing is recommended when no part is in use.

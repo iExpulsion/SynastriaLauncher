@@ -44,7 +44,7 @@
                     ToolTip.Tip="Switches on the Core parts with HD models. Nothing downloads until you apply." />
             <Button Command="{Binding CheckCommand}">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+                <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" Classes.spin="{Binding IsBusy}" />
                 <TextBlock Text="Check for Updates" />
               </StackPanel>
             </Button>

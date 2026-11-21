@@ -69,9 +69,9 @@ public static class ReforgedCatalog
 
     public static ReforgedPart Get(string id) => Parts.First(p => p.Id == id);
 
-    // Patches in Project Reforged's recommended patcher selection that the launcher has and no part strictly needs:
-    // its view distance unlocks (farclip, horizon, environment detail, ground clutter) and no zoom transparency.
-    public static IReadOnlyList<string> Recommended { get; } = [PatchIds.GraphicsLimits, PatchIds.NoZoomFade];
+    // Patches in Project Reforged's recommended patcher selection that the launcher has and no part strictly needs.
+    // Their view distance unlocks (Graphics Limits) are left out: with the world set they crashed some setups.
+    public static IReadOnlyList<string> Recommended { get; } = [PatchIds.NoZoomFade];
 
     public static IReadOnlyList<ReforgedPart> InstalledParts(string gameFolder) =>
         Parts.Where(p => p.Files.Any(f => File.Exists(Path.Combine(gameFolder, "Data", f)))).ToList();
