@@ -1,5 +1,5 @@
 {
-  "revision": 4,
+  "revision": 5,
   "minLauncher": "0.1.0",
   "addons": [
     {
@@ -102,6 +102,29 @@
       "folders": ["WeakAuras", "WeakAurasArchive", "WeakAurasModelPaths", "WeakAurasOptions"],
       "toc": "WeakAuras/WeakAuras.toc",
       "description": "Custom on-screen alerts and bars for buffs, debuffs, cooldowns and procs."
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI",
+      "name": "ElvUI",
+      "folders": ["ElvUI", "ElvUI_OptionsUI"],
+      "toc": "ElvUI/ElvUI.toc",
+      "description": "A full interface replacement: unit frames, action bars, bags, chat and more, all movable."
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI_Enhanced",
+      "name": "ElvUI Enhanced",
+      "folders": ["ElvUI_Enhanced"],
+      "toc": "ElvUI_Enhanced/ElvUI_Enhanced.toc",
+      "description": "Extras for ElvUI: a fuller character window, death recap, minimap button bar, quest levels and more.",
+      "requires": ["ElvUI-WotLK/ElvUI"]
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI_AddOnSkins",
+      "name": "ElvUI AddOnSkins",
+      "folders": ["ElvUI_AddOnSkins"],
+      "toc": "ElvUI_AddOnSkins/ElvUI_AddOnSkins.toc",
+      "description": "Restyles many popular addons to match ElvUI.",
+      "requires": ["ElvUI-WotLK/ElvUI"]
     },
     {
       "repo": "Sablinova-WoW/Soul-Forge",
