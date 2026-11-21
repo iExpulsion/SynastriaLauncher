@@ -199,13 +199,15 @@ public sealed class AddonTests : IDisposable
         Assert.Equal("v1", loaded.Installed["a/b"].Tag);
     }
 
-    // The built-in addons.json passes the checks a published list must pass, and has a library.
+    // The built-in addons.json passes the checks a published list must pass, has a library, and has both browse sections.
     [Fact]
     public void BuiltInAddonListIsValid()
     {
         var catalog = AddonCatalog.Embedded();
         Assert.Empty(catalog.Problems());
         Assert.Contains(catalog.Sources, a => a.Library);
+        Assert.Contains(catalog.Sources, a => a.Wotlk);
+        Assert.Contains(catalog.Sources, a => !a.Wotlk);
         Assert.All(catalog.Sources, a => Assert.True(a.Curated));
     }
 

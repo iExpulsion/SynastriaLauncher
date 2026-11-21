@@ -132,8 +132,10 @@
       </ItemsControl>
 
       <!-- Not installed yet: cards to browse -->
-      <StackPanel DataContext="{Binding AvailableSection}" x:DataType="vm:AddonSectionViewModel"
-                  IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <ItemsControl ItemsSource="{Binding AvailableSections}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:AddonSectionViewModel">
+      <StackPanel>
       <Button Classes="sectionToggle" Command="{Binding ToggleCommand}" ToolTip.Tip="{Binding ToggleHint}">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <PathIcon Data="{StaticResource IconChevron}" Classes.collapsed="{Binding !IsExpanded}" />
@@ -189,6 +191,9 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
       </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

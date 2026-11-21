@@ -11,9 +11,10 @@ public sealed record AddonEntry(
     [property: JsonPropertyName("toc")] string? Toc,
     [property: JsonPropertyName("description")] string Description,
     [property: JsonPropertyName("requires")] IReadOnlyList<string>? Requires = null,
-    [property: JsonPropertyName("library")] bool Library = false)
+    [property: JsonPropertyName("library")] bool Library = false,
+    [property: JsonPropertyName("wotlk")] bool Wotlk = false)
 {
-    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library);
+    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library, Wotlk);
 }
 
 // The curated addons: Addons/addons.json, built in and published in the launcher's repo (LiveList).

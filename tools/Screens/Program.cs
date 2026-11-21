@@ -102,7 +102,7 @@ if (args.Length > 1 && args[1] == "--readme")
     Shot("addons");
     Pump(TimeSpan.FromMilliseconds(600));
     ScrollTo(window.GetVisualDescendants().OfType<Avalonia.Controls.Button>()
-        .First(b => b.Classes.Contains("sectionToggle") && b.DataContext == model.Addons.AvailableSection), 8);
+        .First(b => b.Classes.Contains("sectionToggle") && b.DataContext == model.Addons.AvailableSections[0]), 8);
     Shot("addons-available");
 
     model.Page = LauncherPage.Patches;
@@ -238,6 +238,10 @@ var installedSection = model.Addons.Sections.First(s => s.Title == "Installed");
 installedSection.ToggleCommand.Execute(null);
 Shot("addons-collapsed");
 installedSection.ToggleCommand.Execute(null);
+Pump(TimeSpan.FromMilliseconds(600));
+ScrollTo(window.GetVisualDescendants().OfType<Avalonia.Controls.Button>()
+    .First(b => b.Classes.Contains("sectionToggle") && b.DataContext == model.Addons.AvailableSections[^1]), 8);
+Shot("addons-wotlk");
 
 model.Page = LauncherPage.Patches;
 var items = model.Patches.Groups.SelectMany(g => g.Items).ToList();

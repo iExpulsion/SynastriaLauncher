@@ -4,7 +4,7 @@ namespace SynastriaLauncher.Core.Addons;
 // .toc inside the repo, used to compare versions of a copy installed some other way. Requires lists the repos
 // installed along with it; a Library is only there for the addons that require it.
 public sealed record AddonSource(string Repo, string Name, IReadOnlyList<string> Folders, string? TocPath, bool Curated,
-    string? Description = null, IReadOnlyList<string>? Requires = null, bool Library = false)
+    string? Description = null, IReadOnlyList<string>? Requires = null, bool Library = false, bool Wotlk = false)
 {
     public string Author => Repo.Split('/')[0];
 }

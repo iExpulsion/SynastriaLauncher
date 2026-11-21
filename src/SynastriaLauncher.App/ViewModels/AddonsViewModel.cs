@@ -143,9 +143,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     public ObservableCollection<AddonItemViewModel> Items { get; } = [];
     public ObservableCollection<AddonSectionViewModel> Sections { get; } = [];
 
-    // Not installed yet: shown as cards under the list.
-    [ObservableProperty]
-    public partial AddonSectionViewModel? AvailableSection { get; set; }
+    // Not installed yet: shown as cards under the list, Synastria players' addons apart from well-known WotLK ones.
+    public ObservableCollection<AddonSectionViewModel> AvailableSections { get; } = [];
 
     private string SectionKey(string title) => $"Addons/{title}";
 
@@ -247,7 +246,21 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
             }
         }
         var available = shown.Where(i => i.State == AddonState.NotInstalled).OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase).ToList();
-        AvailableSection = available.Count > 0 ? new AddonSectionViewModel("Available to Install", available, this) : null;
+        (string Title, Func<AddonItemViewModel, bool> Match)[] browse =
+        [
+            ("From Synastria Players", i => i.Source.Curated && !i.Source.Wotlk),
+            ("Popular WotLK Addons", i => i.Source.Curated && i.Source.Wotlk),
+            ("Added by You", i => !i.Source.Curated),
+        ];
+        AvailableSections.Clear();
+        foreach (var (title, match) in browse)
+        {
+            var items = available.Where(match).ToList();
+            if (items.Count > 0)
+            {
+                AvailableSections.Add(new AddonSectionViewModel(title, items, this));
+            }
+        }
         UpdateCount = Items.Count(i => !i.IsHidden && i.NeedsUpdate);
         var installed = Items.Count(i => !i.Source.Library && AddonDependencies.IsInstalled(i.State));
         Summary = IsChecking ? "Checking GitHub for Updates"
