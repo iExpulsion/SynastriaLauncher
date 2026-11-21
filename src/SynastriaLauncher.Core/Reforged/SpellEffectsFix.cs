@@ -45,7 +45,8 @@ public static class SpellEffectsFix
     public static string DbcPath(string table) => $"DBFilesClient\\{table}.dbc";
 
     private static readonly byte[] Marker = Encoding.ASCII.GetBytes(
-        "Made by the Synastria Launcher from Project Reforged's patch-P.mpq. The launcher rebuilds or removes it as needed.\r\n");
+        "Made by the Synastria Launcher from Project Reforged's patch-P.mpq. The launcher rebuilds or removes it as needed.\r\n"
+        + "Fix version 1\r\n");
 
     // Spell.dbc's two visual fields.
     public static readonly int[] SpellVisualFields = [131, 132];
@@ -148,36 +149,47 @@ public static class SpellEffectsFix
             : MpqWriter.Write(fixedTables.Select(t => (DbcPath(t.Key), t.Value.Write())).Append((MarkerName, Marker)).ToList());
     }
 
-    public static bool IsOurs(string path)
+    // The launcher's marker file in a patch-Z.mpq, or null when it isn't the launcher's.
+    private static byte[]? ReadMarker(string path)
     {
-        var ours = false;
+        byte[]? marker = null;
         try
         {
             using var archive = new MpqArchive(path);
-            ours = archive.Contains(MarkerName);
+            marker = archive.Read(MarkerName);
         }
         catch (Exception e) when (e is InvalidDataException or EndOfStreamException or ArgumentException)
         {
-            ours = false;
+            marker = null;
         }
-        return ours;
+        return marker;
     }
 
+    public static bool IsOurs(string path) => ReadMarker(path) is not null;
+
+    private static DateTime WrittenUtc(string path) =>
+        (new FileInfo(path).ResolveLinkTarget(returnFinalTarget: true) as FileInfo ?? new FileInfo(path)).LastWriteTimeUtc;
+
     // Brings patch-Z.mpq in line with patch-P.mpq: built or rebuilt while Spell Particle Effects is installed and
-    // needs it, removed otherwise. A patch-Z.mpq the launcher didn't make is never touched.
+    // needs it, removed otherwise. A patch-Z.mpq the launcher didn't make is never touched. A fix newer than
+    // patch-P.mpq and made by this version of the launcher is taken as current without rebuilding it.
     public static SpellEffectsFixState Sync(string gameFolder)
     {
         var data = ReforgedService.DataFolder(gameFolder);
         var target = Path.Combine(data, FileName);
+        var source = Path.Combine(data, SourceName);
         var exists = File.Exists(target);
-        var ours = exists && IsOurs(target);
-        var built = File.Exists(Path.Combine(data, SourceName)) && (!exists || ours) ? Build(gameFolder) : null;
+        var marker = exists ? ReadMarker(target) : null;
+        var ours = marker is not null;
+        var hasSource = File.Exists(source);
+        var unchanged = ours && hasSource && marker.AsSpan().SequenceEqual(Marker) && File.GetLastWriteTimeUtc(target) >= WrittenUtc(source);
+        var built = hasSource && !unchanged && (!exists || ours) ? Build(gameFolder) : null;
         SpellEffectsFixState state;
         if (exists && !ours)
         {
             state = SpellEffectsFixState.Blocked;
         }
-        else if (built is not null && ours && File.ReadAllBytes(target).AsSpan().SequenceEqual(built))
+        else if (unchanged || built is not null && ours && File.ReadAllBytes(target).AsSpan().SequenceEqual(built))
         {
             state = SpellEffectsFixState.Current;
         }

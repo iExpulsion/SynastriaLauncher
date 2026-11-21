@@ -165,6 +165,35 @@ public sealed class SpellEffectsFixTests : IDisposable
         Assert.Equal(SpellEffectsFixState.Current, Sync(game));
     }
 
+    // A patch-P.mpq replaced after the fix was made (a Reforged update) gets a rebuilt fix.
+    [Fact]
+    public void SyncRebuildsAfterReforgedChanges()
+    {
+        var game = MakeGame(withReforged: true);
+        Sync(game);
+        var source = Path.Combine(game, "Data", SourceName);
+        var reforged = Reforged();
+        reforged[Kit].Rows.Add(Row(Kit, 13));
+        File.WriteAllBytes(source, MpqWriter.Write(reforged.Select(t => (DbcPath(t.Key), t.Value.Write())).ToList()));
+        File.SetLastWriteTimeUtc(source, DateTime.UtcNow.AddMinutes(1));
+        Assert.Equal(SpellEffectsFixState.Written, Sync(game));
+        using var archive = new MpqArchive(Path.Combine(game, "Data", FileName));
+        Assert.Equal(8, DbcTable.Read(archive.Read(DbcPath(Kit))!).Rows.Count);
+    }
+
+    // A fix made by an older launcher (another marker) is rebuilt even when it's newer than patch-P.mpq.
+    [Fact]
+    public void SyncRebuildsAnOlderFix()
+    {
+        var game = MakeGame(withReforged: true);
+        var path = Path.Combine(game, "Data", FileName);
+        File.WriteAllBytes(path, MpqWriter.Write([(MarkerName, "Fix version 0\r\n"u8.ToArray())]));
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddMinutes(1));
+        Assert.Equal(SpellEffectsFixState.Written, Sync(game));
+        using var archive = new MpqArchive(path);
+        Assert.True(archive.Contains(DbcPath(Kit)));
+    }
+
     // Once patch-P.mpq is gone, the launcher's patch-Z.mpq goes too.
     [Fact]
     public void SyncRemovesTheFixWithReforged()

@@ -120,9 +120,9 @@ public sealed partial class MainViewModel : ObservableObject
         await SyncSpellEffectsFixAsync();
     }
 
-    // Catches up with Reforged updates made outside the launcher. While the game runs the file is in use, so this
-    // waits for the next start.
-    private async Task SyncSpellEffectsFixAsync()
+    // Catches up with Reforged changes made outside the launcher, at launcher start and before the game starts. While
+    // the game runs the file is in use, so this waits.
+    public async Task SyncSpellEffectsFixAsync()
     {
         if (GameFolder is { } game && !GameProcess.IsRunning())
         {
