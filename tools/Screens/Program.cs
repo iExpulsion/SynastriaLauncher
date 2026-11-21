@@ -82,6 +82,8 @@ if (args.Length > 1 && args[1] == "--readme")
 {
     model.Page = LauncherPage.Addons;
     Pump(TimeSpan.FromSeconds(5));
+    model.LauncherUpdate = null;
+    model.LauncherUpdateStatus = "Up to Date";
     string[] toInstall = ["SynScoots/ScootsCraft", "SynScoots/ScootsLibOptions", "RedeemedRiku/LootPop", "Sablinova-WoW/Soul-Forge",
         "RosemyneH/TheJournal", "speedyrulz/AttuneNext", "SynScoots/MehTrajectory", "RosemyneH/ResourceBankViewer",
         "SynScoots/ScootsRares", "SynScoots/ScootsProgressBar"];

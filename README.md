@@ -78,7 +78,7 @@ A list of addons, each with a short description: those made by Synastria players
 ElvUI, WeakAuras and the damage meters. Install one with a click, and the launcher keeps it up to date. Anything an addon needs, such as a shared library, is installed along with it. The
 list itself is kept up to date too, so new addons show up without a launcher update.
 
-![Available to Install: addon cards with their authors, descriptions and Install buttons; Scoots Craft also installs Scoots Options Library](docs/images/addons-available.png)
+![From Synastria Players: addon cards with their authors, descriptions and Install buttons; Scoots Craft also installs Scoots Options Library](docs/images/addons-available.png)
 
 - **Add your own:** press **Add Addon** and type any GitHub addon as `owner/repo`, or paste its link.
 - **Update All** updates everything at once. Press **Check for Updates** to look again.
