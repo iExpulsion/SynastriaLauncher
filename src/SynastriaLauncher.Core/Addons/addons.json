@@ -1,7 +1,59 @@
 {
-  "revision": 6,
+  "revision": 7,
   "minLauncher": "0.1.0",
   "addons": [
+    {
+      "repo": "bkader/Skada-WoTLK",
+      "name": "Skada",
+      "folders": ["Skada", "SkadaImprovement", "SkadaStorage"],
+      "toc": "Skada/Skada.toc",
+      "description": "A damage and healing meter with per-spell breakdowns for every fight."
+    },
+    {
+      "repo": "Bunny67/Details-WotLK",
+      "name": "Details! Damage Meter",
+      "folders": ["Details", "Details_3DModelsPaths", "Details_ChartViewer", "Details_DataStorage", "Details_DeathGraphs",
+        "Details_EncounterDetails", "Details_SunderCount", "Details_TimeLine", "Details_TinyThreat"],
+      "toc": "Details/Details.toc",
+      "description": "A damage, healing and threat meter with charts, death logs and encounter breakdowns."
+    },
+    {
+      "repo": "Bunny67/WeakAuras-WotLK",
+      "name": "WeakAuras",
+      "folders": ["WeakAuras", "WeakAurasArchive", "WeakAurasModelPaths", "WeakAurasOptions"],
+      "toc": "WeakAuras/WeakAuras.toc",
+      "description": "Custom on-screen alerts and bars for buffs, debuffs, cooldowns and procs."
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI",
+      "name": "ElvUI",
+      "folders": ["ElvUI", "ElvUI_OptionsUI"],
+      "toc": "ElvUI/ElvUI.toc",
+      "description": "A full interface replacement: unit frames, action bars, bags, chat and more, all movable."
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI_AddOnSkins",
+      "name": "ElvUI AddOnSkins",
+      "folders": ["ElvUI_AddOnSkins"],
+      "toc": "ElvUI_AddOnSkins/ElvUI_AddOnSkins.toc",
+      "description": "Restyles many popular addons to match ElvUI.",
+      "requires": ["ElvUI-WotLK/ElvUI"]
+    },
+    {
+      "repo": "ElvUI-WotLK/ElvUI_Enhanced",
+      "name": "ElvUI Enhanced",
+      "folders": ["ElvUI_Enhanced"],
+      "toc": "ElvUI_Enhanced/ElvUI_Enhanced.toc",
+      "description": "Extras for ElvUI: a fuller character window, death recap, minimap button bar, quest levels and more.",
+      "requires": ["ElvUI-WotLK/ElvUI"]
+    },
+    {
+      "repo": "iExpulsion/AddonTraffic",
+      "name": "AddonTraffic",
+      "folders": ["!AddonTraffic"],
+      "toc": "!AddonTraffic/!AddonTraffic.toc",
+      "description": "Shows which addons send messages, how many a second and minute, and what was sent before a chat mute."
+    },
     {
       "repo": "iExpulsion/InstanceGPS",
       "name": "InstanceGPS",
@@ -47,13 +99,6 @@
       "description": "Cleaner replacements for Synastria's own windows, plus your friends' attunes."
     },
     {
-      "repo": "iExpulsion/AddonTraffic",
-      "name": "AddonTraffic",
-      "folders": ["!AddonTraffic"],
-      "toc": "!AddonTraffic/!AddonTraffic.toc",
-      "description": "Shows which addons send messages, how many a second and minute, and what was sent before a chat mute."
-    },
-    {
       "repo": "RedeemedRiku/LootPop",
       "name": "LootPop",
       "folders": ["LootPop"],
@@ -68,18 +113,18 @@
       "description": "An all-in-one bag, bank and inventory manager."
     },
     {
+      "repo": "RosemyneH/ResourceBankViewer",
+      "name": "ResourceBankViewer",
+      "folders": ["ResourceBankViewer"],
+      "toc": "ResourceBankViewer/ResourceBankViewer.toc",
+      "description": "A movable window for browsing your Resource Bank."
+    },
+    {
       "repo": "RosemyneH/TheJournal",
       "name": "The Journal",
       "folders": ["TheJournal"],
       "toc": "src/TheJournal/TheJournal.toc",
       "description": "Dungeons, raids, attunements, friends and loot in one journal."
-    },
-    {
-      "repo": "scoufman/synastria_ah_buyer",
-      "name": "Synastria AH Buyer",
-      "folders": ["synastria_ah_buyer"],
-      "toc": "synastria_ah_buyer/synastria_ah_buyer.toc",
-      "description": "Instant Buy and Bid buttons on every Auction House row."
     },
     {
       "repo": "Sablinova-WoW/Gear-Mover",
@@ -89,56 +134,25 @@
       "description": "Deposits and withdraws gear from your banks for you."
     },
     {
-      "repo": "bkader/Skada-WoTLK",
-      "name": "Skada",
-      "folders": ["Skada", "SkadaImprovement", "SkadaStorage"],
-      "toc": "Skada/Skada.toc",
-      "description": "A damage and healing meter with per-spell breakdowns for every fight."
-    },
-    {
-      "repo": "Bunny67/Details-WotLK",
-      "name": "Details! Damage Meter",
-      "folders": ["Details", "Details_3DModelsPaths", "Details_ChartViewer", "Details_DataStorage", "Details_DeathGraphs",
-        "Details_EncounterDetails", "Details_SunderCount", "Details_TimeLine", "Details_TinyThreat"],
-      "toc": "Details/Details.toc",
-      "description": "A damage, healing and threat meter with charts, death logs and encounter breakdowns."
-    },
-    {
-      "repo": "Bunny67/WeakAuras-WotLK",
-      "name": "WeakAuras",
-      "folders": ["WeakAuras", "WeakAurasArchive", "WeakAurasModelPaths", "WeakAurasOptions"],
-      "toc": "WeakAuras/WeakAuras.toc",
-      "description": "Custom on-screen alerts and bars for buffs, debuffs, cooldowns and procs."
-    },
-    {
-      "repo": "ElvUI-WotLK/ElvUI",
-      "name": "ElvUI",
-      "folders": ["ElvUI", "ElvUI_OptionsUI"],
-      "toc": "ElvUI/ElvUI.toc",
-      "description": "A full interface replacement: unit frames, action bars, bags, chat and more, all movable."
-    },
-    {
-      "repo": "ElvUI-WotLK/ElvUI_Enhanced",
-      "name": "ElvUI Enhanced",
-      "folders": ["ElvUI_Enhanced"],
-      "toc": "ElvUI_Enhanced/ElvUI_Enhanced.toc",
-      "description": "Extras for ElvUI: a fuller character window, death recap, minimap button bar, quest levels and more.",
-      "requires": ["ElvUI-WotLK/ElvUI"]
-    },
-    {
-      "repo": "ElvUI-WotLK/ElvUI_AddOnSkins",
-      "name": "ElvUI AddOnSkins",
-      "folders": ["ElvUI_AddOnSkins"],
-      "toc": "ElvUI_AddOnSkins/ElvUI_AddOnSkins.toc",
-      "description": "Restyles many popular addons to match ElvUI.",
-      "requires": ["ElvUI-WotLK/ElvUI"]
-    },
-    {
       "repo": "Sablinova-WoW/Soul-Forge",
       "name": "Soul Forge",
       "folders": ["Soul Forge"],
       "toc": "Soul Forge.toc",
       "description": "Boss and rare kill counts, account titles and shared leaderboards."
+    },
+    {
+      "repo": "scoufman/synastria_ah_buyer",
+      "name": "Synastria AH Buyer",
+      "folders": ["synastria_ah_buyer"],
+      "toc": "synastria_ah_buyer/synastria_ah_buyer.toc",
+      "description": "Instant Buy and Bid buttons on every Auction House row."
+    },
+    {
+      "repo": "speedyrulz/AttuneNext",
+      "name": "AttuneNext",
+      "folders": ["AttuneNext"],
+      "toc": "AttuneNext.toc",
+      "description": "Recommends what to attune next, by expansion, content, zone, currency or profession."
     },
     {
       "repo": "suprepupre/LuaBoost",
@@ -148,12 +162,42 @@
       "description": "Garbage collection control and quieter loading screens; pairs with wow-optimize."
     },
     {
+      "repo": "SynScoots/MehTrajectory",
+      "name": "Meh Trajectory",
+      "folders": ["MehTrajectory"],
+      "toc": "src/MehTrajectory/MehTrajectory.toc",
+      "description": "Draws a line on the world map showing where you're heading."
+    },
+    {
       "repo": "SynScoots/ScootsCraft",
       "name": "Scoots Craft",
       "folders": ["ScootsCraft"],
       "toc": "src/ScootsCraft/ScootsCraft.toc",
       "description": "A complete overhaul of the professions window.",
       "requires": ["SynScoots/ScootsLibOptions"]
+    },
+    {
+      "repo": "SynScoots/ScootsLibOptions",
+      "name": "Scoots Options Library",
+      "folders": ["ScootsLibOptions"],
+      "toc": "src/ScootsLibOptions/ScootsLibOptions.toc",
+      "description": "Shared options code that some Scoots addons need.",
+      "library": true
+    },
+    {
+      "repo": "SynScoots/ScootsProgressBar",
+      "name": "Scoots Progress Bar",
+      "folders": ["ScootsProgressBar"],
+      "toc": "src/ScootsProgressBar/ScootsProgressBar.toc",
+      "description": "A configurable display for a range of progress statistics.",
+      "requires": ["SynScoots/ScootsLibOptions"]
+    },
+    {
+      "repo": "SynScoots/ScootsRares",
+      "name": "Scoots Rares",
+      "folders": ["ScootsRares"],
+      "toc": "src/ScootsRares/ScootsRares.toc",
+      "description": "Puts a chat link near a rare that runs .findnpc for you."
     },
     {
       "repo": "SynScoots/ScootsSpeedrun",
@@ -190,50 +234,6 @@
       "folders": ["ScootsWarpMap"],
       "toc": "src/ScootsWarpMap/ScootsWarpMap.toc",
       "description": "An alternative window for warping."
-    },
-    {
-      "repo": "speedyrulz/AttuneNext",
-      "name": "AttuneNext",
-      "folders": ["AttuneNext"],
-      "toc": "AttuneNext.toc",
-      "description": "Recommends what to attune next, by expansion, content, zone, currency or profession."
-    },
-    {
-      "repo": "RosemyneH/ResourceBankViewer",
-      "name": "ResourceBankViewer",
-      "folders": ["ResourceBankViewer"],
-      "toc": "ResourceBankViewer/ResourceBankViewer.toc",
-      "description": "A movable window for browsing your Resource Bank."
-    },
-    {
-      "repo": "SynScoots/MehTrajectory",
-      "name": "Meh Trajectory",
-      "folders": ["MehTrajectory"],
-      "toc": "src/MehTrajectory/MehTrajectory.toc",
-      "description": "Draws a line on the world map showing where you're heading."
-    },
-    {
-      "repo": "SynScoots/ScootsProgressBar",
-      "name": "Scoots Progress Bar",
-      "folders": ["ScootsProgressBar"],
-      "toc": "src/ScootsProgressBar/ScootsProgressBar.toc",
-      "description": "A configurable display for a range of progress statistics.",
-      "requires": ["SynScoots/ScootsLibOptions"]
-    },
-    {
-      "repo": "SynScoots/ScootsRares",
-      "name": "Scoots Rares",
-      "folders": ["ScootsRares"],
-      "toc": "src/ScootsRares/ScootsRares.toc",
-      "description": "Puts a chat link near a rare that runs .findnpc for you."
-    },
-    {
-      "repo": "SynScoots/ScootsLibOptions",
-      "name": "Scoots Options Library",
-      "folders": ["ScootsLibOptions"],
-      "toc": "src/ScootsLibOptions/ScootsLibOptions.toc",
-      "description": "Shared options code that some Scoots addons need.",
-      "library": true
     }
   ]
 }

@@ -71,6 +71,9 @@ public sealed record AddonCatalog(
         }
         problems.AddRange(Addons.GroupBy(a => a.Repo, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
             .Select(g => $"{g.Key} is listed twice"));
+        problems.AddRange(Addons.SelectMany(a => a.Folders.Distinct(StringComparer.OrdinalIgnoreCase).Select(f => (Folder: f, a.Repo)))
+            .GroupBy(x => x.Folder, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
+            .Select(g => $"{g.Key} is claimed by {string.Join(" and ", g.Select(x => x.Repo))}"));
         problems.AddRange(Addons.Where(a => InCycle(a.Repo)).Select(a => $"{a.Repo}: its requirements lead back to itself"));
         return problems;
     }

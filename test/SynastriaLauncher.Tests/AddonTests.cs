@@ -233,13 +233,23 @@ public sealed class AddonTests : IDisposable
         Assert.NotEmpty(Catalog(2, null, Good with { Folders = ["Good."] }).Problems());
     }
 
+    // Two addons can't claim the same folder (in any letter case), since installing one would overwrite the other.
+    [Fact]
+    public void SharedFoldersAreReported()
+    {
+        var a = Good with { Repo = "x/A", Folders = ["Shared", "OnlyA"] };
+        var b = Good with { Repo = "x/B", Folders = ["shared"] };
+        Assert.NotEmpty(Catalog(2, null, a, b).Problems());
+        Assert.Empty(Catalog(2, null, a, b with { Folders = ["OnlyB"] }).Problems());
+    }
+
     // Addons that require each other (directly or through a third) are refused, since installing one would never end.
     [Fact]
     public void RequirementCyclesAreReported()
     {
-        var a = Good with { Repo = "x/A", Requires = ["x/B"] };
-        var b = Good with { Repo = "x/B", Requires = ["x/C"] };
-        var c = Good with { Repo = "x/C", Requires = ["x/A"] };
+        var a = Good with { Repo = "x/A", Folders = ["A"], Requires = ["x/B"] };
+        var b = Good with { Repo = "x/B", Folders = ["B"], Requires = ["x/C"] };
+        var c = Good with { Repo = "x/C", Folders = ["C"], Requires = ["x/A"] };
         Assert.NotEmpty(Catalog(2, null, a, b, c).Problems());
         Assert.Empty(Catalog(2, null, a, b with { Requires = null }).Problems());
     }
