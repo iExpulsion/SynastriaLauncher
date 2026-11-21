@@ -28,8 +28,9 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
         nameof(ShowState), nameof(IsWorking))]
     public partial bool IsBusy { get; set; }
 
-    // Up to Date and Not Installed go without saying; only states that need a look get a pill.
-    public bool ShowState => IsBusy || State is not (AddonState.NotInstalled or AddonState.UpToDate);
+    // Up to Date and Not Installed go without saying, and an update has its Update button; only states that need a
+    // look get a pill.
+    public bool ShowState => IsBusy || State is not (AddonState.NotInstalled or AddonState.UpToDate) && !NeedsUpdate;
     public bool IsWorking => IsBusy || State is null;
 
     // Under the description: the libraries that come with it, or what an install brings along.
@@ -47,7 +48,7 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     // Held: the player keeps their own version; Update All and the update count pass it by.
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HoldLabel), nameof(NeedsUpdate), nameof(StateLabel), nameof(HasPrimary), nameof(IsAccent),
-        nameof(IsInfo), nameof(StateHint), nameof(CanUpdateAnyway), nameof(Versions))]
+        nameof(IsInfo), nameof(StateHint), nameof(CanUpdateAnyway), nameof(Versions), nameof(ShowState))]
     public partial bool IsHeld { get; set; }
 
     public AddonState? State => Check?.State;

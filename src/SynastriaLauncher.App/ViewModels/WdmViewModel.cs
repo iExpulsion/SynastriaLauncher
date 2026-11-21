@@ -32,8 +32,9 @@ public sealed partial class WdmPartViewModel(WdmPart part, WdmViewModel owner) :
     private WdmState? State => Status?.State;
     public bool IsLocked => State == WdmState.InReforged;
     public string LockNote => IsLocked ? "Already in Project Reforged's Maps and Loading Screens, with larger art" : "";
-    // Installed goes without saying next to its Uninstall button, like on Mods.
-    public bool ShowState => IsBusy || State is not (null or WdmState.NotInstalled or WdmState.Installed);
+    // Installed goes without saying next to its Uninstall button, like on Mods, and an update next to Update.
+    public bool ShowState => IsBusy || State is not (null or WdmState.NotInstalled or WdmState.Installed)
+        && !(State == WdmState.UpdateAvailable && HasPrimary);
     public bool ShowUninstall => CanUninstall && !HasPrimary;
     public bool IsGood => State == WdmState.Installed;
     public bool IsAccent => State is WdmState.UpdateAvailable or WdmState.VersionUnknown;
