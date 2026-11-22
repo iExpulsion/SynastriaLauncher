@@ -50,6 +50,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         Warnings = string.Join("   ", main.Mods.Items
             .Where(m => !m.Mod.FollowsReforged && m.State is not (ModState.NotInstalled or ModState.Disabled) && m.HasRequirement)
             .Select(m => $"{m.Name}: {m.Requirement}")
+            .Prepend(main.PatcherDllWarning)
             .Append(main.Reforged.InstalledWarning.Length > 0 ? $"Project Reforged's {main.Reforged.InstalledWarning}" : "")
             .Append(main.GameFolder is { } game && WdmService.ReforgedConflicts(game, WdmCatalog.Locale(game)).Count > 0
                 ? "WDM's map patches replace Project Reforged's maps; uninstall them on WoW Dungeon Maps" : "")
@@ -74,7 +75,20 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         {
             await main.SyncGameFilesAsync();
             await main.Mods.SyncReforgedFixesAsync();
-            GameProcess.Start(exe.ExePath);
+            Refresh();
+            var start = main.PatcherDllWarning.Length == 0 || await main.Dialogs.ConfirmAsync("Start Without Patches?",
+                (main.PatcherDllBlocked
+                    ? "Your antivirus blocked SynastriaLauncher.dll, the launcher's own patcher, so the game would start with none of your patches. "
+                    : "SynastriaLauncher.dll, the launcher's own patcher, is missing from the game folder (an antivirus may have removed it), so the game would start with none of your patches. ")
+                + "If you use Interface Edit, the game may then say your interface files are corrupted. "
+                + (main.PatcherDllBlocked
+                    ? "If you trust it, restore it from Windows Security's Protection History (or your antivirus's quarantine) and allow it."
+                    : "Press Apply Changes on Patches to put it back."),
+                "Start Anyway");
+            if (start)
+            {
+                GameProcess.Start(exe.ExePath);
+            }
         }
         else
         {

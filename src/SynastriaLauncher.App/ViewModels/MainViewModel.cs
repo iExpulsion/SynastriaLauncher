@@ -134,11 +134,20 @@ public sealed partial class MainViewModel : ObservableObject
         {
             try
             {
-                await Task.Run(() =>
-                {
-                    new GameExe(game).RefreshPatcherDll(PatcherConfig.EmbeddedDll());
-                    Core.Reforged.SpellEffectsFix.Sync(game);
-                });
+                await Task.Run(() => new GameExe(game).RefreshPatcherDll(PatcherConfig.EmbeddedDll()));
+                PatcherDllBlocked = false;
+            }
+            catch (IOException e) when (IsAntivirusBlock(e))
+            {
+                PatcherDllBlocked = true;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
+            {
+                App.LogCrash(e);
+            }
+            try
+            {
+                await Task.Run(() => Core.Reforged.SpellEffectsFix.Sync(game));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
             {
@@ -146,6 +155,20 @@ public sealed partial class MainViewModel : ObservableObject
             }
         }
     }
+
+    // The antivirus refused SynastriaLauncher.dll the last time the launcher put it back.
+    public bool PatcherDllBlocked { get; private set; }
+
+    // Patches are on but SynastriaLauncher.dll, which loads them, isn't in the game folder; empty when all is well.
+    public string PatcherDllWarning => Exe is not { PatcherDllMissing: true } ? ""
+        : PatcherDllBlocked ? "Your antivirus blocks SynastriaLauncher.dll, so no patches load"
+        : "SynastriaLauncher.dll is missing, so no patches load; press Apply Changes on Patches";
+
+    public const string PatcherDllAntivirusNote =
+        "The file it blocked is SynastriaLauncher.dll, the launcher's own patcher, which applies your patches as the game "
+        + "starts. Patchers like it are sometimes flagged because they change the game while it runs. If you trust it, "
+        + "restore it from Windows Security's Protection History (or your antivirus's quarantine) and allow it, then press "
+        + "Apply Changes on Patches.";
 
     [RelayCommand]
     private async Task ChooseGameFolderAsync()
@@ -274,7 +297,7 @@ public sealed partial class MainViewModel : ObservableObject
     private static bool IsAntivirusBlock(IOException e) => (e.HResult & 0xFFFF) is 225 or 226;
 
     // Writes to the game folder can fail without admin rights (under Program Files) or while the game runs.
-    public async Task<bool> RunGameWriteAsync(string what, Func<Task> write)
+    public async Task<bool> RunGameWriteAsync(string what, Func<Task> write, string? antivirusNote = null)
     {
         var done = false;
         if (GameProcess.IsRunning(GameFolder))
@@ -306,9 +329,10 @@ public sealed partial class MainViewModel : ObservableObject
             catch (IOException e) when (IsAntivirusBlock(e))
             {
                 await Dialogs.AlertAsync("Blocked by Your Antivirus",
-                    $"Windows Security (or your antivirus) flagged a download needed to {what} and blocked it, so nothing was installed. "
-                    + "The launcher doesn't work around antivirus blocks. Mods that hook into the game are sometimes flagged even when "
-                    + "they're harmless, but only you can decide to trust one: its home page has its author's notes.");
+                    $"Windows Security (or your antivirus) flagged a file the launcher needed to {what} and blocked it. "
+                    + "The launcher doesn't work around antivirus blocks. "
+                    + (antivirusNote ?? "Mods that hook into the game are sometimes flagged even when they're harmless, but only "
+                        + "you can decide to trust one: its home page has its author's notes."));
             }
             catch (Exception e) when (e is IOException or InvalidDataException or HttpRequestException)
             {

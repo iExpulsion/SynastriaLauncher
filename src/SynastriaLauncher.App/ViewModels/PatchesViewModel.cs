@@ -356,7 +356,7 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
         {
             result = exe.ApplyMemory(config, on.Contains(PatchIds.DllLoader), folder, PatcherConfig.EmbeddedDll());
             return Task.CompletedTask;
-        });
+        }, MainViewModel.PatcherDllAntivirusNote);
         if (result is { Result.Failed.Count: > 0 })
         {
             await main.Dialogs.AlertAsync("Can't Apply These Patches",

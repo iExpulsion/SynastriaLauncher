@@ -100,11 +100,16 @@ public sealed class GameExe(string gameFolder)
     public bool HasPatcherDll(byte[]? dll) =>
         dll is not null && File.Exists(DllPath) && File.ReadAllBytes(DllPath).AsSpan().SequenceEqual(dll);
 
-    // Brings an installed SynastriaLauncher.dll up to this launcher's build. It carries the launcher's version, so each
-    // launcher update brings a new one; its settings file stays as it is. Returns whether it was written.
+    // Patches are set up to load in memory, but SynastriaLauncher.dll is gone (an antivirus may have removed it), so
+    // the game starts with none of them.
+    public bool PatcherDllMissing => !File.Exists(DllPath) && ReadConfig() is { On.Count: > 0 };
+
+    // Brings SynastriaLauncher.dll up to this launcher's build, and puts it back if it went missing while its settings
+    // file is there. It carries the launcher's version, so each launcher update brings a new one; its settings file
+    // stays as it is. Returns whether it was written.
     public bool RefreshPatcherDll(byte[]? dll)
     {
-        var stale = dll is not null && File.Exists(DllPath) && !HasPatcherDll(dll);
+        var stale = dll is not null && (File.Exists(DllPath) || File.Exists(IniPath)) && !HasPatcherDll(dll);
         if (stale)
         {
             WriteAtomic(DllPath, dll!);
