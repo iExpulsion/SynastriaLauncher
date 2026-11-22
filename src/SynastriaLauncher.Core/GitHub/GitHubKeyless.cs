@@ -7,6 +7,8 @@ namespace SynastriaLauncher.Core.GitHub;
 
 public sealed record ReleaseZip(string Url, bool FromRelease);
 
+public sealed record ReleaseAsset(string Name, string Url);
+
 // Reads GitHub without the REST API (and its 60-requests-an-hour limit for clients without a token): Git's smart
 // HTTP ref listing, the releases/latest redirect, the release assets fragment, raw files and Atom feeds. The API
 // is used only as a fallback for one release's assets and when a repo is added by hand.
@@ -61,22 +63,23 @@ public sealed partial class GitHubKeyless : IDisposable
     [GeneratedRegex("href=\"(/[^\"]+/releases/download/[^\"]+)\"", RegexOptions.IgnoreCase)]
     private static partial Regex AssetLink();
 
-    public Task<string?> GetReleaseZipUrlAsync(string repo, string tag, CancellationToken cancel = default) =>
-        GetReleaseAssetUrlAsync(repo, tag, name => name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase), cancel);
-
-    // The release's first asset whose file name matches. The assets fragment is undocumented, so when it doesn't
-    // look like a release page at all, the API is asked instead. Null when no asset matches.
+    // The release's first asset whose file name matches; null when none does.
     public async Task<string?> GetReleaseAssetUrlAsync(string repo, string tag, Func<string, bool> matches,
-        CancellationToken cancel = default)
+        CancellationToken cancel = default) =>
+        (await GetReleaseAssetsAsync(repo, tag, cancel)).FirstOrDefault(a => matches(a.Name))?.Url;
+
+    // The release's downloads (not GitHub's own source archives), in the order the release lists them. The assets
+    // fragment is undocumented, so when it doesn't look like a release page at all, the API is asked instead.
+    public async Task<IReadOnlyList<ReleaseAsset>> GetReleaseAssetsAsync(string repo, string tag, CancellationToken cancel = default)
     {
         var html = await GetTextOrNullAsync(
             $"https://github.com/{repo}/releases/expanded_assets/{Uri.EscapeDataString(tag)}", cancel) ?? "";
-        var link = AssetLink().Matches(html)
+        var links = AssetLink().Matches(html)
             .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value))
-            .FirstOrDefault(href => matches(Uri.UnescapeDataString(href[(href.LastIndexOf('/') + 1)..])));
-        return link is not null ? "https://github.com" + link
-            : html.Contains("Source code", StringComparison.Ordinal) ? null
-            : await GetReleaseAssetFromApiAsync(repo, tag, matches, cancel);
+            .Select(href => new ReleaseAsset(Uri.UnescapeDataString(href[(href.LastIndexOf('/') + 1)..]), "https://github.com" + href))
+            .ToList();
+        return links.Count > 0 || html.Contains("Source code", StringComparison.Ordinal) ? links
+            : await GetReleaseAssetsFromApiAsync(repo, tag, cancel);
     }
 
     internal sealed record ApiAsset([property: JsonPropertyName("name")] string Name,
@@ -84,16 +87,19 @@ public sealed partial class GitHubKeyless : IDisposable
 
     internal sealed record ApiRelease([property: JsonPropertyName("assets")] List<ApiAsset> Assets);
 
-    private async Task<string?> GetReleaseAssetFromApiAsync(string repo, string tag, Func<string, bool> matches,
-        CancellationToken cancel)
+    private async Task<IReadOnlyList<ReleaseAsset>> GetReleaseAssetsFromApiAsync(string repo, string tag, CancellationToken cancel)
     {
         using var response = await _http.GetAsync($"https://api.github.com/repos/{repo}/releases/tags/{Uri.EscapeDataString(tag)}", cancel);
         response.EnsureSuccessStatusCode();
         var release = await response.Content.ReadFromJsonAsync(CoreJson.Default.ApiRelease, cancel);
-        return release?.Assets.FirstOrDefault(a => matches(a.Name))?.Url;
+        return release?.Assets.Select(a => new ReleaseAsset(a.Name, a.Url)).ToList() ?? [];
     }
 
     public static string SourceZipUrl(string repo, string sha) => $"https://codeload.github.com/{repo}/zip/{sha}";
+
+    // GitHub's source archive of a tag, which every release has.
+    public static string TagSourceZipUrl(string repo, string tag) =>
+        $"https://codeload.github.com/{repo}/zip/refs/tags/{Uri.EscapeDataString(tag)}";
 
     public Task<string?> GetRawFileAsync(string repo, string gitRef, string path, CancellationToken cancel = default)
     {

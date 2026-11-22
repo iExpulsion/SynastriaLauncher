@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using SynastriaLauncher.Core.GitHub;
 
 namespace SynastriaLauncher.Core.Addons;
@@ -8,21 +7,24 @@ public sealed class LinkedFolderException(string folder)
 
 public static class AddonInstaller
 {
-    // Installs the latest release zip (preferred: packaged releases often bundle libraries the source lacks), or
-    // the source at the default branch's head when the release has no zip.
+    // A repo with releases installs its latest one: the packaged download when there is one (it often bundles
+    // libraries the source lacks), else the release's source. A repo without releases, or one the player switched to
+    // Latest Commits, installs the default branch's head.
     public static async Task<InstallRecord> InstallAsync(GitHubKeyless github, AddonCheck check, string addOnsPath,
         bool keepBackup, CancellationToken cancel = default)
     {
         var repo = check.Source.Repo;
-        var releaseZip = check.ReleaseTag is null ? null : await github.GetReleaseZipUrlAsync(repo, check.ReleaseTag, cancel);
-        var url = releaseZip ?? GitHubKeyless.SourceZipUrl(repo, check.HeadSha ?? check.DefaultBranch ?? "HEAD");
+        var tag = check.LatestCommits ? null : check.ReleaseTag;
+        var asset = tag is null ? null : Archives.Best(await github.GetReleaseAssetsAsync(repo, tag, cancel), a => a.Name);
+        var url = asset?.Url ?? (tag is not null ? GitHubKeyless.TagSourceZipUrl(repo, tag)
+            : GitHubKeyless.SourceZipUrl(repo, check.HeadSha ?? check.DefaultBranch ?? "HEAD"));
         var temp = Directory.CreateTempSubdirectory("launcher-addon-").FullName;
         try
         {
-            var zip = Path.Combine(temp, "download.zip");
-            await github.DownloadAsync(url, zip, cancel);
-            var folders = InstallFromZip(zip, addOnsPath, keepBackup);
-            return new InstallRecord(releaseZip is null ? null : check.ReleaseTag, check.HeadSha, folders, DateTime.Now,
+            var download = Path.Combine(temp, "download");
+            await github.DownloadAsync(url, download, cancel);
+            var folders = InstallFromArchive(download, addOnsPath, keepBackup);
+            return new InstallRecord(tag, tag is null ? check.HeadSha : null, folders, DateTime.Now,
                 InstalledFiles.Stamp(addOnsPath, folders));
         }
         finally
@@ -34,12 +36,12 @@ public static class AddonInstaller
     // Every folder holding a .toc (outside Libs) is an addon, named after its folder, or after its shortest .toc
     // when it sits at the archive root. Only the shallowest such folders count (siblings like Foo and Foo_Options
     // both do; Foo/legacy/Old.toc doesn't). Returns the installed folder names.
-    public static IReadOnlyList<string> InstallFromZip(string zipPath, string addOnsPath, bool keepBackup)
+    public static IReadOnlyList<string> InstallFromArchive(string archivePath, string addOnsPath, bool keepBackup)
     {
         var temp = Directory.CreateTempSubdirectory("launcher-extract-").FullName;
         try
         {
-            ZipFile.ExtractToDirectory(zipPath, temp);
+            Archives.ExtractTo(archivePath, temp);
             var top = Directory.GetFileSystemEntries(temp);
             var root = top.Length == 1 && Directory.Exists(top[0]) ? top[0] : temp;
             var groups = Directory.EnumerateFiles(temp, "*.toc", SearchOption.AllDirectories)

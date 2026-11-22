@@ -82,6 +82,8 @@ list itself is kept up to date too, so new addons show up without a launcher upd
 
 - **Add your own:** press **Add Addon** and type any GitHub addon as `owner/repo`, or paste its link.
 - **Update All** updates everything at once. Press **Check for Updates** to look again.
+- **Releases first:** an addon whose author publishes releases updates when a new release is out. To try every new
+  commit before it's released, choose **Use Latest Commits** in its **…** menu.
 - **Your changes are safe:** if you've edited an addon's files, the launcher asks before updating over them. To keep
   your own version for good, choose **Hold Updates** in its **…** menu.
 - **Hide** addons you'll never want from the list, and fold away any section you don't need.

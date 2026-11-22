@@ -23,13 +23,17 @@ public sealed record AddonCheck(
     string? DefaultBranch = null,
     string? LocalVersion = null,
     string? Error = null,
-    IReadOnlyList<string>? ChangedFiles = null)
+    IReadOnlyList<string>? ChangedFiles = null,
+    bool LatestCommits = false)
 {
     public bool HasLocalEdits => ChangedFiles is { Count: > 0 };
 
     public bool CanInstall => State is AddonState.NotInstalled or AddonState.UpdateAvailable or AddonState.Unknown;
 
-    public string LatestLabel => ReleaseTag ?? (HeadSha is null ? "" : HeadSha[..7]);
+    // What an install would put in: the release, or the head commit for a repo without releases or on Latest Commits.
+    public bool FollowsRelease => ReleaseTag is not null && !LatestCommits;
+
+    public string LatestLabel => FollowsRelease ? ReleaseTag! : HeadSha is null ? "" : HeadSha[..7];
 }
 
 public static partial class AddonStatus
@@ -43,18 +47,27 @@ public static partial class AddonStatus
         return Version.TryParse(l, out var lv) && Version.TryParse(r, out var rv) ? lv >= rv : l == r;
     }
 
-    // Decides a source's state the way the old updater did: by the recorded release tag, else the recorded commit,
-    // else a differing .toc version, else whether local files are older than the last commit.
+    // What the install record says on its own. Following releases, only a recorded release tag counts, so commits
+    // after a release never show as an update. Following commits, a recorded commit is compared with the head, and a
+    // copy installed from a release is behind it. Null when the record can't tell (none, or one from the other mode).
+    public static bool? RecordSays(InstallRecord? recorded, string? releaseTag, string? headSha, bool latestCommits) =>
+        releaseTag is not null && !latestCommits ? recorded?.Tag is { } tag ? IsCurrent(tag, releaseTag) : null
+        : recorded is { Sha: not null } && headSha is not null ? recorded.Sha == headSha
+        : recorded is { Tag: not null } && headSha is not null ? false
+        : null;
+
+    // Decides a source's state: by the install record, else a differing .toc version (from the release when
+    // following releases), else a matching release .toc, else whether local files are older than the last commit.
     public static AddonState Evaluate(LocalAddon local, InstallRecord? recorded, string? releaseTag, string? headSha,
-        string? remoteTocVersion, DateTimeOffset? lastCommit)
+        string? remoteTocVersion, DateTimeOffset? lastCommit, bool latestCommits = false)
     {
         var tocDiffers = local.TocVersion is not null && remoteTocVersion is not null &&
             VersionKey(local.TocVersion) != VersionKey(remoteTocVersion);
+        var followsRelease = releaseTag is not null && !latestCommits;
         bool? current =
-            releaseTag is not null && recorded?.Tag is not null ? IsCurrent(recorded.Tag, releaseTag)
-            : recorded is { Tag: null, Sha: not null } && headSha is not null ? recorded.Sha == headSha
+            RecordSays(recorded, releaseTag, headSha, latestCommits) is { } said ? said
             : tocDiffers ? IsCurrent(local.TocVersion!, remoteTocVersion!)
-            : releaseTag is not null && local.TocVersion is not null && remoteTocVersion is not null ? true
+            : followsRelease && local.TocVersion is not null && remoteTocVersion is not null ? true
             : lastCommit is not null && local.NewestFile is not null ? local.NewestFile.Value.Date >= lastCommit.Value.LocalDateTime.Date
             : null;
         return !local.Installed ? AddonState.NotInstalled

@@ -128,7 +128,7 @@ public static class WdmService
         {
             foreach (var zip in files)
             {
-                AddonInstaller.InstallFromZip(zip, GameFolder.AddOnsPath(gameFolder), keepBackup);
+                AddonInstaller.InstallFromArchive(zip, GameFolder.AddOnsPath(gameFolder), keepBackup);
             }
         }
     }

@@ -20,6 +20,11 @@ public sealed class LauncherData
     // Addons the player keeps on their own version (local fixes, a pinned release): Update All passes them by.
     public List<string> HeldRepos { get; set; } = [];
 
+    // Addons with releases that the player runs from their latest commits instead (a test or development version).
+    public List<string> LatestCommitRepos { get; set; } = [];
+
+    public bool UsesLatestCommits(string repo) => LatestCommitRepos.Any(r => SameRepo(r, repo));
+
     // Page sections the player folded, as "Page/Section".
     public List<string> CollapsedSections { get; set; } = [];
     public Dictionary<string, InstallRecord> Installed { get; set; } = [];

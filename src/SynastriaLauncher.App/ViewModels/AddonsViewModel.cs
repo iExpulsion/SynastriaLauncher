@@ -20,7 +20,8 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(PrimaryLabel), nameof(HasPrimary), nameof(CanReinstall), nameof(CanRemove),
         nameof(Versions), nameof(NeedsUpdate), nameof(HasUpdate), nameof(IsGood), nameof(IsAccent), nameof(IsInfo), nameof(IsBad),
-        nameof(StateHint), nameof(HasEdits), nameof(EditsHint), nameof(CanUpdateAnyway), nameof(CanHold), nameof(ShowState), nameof(IsWorking))]
+        nameof(StateHint), nameof(HasEdits), nameof(EditsHint), nameof(CanUpdateAnyway), nameof(CanHold), nameof(ShowState), nameof(IsWorking),
+        nameof(CanChooseLatestCommits), nameof(UsesLatestCommits), nameof(LatestCommitsLabel), nameof(LatestCommitsHint))]
     public partial AddonCheck? Check { get; set; }
 
     [ObservableProperty]
@@ -115,6 +116,17 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
 
     [RelayCommand]
     private void ToggleHeld() => owner.ToggleHeld(this);
+
+    // Only repos with releases have a choice; the others always follow their commits.
+    public bool CanChooseLatestCommits => Check is { ReleaseTag: not null } && State is not (AddonState.Linked or null);
+    public bool UsesLatestCommits => Check is { LatestCommits: true };
+    public string LatestCommitsLabel => UsesLatestCommits ? "Use Releases" : "Use Latest Commits";
+    public string LatestCommitsHint => UsesLatestCommits
+        ? "Go back to updating only when a new release is out."
+        : "Update to every new commit, before it's released. Newer, but less tested.";
+
+    [RelayCommand]
+    private Task ToggleLatestCommitsAsync() => owner.ToggleLatestCommitsAsync(this);
 
     [RelayCommand]
     private void OpenPage() => GameProcess.OpenUrl($"https://github.com/{Repo}");
@@ -298,7 +310,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
         if (path is not null)
         {
             var checking = Items.ToList();
-            var checks = await AddonChecker.CheckAllAsync(main.GitHub, checking.Select(i => i.Source), path, main.Data.Installed);
+            var checks = await AddonChecker.CheckAllAsync(main.GitHub, checking.Select(i => i.Source), path, main.Data.Installed,
+                main.Data.UsesLatestCommits);
             foreach (var (item, check) in checking.Zip(checks))
             {
                 item.Check = check;
@@ -310,7 +323,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
 
     private async Task RecheckAsync(AddonItemViewModel item)
     {
-        item.Check = await AddonChecker.CheckAsync(main.GitHub, item.Source, AddOnsPath!, main.Data.Installed.GetValueOrDefault(item.Repo));
+        item.Check = await AddonChecker.CheckAsync(main.GitHub, item.Source, AddOnsPath!, main.Data.Installed.GetValueOrDefault(item.Repo),
+            main.Data.UsesLatestCommits(item.Repo));
         RefreshVisible();
     }
 
@@ -403,6 +417,21 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
         item.IsHeld = !item.IsHeld;
         main.Data.Save();
         RefreshVisible();
+    }
+
+    // Switching back to releases leaves the installed copy alone until the next release is out.
+    public async Task ToggleLatestCommitsAsync(AddonItemViewModel item)
+    {
+        if (main.Data.UsesLatestCommits(item.Repo))
+        {
+            main.Data.LatestCommitRepos.RemoveAll(r => LauncherData.SameRepo(r, item.Repo));
+        }
+        else
+        {
+            main.Data.LatestCommitRepos.Add(item.Repo);
+        }
+        main.Data.Save();
+        await RecheckAsync(item);
     }
 
     public async Task RemoveAsync(AddonItemViewModel item)

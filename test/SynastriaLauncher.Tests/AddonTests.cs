@@ -76,6 +76,64 @@ public sealed class AddonTests : IDisposable
         Assert.Equal(AddonState.UpdateAvailable, AddonStatus.Evaluate(Installed, null, "v1.1", "x", "1.1", null));
     }
 
+    // Following releases, a copy installed from a commit isn't flagged by later commits: the release .toc decides.
+    [Fact]
+    public void ReleasesIgnoreCommits()
+    {
+        var fromCommit = new InstallRecord(null, "abc", ["A"], DateTime.Now);
+        Assert.Equal(AddonState.UpToDate, AddonStatus.Evaluate(Installed, fromCommit, "v1.0", "def", "1.0", null));
+        Assert.Equal(AddonState.UpdateAvailable, AddonStatus.Evaluate(Installed, fromCommit, "v1.1", "def", "1.1", null));
+    }
+
+    // On Latest Commits, a new commit is an update, and a copy installed from a release is behind the head.
+    [Fact]
+    public void LatestCommitsFollowTheHead()
+    {
+        var fromCommit = new InstallRecord(null, "abc", ["A"], DateTime.Now);
+        var fromRelease = new InstallRecord("v1.0", null, ["A"], DateTime.Now);
+        Assert.Equal(AddonState.UpToDate, AddonStatus.Evaluate(Installed, fromCommit, "v1.0", "abc", null, null, latestCommits: true));
+        Assert.Equal(AddonState.UpdateAvailable, AddonStatus.Evaluate(Installed, fromCommit, "v1.0", "def", null, null, latestCommits: true));
+        Assert.Equal(AddonState.UpdateAvailable, AddonStatus.Evaluate(Installed, fromRelease, "v1.0", "def", null, null, latestCommits: true));
+        Assert.Equal(AddonState.UpToDate, AddonStatus.Evaluate(Installed, fromRelease, "v1.0", "def", null, null));
+    }
+
+    // Release downloads in any common archive format count, a .zip wins over a .7z, and other files are skipped.
+    [Fact]
+    public void PicksTheReleaseArchive()
+    {
+        Assert.Equal("Foo.zip", Archives.Best(["Foo.7z", "Foo.zip", "SHA256SUMS"], n => n));
+        Assert.Equal("Foo.tar.gz", Archives.Best(["Setup.exe", "Foo.tar.gz"], n => n));
+        Assert.Equal("LuaBoost.7z", Archives.Best(["LuaBoost.7z"], n => n));
+        Assert.Null(Archives.Best(["Foo.lua", "README.md"], n => n));
+    }
+
+    private const string SevenZip = "N3q8ryccAAQJqglrmAAAAAAAAAAhAAAAAAAAAMadNMEBABhwcmludCgxKQojIyBWZXJzaW9uOiAxLjAKAAAAgTMHrg/P2W+8D+vqnL82Pf53Qe42TVJY58vO2hM/Kffv8RNgqLZ81+N255GYne8seIF+/IEGpFgwIfuKUMX7U14CxO7ggvBNkVWEkZxQHJZMHwmLV1w6h8n+Pj2kA1e5ZjTSkysLxOK5Xea0kSBc4brG1wFLkgiUABcGHQEJewAHCwEAASMDAQEFXQAQAAAMgOYKAReSptYAAA==";
+    private const string TarGz = "H4sICEBeA2sEAGZvby50YXIA7dSxCoMwEAbgm/sUAZd2qM1Vk4OuhT5CdykOQjElxvfvVRC0iwiaJfdBuCTrf3cP586Y6wvsSDMi4jqY1fGOptDaGsLh35ItQRmIoO9C5ZWCRI35c92tB9bnT0aT5B/DNP+783X+7ivY2GL+iLP8+c0dAEpDBInn//FNG454OoBI0WT+fycP7gVbW5z/69/+5/EvSpn/GLJMPWvfNa69Ke4DWQNCCJGIL8RI4lwAEAAA";
+
+    // A .7z and a .tar.gz (made with 7-Zip: Foo-1.0/Foo/Foo.toc and Core.lua) install like a zip.
+    [Theory]
+    [InlineData(SevenZip)]
+    [InlineData(TarGz)]
+    public void InstallsOtherArchiveFormats(string base64)
+    {
+        var archive = Path.Combine(_root, "download");
+        File.WriteAllBytes(archive, Convert.FromBase64String(base64));
+        var addOns = Path.Combine(_root, "AddOns");
+        Assert.Equal(["Foo"], AddonInstaller.InstallFromArchive(archive, addOns, keepBackup: false));
+        Assert.Equal("print(1)\n", File.ReadAllText(Path.Combine(addOns, "Foo", "Core.lua")));
+        Assert.Equal("1.0", AddonStatus.ReadTocVersion(Path.Combine(addOns, "Foo")));
+    }
+
+    // An archive entry climbing out of the extraction folder stops the install before anything is written.
+    [Fact]
+    public void RefusesEntriesOutsideTheArchive()
+    {
+        var addOns = Path.Combine(_root, "AddOns");
+        Assert.Throws<InvalidDataException>(() =>
+            AddonInstaller.InstallFromArchive(MakeZip(("Foo/Foo.toc", ""), ("../../evil.lua", "")), addOns, false));
+        Assert.False(Directory.Exists(Path.Combine(addOns, "Foo")));
+    }
+
     // Missing folders read as not installed and linked folders as linked, whatever the versions say.
     [Fact]
     public void MissingAndLinkedComeFirst()
@@ -140,7 +198,7 @@ public sealed class AddonTests : IDisposable
             ("repo-abc/src/Foo/legacy/Old.toc", ""),
             ("repo-abc/src/Foo_Options/Foo_Options.toc", ""));
         var addOns = Path.Combine(_root, "AddOns");
-        Assert.Equal(["Foo", "Foo_Options"], AddonInstaller.InstallFromZip(zip, addOns, keepBackup: false).Order());
+        Assert.Equal(["Foo", "Foo_Options"], AddonInstaller.InstallFromArchive(zip, addOns, keepBackup: false).Order());
         Assert.True(File.Exists(Path.Combine(addOns, "Foo", "Libs", "Lib", "Lib.toc")));
     }
 
@@ -150,7 +208,7 @@ public sealed class AddonTests : IDisposable
     {
         var zip = MakeZip(("Gear-Mover-main/Gear Mover.toc", ""), ("Gear-Mover-main/Gear Mover-Classic.toc", ""), ("Gear-Mover-main/Core.lua", ""));
         var addOns = Path.Combine(_root, "AddOns");
-        Assert.Equal(["Gear Mover"], AddonInstaller.InstallFromZip(zip, addOns, keepBackup: false));
+        Assert.Equal(["Gear Mover"], AddonInstaller.InstallFromArchive(zip, addOns, keepBackup: false));
         Assert.True(File.Exists(Path.Combine(addOns, "Gear Mover", "Core.lua")));
     }
 
@@ -161,10 +219,10 @@ public sealed class AddonTests : IDisposable
         var addOns = Path.Combine(_root, "AddOns");
         Directory.CreateDirectory(Path.Combine(addOns, "Foo"));
         File.WriteAllText(Path.Combine(addOns, "Foo", "old.lua"), "");
-        AddonInstaller.InstallFromZip(MakeZip(("Foo/Foo.toc", "")), addOns, keepBackup: true);
+        AddonInstaller.InstallFromArchive(MakeZip(("Foo/Foo.toc", "")), addOns, keepBackup: true);
         Assert.False(File.Exists(Path.Combine(addOns, "Foo", "old.lua")));
         Assert.True(File.Exists(Path.Combine(addOns, "Foo.bak", "old.lua")));
-        AddonInstaller.InstallFromZip(MakeZip(("Foo/Foo.toc", "")), addOns, keepBackup: false);
+        AddonInstaller.InstallFromArchive(MakeZip(("Foo/Foo.toc", "")), addOns, keepBackup: false);
         Assert.True(File.Exists(Path.Combine(addOns, "Foo", "Foo.toc")));
     }
 
@@ -173,7 +231,7 @@ public sealed class AddonTests : IDisposable
     public void RefusesZipWithoutToc()
     {
         var addOns = Path.Combine(_root, "AddOns");
-        Assert.Throws<InvalidDataException>(() => AddonInstaller.InstallFromZip(MakeZip(("readme.txt", "")), addOns, false));
+        Assert.Throws<InvalidDataException>(() => AddonInstaller.InstallFromArchive(MakeZip(("readme.txt", "")), addOns, false));
         Assert.False(Directory.Exists(addOns));
     }
 
@@ -182,7 +240,7 @@ public sealed class AddonTests : IDisposable
     public void SpotsLocalEdits()
     {
         var addOns = Path.Combine(_root, "AddOns");
-        var folders = AddonInstaller.InstallFromZip(MakeZip(("Foo/Foo.toc", ""), ("Foo/Core.lua", "a"), ("Foo/Old.lua", "")), addOns, false);
+        var folders = AddonInstaller.InstallFromArchive(MakeZip(("Foo/Foo.toc", ""), ("Foo/Core.lua", "a"), ("Foo/Old.lua", "")), addOns, false);
         var record = new InstallRecord("v1", "abc", folders, DateTime.Now, InstalledFiles.Stamp(addOns, folders));
         Assert.Empty(InstalledFiles.Changed(addOns, record));
         File.WriteAllText(Path.Combine(addOns, "Foo", "Core.lua"), "my fix");
@@ -287,7 +345,7 @@ public sealed class AddonTests : IDisposable
             using var writer = new StreamWriter(archive.CreateEntry(".toc").Open());
             writer.Write("## Title: Bad");
         }
-        Assert.Throws<InvalidDataException>(() => AddonInstaller.InstallFromZip(zip, addOns, keepBackup: false));
+        Assert.Throws<InvalidDataException>(() => AddonInstaller.InstallFromArchive(zip, addOns, keepBackup: false));
         Assert.True(File.Exists(Path.Combine(addOns, "Keep.txt")));
         Assert.Throws<IOException>(() => AddonInstaller.Uninstall(addOns, ["..."]));
         Assert.True(File.Exists(Path.Combine(addOns, "Keep.txt")));

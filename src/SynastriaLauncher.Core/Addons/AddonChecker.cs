@@ -7,7 +7,7 @@ public static class AddonChecker
     // About two requests per repo (refs and the latest-release redirect), plus a raw .toc or commit feed only for a
     // copy the launcher didn't install. None of them count against the API limit.
     public static async Task<AddonCheck> CheckAsync(GitHubKeyless github, AddonSource source, string addOnsPath,
-        InstallRecord? recorded, CancellationToken cancel = default)
+        InstallRecord? recorded, bool latestCommits = false, CancellationToken cancel = default)
     {
         AddonCheck check;
         try
@@ -22,19 +22,23 @@ public static class AddonChecker
             else
             {
                 var tag = await github.GetLatestReleaseTagAsync(source.Repo, cancel);
-                var needsFallback = local.Installed && !local.Linked && recorded is null;
+                var followsRelease = tag is not null && !latestCommits;
+                var needsFallback = local.Installed && !local.Linked
+                    && AddonStatus.RecordSays(recorded, tag, refs.HeadSha, latestCommits) is null;
                 var remoteToc = needsFallback && source.TocPath is not null
-                    ? AddonStatus.TocVersion((await github.GetRawFileAsync(source.Repo, tag ?? refs.DefaultBranch ?? "HEAD", source.TocPath, cancel) ?? "").Split('\n'))
+                    ? AddonStatus.TocVersion((await github.GetRawFileAsync(source.Repo,
+                        (followsRelease ? tag : null) ?? refs.DefaultBranch ?? "HEAD", source.TocPath, cancel) ?? "").Split('\n'))
                     : null;
                 var tocDiffers = local.TocVersion is not null && remoteToc is not null &&
                     AddonStatus.VersionKey(local.TocVersion) != AddonStatus.VersionKey(remoteToc);
-                var tocMatchesRelease = tag is not null && local.TocVersion is not null && remoteToc is not null;
+                var tocMatchesRelease = followsRelease && local.TocVersion is not null && remoteToc is not null;
                 var lastCommit = needsFallback && !tocDiffers && !tocMatchesRelease && refs.DefaultBranch is not null
                     ? await github.GetLastCommitDateAsync(source.Repo, refs.DefaultBranch, cancel)
                     : null;
-                var state = AddonStatus.Evaluate(local, recorded, tag, refs.HeadSha, remoteToc, lastCommit);
+                var state = AddonStatus.Evaluate(local, recorded, tag, refs.HeadSha, remoteToc, lastCommit, latestCommits);
                 check = new AddonCheck(source, state, tag, refs.HeadSha, refs.DefaultBranch, local.TocVersion,
-                    ChangedFiles: local.Installed && !local.Linked ? InstalledFiles.Changed(addOnsPath, recorded) : null);
+                    ChangedFiles: local.Installed && !local.Linked ? InstalledFiles.Changed(addOnsPath, recorded) : null,
+                    LatestCommits: latestCommits);
             }
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException or UnauthorizedAccessException
@@ -46,7 +50,8 @@ public static class AddonChecker
     }
 
     public static async Task<IReadOnlyList<AddonCheck>> CheckAllAsync(GitHubKeyless github, IEnumerable<AddonSource> sources,
-        string addOnsPath, IReadOnlyDictionary<string, InstallRecord> records, CancellationToken cancel = default)
+        string addOnsPath, IReadOnlyDictionary<string, InstallRecord> records, Func<string, bool> latestCommits,
+        CancellationToken cancel = default)
     {
         using var gate = new SemaphoreSlim(4);
         var tasks = sources.Select(async source =>
@@ -54,7 +59,8 @@ public static class AddonChecker
             await gate.WaitAsync(cancel);
             try
             {
-                return await CheckAsync(github, source, addOnsPath, records.GetValueOrDefault(source.Repo), cancel);
+                return await CheckAsync(github, source, addOnsPath, records.GetValueOrDefault(source.Repo),
+                    latestCommits(source.Repo), cancel);
             }
             finally
             {

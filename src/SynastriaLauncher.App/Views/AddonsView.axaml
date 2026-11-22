@@ -92,6 +92,10 @@
                             <Border Classes="pill info" IsVisible="{Binding HasEdits}" ToolTip.Tip="{Binding EditsHint}">
                               <TextBlock Text="Your Changes" />
                             </Border>
+                            <Border Classes="pill info" IsVisible="{Binding UsesLatestCommits}"
+                                    ToolTip.Tip="Updates to every new commit instead of waiting for releases. Use Releases is in the menu.">
+                              <TextBlock Text="Latest Commits" />
+                            </Border>
                             <Border Classes="pill" Classes.good="{Binding IsGood}" Classes.accent="{Binding IsAccent}"
                                     Classes.info="{Binding IsInfo}" Classes.bad="{Binding IsBad}" ToolTip.Tip="{Binding StateHint}"
                                     IsVisible="{Binding ShowState}">
@@ -111,6 +115,8 @@
                                   <MenuItem Header="Update Anyway" Command="{Binding InstallCommand}" IsVisible="{Binding CanUpdateAnyway}" />
                                   <MenuItem Header="{Binding HoldLabel}" Command="{Binding ToggleHeldCommand}" IsVisible="{Binding CanHold}"
                                             ToolTip.Tip="Keep your own version: Update All passes a held addon by" />
+                                  <MenuItem Header="{Binding LatestCommitsLabel}" Command="{Binding ToggleLatestCommitsCommand}"
+                                            IsVisible="{Binding CanChooseLatestCommits}" ToolTip.Tip="{Binding LatestCommitsHint}" />
                                   <MenuItem Header="Reinstall" Command="{Binding InstallCommand}" IsEnabled="{Binding CanReinstall}" />
                                   <MenuItem Header="Remove from AddOns" Command="{Binding RemoveCommand}" IsEnabled="{Binding CanRemove}" />
                                   <Separator />
