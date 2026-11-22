@@ -54,6 +54,7 @@ public static partial class AddonStatus
             releaseTag is not null && recorded?.Tag is not null ? IsCurrent(recorded.Tag, releaseTag)
             : recorded is { Tag: null, Sha: not null } && headSha is not null ? recorded.Sha == headSha
             : tocDiffers ? IsCurrent(local.TocVersion!, remoteTocVersion!)
+            : releaseTag is not null && local.TocVersion is not null && remoteTocVersion is not null ? true
             : lastCommit is not null && local.NewestFile is not null ? local.NewestFile.Value.Date >= lastCommit.Value.LocalDateTime.Date
             : null;
         return !local.Installed ? AddonState.NotInstalled

@@ -28,7 +28,8 @@ public static class AddonChecker
                     : null;
                 var tocDiffers = local.TocVersion is not null && remoteToc is not null &&
                     AddonStatus.VersionKey(local.TocVersion) != AddonStatus.VersionKey(remoteToc);
-                var lastCommit = needsFallback && !tocDiffers && refs.DefaultBranch is not null
+                var tocMatchesRelease = tag is not null && local.TocVersion is not null && remoteToc is not null;
+                var lastCommit = needsFallback && !tocDiffers && !tocMatchesRelease && refs.DefaultBranch is not null
                     ? await github.GetLastCommitDateAsync(source.Repo, refs.DefaultBranch, cancel)
                     : null;
                 var state = AddonStatus.Evaluate(local, recorded, tag, refs.HeadSha, remoteToc, lastCommit);

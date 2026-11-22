@@ -66,6 +66,16 @@ public sealed class AddonTests : IDisposable
         Assert.Equal(AddonState.Unknown, AddonStatus.Evaluate(Installed, null, null, "x", null, null));
     }
 
+    // Without a record, a .toc matching the latest release's is current, even with newer commits on the branch
+    // (LuaBoost 1.9.8 showed an update for a FUNDING.yml commit).
+    [Fact]
+    public void MatchingReleaseTocIsCurrent()
+    {
+        var newerCommit = new DateTimeOffset(2026, 11, 5, 0, 0, 0, TimeSpan.Zero);
+        Assert.Equal(AddonState.UpToDate, AddonStatus.Evaluate(Installed, null, "v1.0", "x", "1.0", newerCommit));
+        Assert.Equal(AddonState.UpdateAvailable, AddonStatus.Evaluate(Installed, null, "v1.1", "x", "1.1", null));
+    }
+
     // Missing folders read as not installed and linked folders as linked, whatever the versions say.
     [Fact]
     public void MissingAndLinkedComeFirst()
