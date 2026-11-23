@@ -50,6 +50,7 @@ public static class PatchIds
     public const string ShortNumbers = "ShortNumbers";
     public const string DamageColors = "DamageColors";
     public const string GroundTargets = "GroundTargets";
+    public const string SmoothCursor = "SmoothCursor";
 }
 
 // Patches are planned and applied in this order.
@@ -292,6 +293,12 @@ public static class PatchCatalog
             "Adds [@cursor], [@playerlocation] and [@targetlocation] (or the short [@cur], [@ploc] and [@tloc]) to /cast "
                 + "macros for spells you place on the ground, like Flamestrike, Flare or Death and Decay: no targeting circle, "
                 + "and the game's usual range and placement rules apply. Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
+        new(PatchIds.SmoothCursor, "Smooth Cursor", PatchGroup.Visuals,
+            "Fewer frame drops when you move the mouse fast",
+            "While the mouse moves, the game keeps sending its cursor to the graphics card again, even when the cursor looks "
+                + "the same. With DXVK each send is slow, more so with its enlarged cursor. This skips the sends that "
+                + "wouldn't change the cursor. Only works with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
     ];
 

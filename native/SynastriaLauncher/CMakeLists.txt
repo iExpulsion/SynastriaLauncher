@@ -21,7 +21,8 @@ add_library(patcher_engine STATIC
     src/DamageColors.cpp
     src/NameplateSort.cpp
     src/NameplateStack.cpp
-    src/GroundTargets.cpp)
+    src/GroundTargets.cpp
+    src/SmoothCursor.cpp)
 
 string(REPLACE "." "," LAUNCHER_VERSION_COMMAS "${LAUNCHER_VERSION}")
 configure_file(src/Version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/Version.rc" @ONLY)
@@ -33,5 +34,5 @@ add_library(image_file STATIC src/ImageFile.cpp)
 add_executable(PatcherHost src/Host.cpp)
 target_link_libraries(PatcherHost PRIVATE patcher_engine image_file)
 
-add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp)
+add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp)
 target_link_libraries(PatcherTests PRIVATE patcher_engine image_file)

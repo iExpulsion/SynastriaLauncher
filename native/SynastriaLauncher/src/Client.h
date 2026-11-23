@@ -77,4 +77,15 @@ namespace Client
     constexpr uint32_t PlateLayout = 0x20;                 // embedded layout object; its vtable gives the size
     constexpr uint32_t VtableGetWidth = 0x28;              // float GetWidth()
     constexpr uint32_t VtableGetHeight = 0x2C;             // float GetHeight()
+
+    // The graphics device's hardware cursor (both D3D9 device classes). Changing the cursor marks it dirty, and the
+    // device's cursor update then copies the image into its cursor texture and calls SetCursorProperties.
+    constexpr uint32_t GxCursorHotspotX = 0x2958;
+    constexpr uint32_t GxCursorHotspotY = 0x295C;
+    constexpr uint32_t GxCursorImage = 0x2960;             // 32 rows of 32 A8R8G8B8 pixels
+    constexpr uint32_t GxCursorImageSize = 32 * 32 * 4;
+    constexpr uint32_t GxD3dDevice = 0x397C;               // IDirect3DDevice9*
+    constexpr uint32_t GxCursorDirty = 0x3B4C;             // nonzero: upload at the next cursor update
+    constexpr uint32_t GxCursorTexture = 0x3B54;           // IDirect3DTexture9*, managed, so it outlives a device reset
+    constexpr uint32_t GxCursorUploads = 0xF58;            // the update uploads only while this is nonzero
 }

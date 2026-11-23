@@ -149,6 +149,7 @@ const std::vector<Patch>& Patches()
         ShortNumbersPatch(),
         DamageColorsPatch(),
         GroundTargetsPatch(),
+        SmoothCursorPatch(),
     };
     return all;
 }

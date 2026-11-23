@@ -20,6 +20,7 @@
 #include "../src/NameplateStack.h"
 #include "../src/Patch.h"
 #include "../src/ShortNumbers.h"
+#include "../src/SmoothCursor.h"
 #include "NativeTests.h"
 
 #pragma warning(disable : 4731)
@@ -292,6 +293,9 @@ namespace
             { "HdPortraits/MaskLookup", 1, reinterpret_cast<const void*>(&PortraitMaskForSize) },
             { "GraphicsLimits/GlueSliderMaximum", 1, reinterpret_cast<const void*>(&SliderMaximum) },
             { "GraphicsLimits/GameSliderMaximum", 1, reinterpret_cast<const void*>(&SliderMaximum) },
+            { "SmoothCursor/CursorUnlock", 7, reinterpret_cast<const void*>(&CursorChanged) },
+            { "SmoothCursor/CursorUpdate", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
+            { "SmoothCursor/CursorUpdateEx", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
         };
         for (const Expected& site : expected)
         {
@@ -347,6 +351,7 @@ int main(int argc, char** argv)
     NameplateTests();
     VisualTests();
     GroundTests();
+    CursorTests();
     if (argc > 1)
     {
         SiteTests(argv[1]);

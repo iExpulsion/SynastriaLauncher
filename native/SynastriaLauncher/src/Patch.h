@@ -67,3 +67,4 @@ Patch NameplateStackPatch();
 Patch ShortNumbersPatch();
 Patch DamageColorsPatch();
 Patch GroundTargetsPatch();
+Patch SmoothCursorPatch();
