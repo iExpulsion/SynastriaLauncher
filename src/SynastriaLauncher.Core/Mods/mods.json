@@ -18,9 +18,7 @@
           "path": "WTF/dxvk.conf", "config": true,
           "presets": [
             { "id": "default", "name": "Mod Defaults", "description": "No settings file: DXVK uses its own defaults, including a double-size mouse cursor." },
-            { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" },
-            { "id": "luxvelum-msaa", "name": "Luxvelum MSAA Fix", "description": "Reports an AMD graphics card, so Luxvelum keeps antialiasing on NVIDIA and Intel cards; double-size cursor. If odd graphics glitches appear, go back to Mod Defaults.", "file": "dxvk.luxvelum-msaa.conf" },
-            { "id": "luxvelum-msaa-original-cursor", "name": "Luxvelum MSAA Fix, Original Cursor", "description": "The Luxvelum MSAA Fix with the cursor enlargement off.", "file": "dxvk.luxvelum-msaa-original-cursor.conf" }
+            { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" }
           ]
         }
       ]

@@ -267,8 +267,8 @@ public sealed class ModTests : IDisposable
     {
         var file = ModPresets.PresetFile(DxvkMod())!;
         var path = Path.Combine(Directory.CreateDirectory(Path.Combine(Game, "WTF")).FullName, "dxvk.conf");
-        File.WriteAllText(path, "d3d9.enlargeHardwareCursor = 1\r\nd3d9.customVendorId = 1002\r\n\r\n");
-        Assert.Equal("luxvelum-msaa-original-cursor", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
+        File.WriteAllText(path, "d3d9.enlargeHardwareCursor = 1\r\n\r\n");
+        Assert.Equal("original-cursor", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
         File.WriteAllText(path, "d3d9.maxFrameRate = 60\n");
         Assert.True(ModPresets.Detect(file, Game, "DLLs").IsCustom);
     }
@@ -280,9 +280,9 @@ public sealed class ModTests : IDisposable
         var file = ModPresets.PresetFile(DxvkMod())!;
         var path = Path.Combine(Directory.CreateDirectory(Path.Combine(Game, "WTF")).FullName, "dxvk.conf");
         File.WriteAllText(path, "mine");
-        ModPresets.Apply(file, Preset(file, "luxvelum-msaa"), Game, "DLLs");
+        ModPresets.Apply(file, Preset(file, "original-cursor"), Game, "DLLs");
         Assert.Equal("mine", File.ReadAllText(path + ".bak"));
-        Assert.Equal("luxvelum-msaa", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
+        Assert.Equal("original-cursor", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
     }
 
     // A disabled mod's config is found, and changed, where it's parked.
@@ -291,9 +291,9 @@ public sealed class ModTests : IDisposable
     {
         var file = new ModFile("{dlls}/Test.conf", Config: true, Presets: ModPresets.PresetFile(DxvkMod())!.Presets);
         var parked = Path.Combine(Directory.CreateDirectory(Path.Combine(Game, "DLLs", "_Disabled")).FullName, "Test.conf");
-        File.WriteAllBytes(parked, ModPresets.Content(Preset(file, "original-cursor"))!);
-        ModPresets.Apply(file, Preset(file, "luxvelum-msaa"), Game, "DLLs");
-        Assert.Equal("luxvelum-msaa", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
+        File.WriteAllText(parked, "mine");
+        ModPresets.Apply(file, Preset(file, "original-cursor"), Game, "DLLs");
+        Assert.Equal("original-cursor", ModPresets.Detect(file, Game, "DLLs").Current?.Id);
         Assert.False(File.Exists(Path.Combine(Game, "DLLs", "Test.conf")));
     }
 
