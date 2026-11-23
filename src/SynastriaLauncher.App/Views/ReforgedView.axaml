@@ -82,16 +82,6 @@
             <TextBlock Text="{Binding PatchWarning}" Foreground="{StaticResource Amber}" TextWrapping="Wrap" VerticalAlignment="Center" />
           </DockPanel>
         </Border>
-        <Border IsVisible="{Binding HasPatchNote}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource InfoSoft}">
-          <DockPanel>
-            <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center"
-                    Command="{Binding TurnOnRecommendedCommand}" ToolTip.Tip="Switches the patches on in Patches; they're written when you apply there">
-              <TextBlock Text="Turn On" Foreground="{StaticResource Info}" FontWeight="SemiBold" />
-            </Button>
-            <TextBlock Text="{Binding PatchNote}" Foreground="{StaticResource Info}" TextWrapping="Wrap" VerticalAlignment="Center" />
-          </DockPanel>
-        </Border>
-
         <Border IsVisible="{Binding HasMapsNote}" Margin="0,12,0,0" Padding="12,8" CornerRadius="7" Background="{StaticResource InfoSoft}">
           <DockPanel>
             <Button DockPanel.Dock="Right" Classes="ghost" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center" Command="{Binding OpenWdmCommand}">

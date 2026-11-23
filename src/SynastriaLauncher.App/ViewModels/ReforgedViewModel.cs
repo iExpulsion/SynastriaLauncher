@@ -144,18 +144,12 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
     [NotifyPropertyChangedFor(nameof(HasPatchWarning))]
     public partial string PatchWarning { get; set; } = "";
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasPatchNote))]
-    public partial string PatchNote { get; set; } = "";
-
     public bool HasPatchWarning => PatchWarning.Length > 0;
-    public bool HasPatchNote => PatchNote.Length > 0;
 
     // For the Play bar: installed parts whose required patch is off.
     public string InstalledWarning { get; private set; } = "";
 
     private IReadOnlyList<string> _missingRequired = [];
-    private IReadOnlyList<string> _missingRecommended = [];
     private IReadOnlyList<ReforgedPart> _installed = [];
 
     public bool IsIdle => !IsBusy;
@@ -186,14 +180,10 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         var applied = main.Patches.AppliedIds();
         _installed = main.GameFolder is { } game ? ReforgedCatalog.InstalledParts(game) : [];
         var chosen = IsLoaded ? Parts.Where(p => p.IsOn).Select(p => p.Part).ToList() : _installed;
-        var (required, recommended) = ReforgedCatalog.MissingPatches(chosen, applied);
+        var required = ReforgedCatalog.MissingPatches(chosen, applied);
         _missingRequired = required.Select(r => r.Patch).ToList();
-        _missingRecommended = recommended;
         PatchWarning = Requirement(required);
-        PatchNote = recommended.Count == 0 ? ""
-            : $"Project Reforged also recommends the {string.Join(" and ", recommended.Select(PatchTitle))} patch{(recommended.Count == 1 ? "" : "es")}" +
-              ", so your character doesn't turn see-through up close.";
-        InstalledWarning = Requirement(ReforgedCatalog.MissingPatches(_installed, applied).Required);
+        InstalledWarning = Requirement(ReforgedCatalog.MissingPatches(_installed, applied));
         var wdmAddon = main.GameFolder is { } folder && WdmService.IsInstalled(WdmCatalog.Get(WdmCatalog.Addon), folder, WdmCatalog.Locale(folder));
         MapsNote = chosen.Any(p => p.Id == "maps") && !wdmAddon
             ? "Maps and Loading Screens includes WDM's cave maps, which need the WDM addon from WoW Dungeon Maps."
@@ -214,14 +204,9 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         _installed.Any(p => p.Needs.Contains(patchId)) ? ["Project Reforged"] : [];
 
     [RelayCommand]
-    private void TurnOnRequired() => TurnOn(_missingRequired);
-
-    [RelayCommand]
-    private void TurnOnRecommended() => TurnOn(_missingRecommended);
-
-    private void TurnOn(IReadOnlyList<string> ids)
+    private void TurnOnRequired()
     {
-        foreach (var id in ids)
+        foreach (var id in _missingRequired)
         {
             main.Patches.Stage(id);
         }

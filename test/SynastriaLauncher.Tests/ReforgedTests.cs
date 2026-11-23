@@ -403,28 +403,22 @@ public sealed class ReforgedTests : IDisposable
         Assert.False(download.CreateLink);
     }
 
-    // The Interface part needs Interface Edit; with it off that's the one requirement, and the recommended patches
-    // that are off are listed whenever any part is in use.
+    // The Interface part needs Interface Edit; with it off that's the one missing patch.
     [Fact]
     public void ListsMissingPatches()
     {
         var interfacePart = ReforgedCatalog.Get("interface");
-        var (required, recommended) = ReforgedCatalog.MissingPatches([ReforgedCatalog.Get("characters"), interfacePart], []);
-        var only = Assert.Single(required);
+        var only = Assert.Single(ReforgedCatalog.MissingPatches([ReforgedCatalog.Get("characters"), interfacePart], []));
         Assert.Equal(PatchIds.InterfaceEdit, only.Patch);
         Assert.Equal([interfacePart], only.Parts);
-        Assert.Equal([PatchIds.NoZoomFade], recommended);
     }
 
-    // Nothing is missing once the patches are on, and nothing is recommended when no part is in use.
+    // Nothing is missing once the needed patches are on, or when no part is in use.
     [Fact]
     public void NoMissingPatchesWhenOnOrUnused()
     {
-        var all = (IReadOnlyCollection<string>)[PatchIds.InterfaceEdit, .. ReforgedCatalog.Recommended];
-        var (required, recommended) = ReforgedCatalog.MissingPatches(ReforgedCatalog.Parts.ToList(), all);
-        Assert.Empty(required);
-        Assert.Empty(recommended);
-        Assert.Empty(ReforgedCatalog.MissingPatches([], []).Recommended);
+        Assert.Empty(ReforgedCatalog.MissingPatches(ReforgedCatalog.Parts.ToList(), [PatchIds.InterfaceEdit]));
+        Assert.Empty(ReforgedCatalog.MissingPatches([], []));
     }
 
     // A part counts as installed when one of its files is in Data.

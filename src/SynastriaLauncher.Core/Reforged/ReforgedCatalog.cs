@@ -69,20 +69,14 @@ public static class ReforgedCatalog
 
     public static ReforgedPart Get(string id) => Parts.First(p => p.Id == id);
 
-    // Patches in Project Reforged's recommended patcher selection that the launcher has and no part strictly needs.
-    // Their view distance unlocks (Graphics Limits) are left out: with the world set they crashed some setups.
-    public static IReadOnlyList<string> Recommended { get; } = [PatchIds.NoZoomFade];
-
     public static IReadOnlyList<ReforgedPart> InstalledParts(string gameFolder) =>
         Parts.Where(p => p.Files.Any(f => File.Exists(Path.Combine(gameFolder, "Data", f)))).ToList();
 
-    // What's missing for the given parts: each required patch that's off with the parts needing it, and the
-    // recommended patches that are off (only when any part is in use).
-    public static (IReadOnlyList<(string Patch, IReadOnlyList<ReforgedPart> Parts)> Required, IReadOnlyList<string> Recommended)
-        MissingPatches(IReadOnlyCollection<ReforgedPart> parts, IReadOnlyCollection<string> applied) =>
-        (parts.SelectMany(p => p.Needs.Select(id => (Id: id, Part: p))).Where(x => !applied.Contains(x.Id))
-                .GroupBy(x => x.Id).Select(g => (g.Key, (IReadOnlyList<ReforgedPart>)g.Select(x => x.Part).ToList())).ToList(),
-            parts.Count == 0 ? [] : Recommended.Where(id => !applied.Contains(id)).ToList());
+    // Each patch the given parts need that's off, with the parts needing it.
+    public static IReadOnlyList<(string Patch, IReadOnlyList<ReforgedPart> Parts)> MissingPatches(
+        IReadOnlyCollection<ReforgedPart> parts, IReadOnlyCollection<string> applied) =>
+        parts.SelectMany(p => p.Needs.Select(id => (Id: id, Part: p))).Where(x => !applied.Contains(x.Id))
+            .GroupBy(x => x.Id).Select(g => (g.Key, (IReadOnlyList<ReforgedPart>)g.Select(x => x.Part).ToList())).ToList();
 
     // The page's combination rules. Selection maps part id to its variant id, null when off.
     public static IReadOnlyList<string> Problems(IReadOnlyDictionary<string, string?> selection)
