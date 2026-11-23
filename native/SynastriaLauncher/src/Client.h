@@ -88,8 +88,8 @@ namespace Client
     constexpr uint32_t GxCursorDirty = 0x3B4C;             // nonzero: upload at the next cursor update
     constexpr uint32_t GxCursorTexture = 0x3B54;           // IDirect3DTexture9*, managed, so it outlives a device reset
     constexpr uint32_t GxCursorUploads = 0xF58;            // the update uploads only while this is nonzero
-
-    // Input events: each frame the game calls int OsInputGet(type*, a*, b*, c*, time*) until it returns 0, and it
-    // pumps Windows messages while its queue is empty, so every WM_MOUSEMOVE is handled as its own event.
-    constexpr uint32_t InputMouseMove = 10;                // a = 0, b = x, c = y in the window's client area
+    // On WM_SETCURSOR over the game the window procedure calls SetCursor(NULL), then the device's ShowCursor with
+    // whether both of these are nonzero: the cursor is shown, and the hardware cursor is in use.
+    constexpr uint32_t GxCursorShown = 0x2950;
+    constexpr uint32_t GxCursorHardware = 0x2954;
 }

@@ -22,7 +22,7 @@ add_library(patcher_engine STATIC
     src/NameplateSort.cpp
     src/NameplateStack.cpp
     src/GroundTargets.cpp
-    src/SmoothCursor.cpp)
+    src/CursorOptimizations.cpp)
 
 string(REPLACE "." "," LAUNCHER_VERSION_COMMAS "${LAUNCHER_VERSION}")
 configure_file(src/Version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/Version.rc" @ONLY)

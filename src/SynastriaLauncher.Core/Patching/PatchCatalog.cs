@@ -50,7 +50,7 @@ public static class PatchIds
     public const string ShortNumbers = "ShortNumbers";
     public const string DamageColors = "DamageColors";
     public const string GroundTargets = "GroundTargets";
-    public const string SmoothCursor = "SmoothCursor";
+    public const string CursorOptimizations = "CursorOptimizations";
 }
 
 // Patches are planned and applied in this order.
@@ -91,6 +91,13 @@ public static class PatchCatalog
             "Lets the game use up to 4 GB of memory",
             "Lets the 32-bit client use up to 4 GB of memory.",
             false, [], [], Hidden: true),
+        new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,
+            "Keeps the frame rate up when you move the mouse",
+            "Each time the mouse moves, the game hides the Windows cursor and has the graphics card show its own cursor again, "
+                + "which is slow, and it keeps sending its cursor to the graphics card even when it looks the same, which DXVK "
+                + "makes slow too. This leaves the cursor in place while it's shown and skips the sends that wouldn't change "
+                + "anything. Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
         new(PatchIds.NoAutoAfk, "No Auto AFK", PatchGroup.QualityOfLife,
             "No more being marked AFK or logged out for sitting idle",
             "Stops the client from marking you AFK after 5 idle minutes and logging you out after 30.",
@@ -293,14 +300,6 @@ public static class PatchCatalog
             "Adds [@cursor], [@playerlocation] and [@targetlocation] (or the short [@cur], [@ploc] and [@tloc]) to /cast "
                 + "macros for spells you place on the ground, like Flamestrike, Flare or Death and Decay: no targeting circle, "
                 + "and the game's usual range and placement rules apply. Only works with patches loaded in memory.",
-            true, [], [], MemoryOnly: true),
-        new(PatchIds.SmoothCursor, "Smooth Cursor", PatchGroup.Visuals,
-            "Fewer frame drops when you move the mouse fast",
-            "The game handles every mouse movement on its own, checking what's under the mouse each time, so a fast mouse "
-                + "makes it do that several times a frame. It also keeps sending its cursor to the graphics card again, even when "
-                + "the cursor looks the same, which DXVK makes slow. This hands the game the newest mouse position once a frame "
-                + "(clicks still land where you clicked) and skips the cursor sends that wouldn't change anything. Only works "
-                + "with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
     ];
 
