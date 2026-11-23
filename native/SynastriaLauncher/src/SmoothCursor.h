@@ -12,3 +12,14 @@ void ForgetCursorUpload();
 
 extern "C" void CursorChanged();
 extern "C" void CursorUploadCheck();
+
+// The game's input getter, read from the patched calls; tests point it at a mock.
+using InputGetFn = int(__cdecl*)(uint32_t* type, uint32_t* a, uint32_t* b, uint32_t* c, uint32_t* time);
+extern void* g_inputGet;
+
+// Stand-ins for the game's per-frame input loop: the first call of a pass, then the rest. Within a pass, mouse moves
+// in a row collapse into the newest, and at most one is handed on when the queue runs dry; any other event first
+// gets the pending move delivered ahead of it. A move held back is handed on in the next pass.
+extern "C" int __cdecl FirstInputEvent(uint32_t* type, uint32_t* a, uint32_t* b, uint32_t* c, uint32_t* time);
+extern "C" int __cdecl NextInputEvent(uint32_t* type, uint32_t* a, uint32_t* b, uint32_t* c, uint32_t* time);
+void ForgetInputEvents();

@@ -296,9 +296,11 @@ public static class PatchCatalog
             true, [], [], MemoryOnly: true),
         new(PatchIds.SmoothCursor, "Smooth Cursor", PatchGroup.Visuals,
             "Fewer frame drops when you move the mouse fast",
-            "While the mouse moves, the game keeps sending its cursor to the graphics card again, even when the cursor looks "
-                + "the same. With DXVK each send is slow, more so with its enlarged cursor. This skips the sends that "
-                + "wouldn't change the cursor. Only works with patches loaded in memory.",
+            "The game handles every mouse movement on its own, checking what's under the mouse each time, so a fast mouse "
+                + "makes it do that several times a frame. It also keeps sending its cursor to the graphics card again, even when "
+                + "the cursor looks the same, which DXVK makes slow. This hands the game the newest mouse position once a frame "
+                + "(clicks still land where you clicked) and skips the cursor sends that wouldn't change anything. Only works "
+                + "with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
     ];
 

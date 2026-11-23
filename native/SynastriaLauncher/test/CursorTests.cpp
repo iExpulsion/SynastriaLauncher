@@ -1,6 +1,9 @@
 // Unit tests for Smooth Cursor: when the cursor update skips an upload (only plain changes since the last upload, and
-// the same image, hotspot, device and texture), and the two assembly shims called with the client's registers.
+// the same image, hotspot, device and texture), the two assembly shims called with the client's registers, and the
+// input pass handing on one mouse move per frame without reordering other events.
 #include <cstring>
+#include <deque>
+#include <string>
 #include <vector>
 #include "../src/Client.h"
 #include "../src/SmoothCursor.h"
@@ -50,6 +53,78 @@ namespace
             pop esi
         }
         return Get(Client::GxCursorDirty);
+    }
+
+    constexpr uint32_t Move = Client::InputMouseMove;
+    constexpr uint32_t Click = 7;
+    constexpr uint32_t Look = 12;
+
+    struct Event
+    {
+        uint32_t type;
+        uint32_t x;
+    };
+
+    std::deque<Event> g_waiting;
+
+    int __cdecl MockInputGet(uint32_t* type, uint32_t* a, uint32_t* b, uint32_t* c, uint32_t* time)
+    {
+        int got = 0;
+        if (!g_waiting.empty())
+        {
+            *type = g_waiting.front().type;
+            *a = 0;
+            *b = g_waiting.front().x;
+            *c = 0;
+            *time = 0;
+            g_waiting.pop_front();
+            got = 1;
+        }
+        return got;
+    }
+
+    // One frame of the game's input loop, as "type:x" entries for what it receives.
+    std::string Frame(std::deque<Event> arriving)
+    {
+        g_waiting = arriving;
+        std::string seen;
+        uint32_t type = 0, a = 0, b = 0, c = 0, time = 0;
+        int more = FirstInputEvent(&type, &a, &b, &c, &time);
+        while (more != 0)
+        {
+            seen += (seen.empty() ? "" : " ") + std::to_string(type) + ":" + std::to_string(b);
+            more = NextInputEvent(&type, &a, &b, &c, &time);
+        }
+        return seen;
+    }
+
+    void InputTests()
+    {
+        void* saved = g_inputGet;
+        g_inputGet = reinterpret_cast<void*>(&MockInputGet);
+        ForgetInputEvents();
+        std::string m = std::to_string(Move) + ":";
+
+        // Mouse moves in a row reach the game as one, the newest.
+        Check(Frame({ { Move, 1 }, { Move, 2 }, { Move, 3 } }) == m + "3", "input: three moves become the newest one");
+
+        // A frame with nothing arriving hands on nothing; a single move passes as it is.
+        Check(Frame({}).empty() && Frame({ { Move, 4 } }) == m + "4", "input: no events, and a single move");
+
+        // A click gets the move before it first, so it lands where the mouse was; a move after it waits a frame.
+        Check(Frame({ { Move, 5 }, { Move, 6 }, { Click, 6 }, { Move, 7 } }) == m + "6 7:6",
+            "input: the move before a click comes first, the click next, the later move is held");
+        Check(Frame({}) == m + "7", "input: the held move arrives in the next frame");
+
+        // Two moves after a frame's move: the newer is held for the next frame, then replaced by a newer one.
+        Check(Frame({ { Move, 8 }, { Click, 8 }, { Move, 9 } }) == m + "8 7:8", "input: a move after the frame's move waits");
+        Check(Frame({ { Move, 10 } }) == m + "10", "input: a newer move replaces the held one");
+
+        // Other events, mouselook's deltas included, all pass in order and are never merged.
+        Check(Frame({ { Look, 1 }, { Look, 2 }, { Click, 3 } }) == "12:1 12:2 7:3", "input: mouselook deltas and clicks pass in order");
+
+        g_inputGet = saved;
+        ForgetInputEvents();
     }
 
     // Returns whether the shim set the zero flag (the client then skips), and the eax it left.
@@ -122,4 +197,6 @@ void CursorTests()
     Check(RunCheck(eaxAfter) && Get(Client::GxCursorDirty) == 1, "cursor update shim: uploads off skips and leaves the flag");
     Set(Client::GxCursorUploads, 1);
     Check(!RunCheck(eaxAfter), "cursor update shim: once uploads are on, the pending 1 uploads");
+
+    InputTests();
 }

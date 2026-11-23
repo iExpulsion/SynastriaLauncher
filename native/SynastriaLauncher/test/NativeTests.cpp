@@ -296,6 +296,8 @@ namespace
             { "SmoothCursor/CursorUnlock", 7, reinterpret_cast<const void*>(&CursorChanged) },
             { "SmoothCursor/CursorUpdate", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
             { "SmoothCursor/CursorUpdateEx", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
+            { "SmoothCursor/InputPassFirst", 6, reinterpret_cast<const void*>(&FirstInputEvent) },
+            { "SmoothCursor/InputPassNext", 4, reinterpret_cast<const void*>(&NextInputEvent) },
         };
         for (const Expected& site : expected)
         {
@@ -309,6 +311,7 @@ namespace
         Check(texture != nullptr && reinterpret_cast<uint8_t*>(g_createTexture) == texture, "HD Portraits hands on to the texture call");
         Check(at["HdPortraits/MaskLookup"] != nullptr && g_maskLookupBody == at["HdPortraits/MaskLookup"] + 10,
             "HD Portraits resumes the mask lookup after its first 9 bytes");
+        Check(image != nullptr && g_inputGet == image + (0x869E00 - 0x400000), "Smooth Cursor hands on to the game's input getter");
         uint8_t* entry = at["GroundTargets/CastSpellByNameEntry"];
         Check(entry != nullptr && entry[0] == 0xE9
             && entry + 5 + static_cast<int32_t>(Read32(entry + 1)) == reinterpret_cast<uint8_t*>(&GroundTargetCastSpellByName)
