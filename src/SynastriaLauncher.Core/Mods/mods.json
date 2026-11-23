@@ -1,5 +1,5 @@
 {
-  "revision": 14,
+  "revision": 15,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -60,11 +60,7 @@
           "sha256": "6e09ad128d0d73c94231e76b4491a8bbac1a27fad9c1aaa54c846f04ad72d99c" },
         { "path": "{dlls}/zones.ini", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "zones.ini",
           "sha256": "2a26881b854907f42a63cf4bca997364bfa1b9f170c8883a1404bf72940c1677" },
-        { "path": "{dlls}/WTF/Luxvelum.ini", "config": true,
-          "presets": [
-            { "id": "default", "name": "Mod Defaults", "description": "The settings Luxvelum ships with.", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum.ini" },
-            { "id": "reforged", "name": "Project Reforged", "description": "Project Reforged's recommended settings, downloaded from their site: lighter fog, sun rays and color grading, brighter lamps in the fog, calmer water, a faster fog quality, and per-region fog for Outland and Northrend. If fog flickers, set Multisampling to 1x in the game's Video options.", "url": "https://pub-0f05631d243e4046993fc02ca7be9542.r2.dev/Wrath%20of%20the%20Lich%20King/mods/presets/LuxVelum.ini" }
-          ] }
+        { "path": "{dlls}/WTF/Luxvelum.ini", "config": true, "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum.ini" }
       ]
     },
     {

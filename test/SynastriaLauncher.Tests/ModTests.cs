@@ -199,14 +199,14 @@ public sealed class ModTests : IDisposable
         Assert.Equal("tuned=1", File.ReadAllText(Path.Combine(Game, "DLLs", "Lux.ini.bak")));
     }
 
-    // Luxvelum offers its own settings and Project Reforged's, both downloaded from their sources.
+    // Luxvelum's settings file comes from its own release, with no presets to pick (Project Reforged uses the same file).
     [Fact]
-    public void LuxvelumHasReforgedPreset()
+    public void LuxvelumSettingsComeFromItsRelease()
     {
-        var file = ModPresets.PresetFile(ModManifest.Embedded().Mods.Single(m => m.Id == "luxvelum"))!;
-        Assert.Equal(["default", "reforged"], file.Presets!.Select(p => p.Id));
-        Assert.All(file.Presets!, p => Assert.True(p.IsDownloaded));
-        Assert.StartsWith(Core.Reforged.ReforgedCatalog.BucketBase, Preset(file, "reforged").Url);
+        var mod = ModManifest.Embedded().Mods.Single(m => m.Id == "luxvelum");
+        var ini = mod.Files.Single(f => f.Config);
+        Assert.Null(ModPresets.PresetFile(mod));
+        Assert.StartsWith("https://github.com/Stormhand-dev/Luxvelum/releases/download/", ini.Url);
     }
 
     private static ModDefinition DxvkMod() => ModManifest.Embedded().Mods.Single(m => m.Id == "dxvk");
