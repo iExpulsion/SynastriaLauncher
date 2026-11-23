@@ -138,9 +138,9 @@ const std::vector<Patch>& Patches()
     static const std::vector<Patch> all =
     {
         InterfaceEditPatch(),
-        CursorOptimizationsPatch(),
         NoAutoAfkPatch(),
         NoMailDelayPatch(),
+        CursorOptimizationsPatch(),
         GraphicsLimitsPatch(),
         NoZoomFadePatch(),
         HdPortraitsPatch(),

@@ -91,13 +91,6 @@ public static class PatchCatalog
             "Lets the game use up to 4 GB of memory",
             "Lets the 32-bit client use up to 4 GB of memory.",
             false, [], [], Hidden: true),
-        new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,
-            "Keeps the frame rate up when you move the mouse",
-            "Each time the mouse moves, the game hides the Windows cursor and has the graphics card show its own cursor again, "
-                + "which is slow, and it keeps sending its cursor to the graphics card even when it looks the same, which DXVK "
-                + "makes slow too. This leaves the cursor in place while it's shown and skips the sends that wouldn't change "
-                + "anything. Only works with patches loaded in memory.",
-            true, [], [], MemoryOnly: true),
         new(PatchIds.NoAutoAfk, "No Auto AFK", PatchGroup.QualityOfLife,
             "No more being marked AFK or logged out for sitting idle",
             "Stops the client from marking you AFK after 5 idle minutes and logging you out after 30.",
@@ -115,6 +108,13 @@ public static class PatchCatalog
                 new("05 60 EA 00 00 68 3A 02 00 00", "05 01 00 00 00 68 3A 02 00 00"),
             ],
             []),
+        new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,
+            "Keeps the frame rate up when you move the mouse",
+            "Each time the mouse moves, the game hides the Windows cursor and has the graphics card show its own cursor again, "
+                + "which is slow, and it keeps sending its cursor to the graphics card even when it looks the same, which DXVK "
+                + "makes slow too. This leaves the cursor in place while it's shown and skips the sends that wouldn't change "
+                + "anything. Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
         new(PatchIds.DllLoader, "DLL Loader", PatchGroup.Advanced,
             "Loads the launcher's patches and DLL mods when the game starts",
             "Loads SynastriaLauncher.dll from the game folder, then every DLL in the chosen folder (inside the game folder), when the game starts.",
