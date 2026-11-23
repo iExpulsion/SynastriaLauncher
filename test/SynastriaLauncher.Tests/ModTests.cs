@@ -227,6 +227,29 @@ public sealed class ModTests : IDisposable
 
     private static ModPreset Preset(ModFile file, string id) => file.Presets!.Single(p => p.Id == id);
 
+    // DXVK offers the NVIDIA multisampling presets, downloaded from this repo so launchers built before them get them.
+    [Fact]
+    public void DxvkHasNvidiaPresets()
+    {
+        var file = ModPresets.PresetFile(DxvkMod())!;
+        Assert.Equal(["default", "original-cursor", "nvidia-msaa", "nvidia-msaa-original-cursor"], file.Presets!.Select(p => p.Id));
+        Assert.All(file.Presets!.Where(p => p.Id.StartsWith("nvidia")), p => Assert.True(p.IsDownloaded));
+    }
+
+    // A preset downloaded from this repo names a file that's in the repo's Presets folder.
+    [Fact]
+    public void RepoPresetsExist()
+    {
+        var presets = ModManifest.Embedded().Mods.SelectMany(m => m.Files).SelectMany(f => f.Presets ?? [])
+            .Where(p => p.Url?.StartsWith(LiveList.RepoFolder, StringComparison.Ordinal) == true).ToList();
+        Assert.NotEmpty(presets);
+        Assert.All(presets, p =>
+        {
+            var name = p.Url![(LiveList.RepoFolder + "Mods/Presets/").Length..];
+            Assert.NotNull(typeof(ModPresets).Assembly.GetManifestResourceStream($"SynastriaLauncher.Core.Mods.Presets.{name}"));
+        });
+    }
+
     // With no config file, Mod Defaults is current; a written preset reads as itself.
     [Fact]
     public void DetectsPresets()

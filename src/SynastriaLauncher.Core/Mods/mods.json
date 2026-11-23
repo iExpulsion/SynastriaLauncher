@@ -1,5 +1,5 @@
 {
-  "revision": 15,
+  "revision": 16,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -18,7 +18,9 @@
           "path": "WTF/dxvk.conf", "config": true,
           "presets": [
             { "id": "default", "name": "Mod Defaults", "description": "No settings file: DXVK uses its own defaults, including a double-size mouse cursor." },
-            { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" }
+            { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" },
+            { "id": "nvidia-msaa", "name": "NVIDIA Multisampling", "description": "For NVIDIA cards with Luxvelum: reports an AMD card, so the game's Video options offer Multisampling above 1x; double-size cursor. If odd graphics glitches appear, go back to Mod Defaults.", "url": "https://raw.githubusercontent.com/iExpulsion/SynastriaLauncher/main/src/SynastriaLauncher.Core/Mods/Presets/dxvk.nvidia-msaa.conf" },
+            { "id": "nvidia-msaa-original-cursor", "name": "NVIDIA Multisampling, Original Cursor", "description": "NVIDIA Multisampling with the cursor enlargement off.", "url": "https://raw.githubusercontent.com/iExpulsion/SynastriaLauncher/main/src/SynastriaLauncher.Core/Mods/Presets/dxvk.nvidia-msaa-original-cursor.conf" }
           ]
         }
       ]
@@ -43,7 +45,7 @@
       "id": "luxvelum",
       "name": "Luxvelum",
       "summary": "Better-looking fog and water",
-      "details": "Press Insert in game for its settings. If fog flickers, set Multisampling to 1x in the game's Video options.",
+      "details": "Press Insert in game for its settings. With DXVK on an NVIDIA card, pick one of DXVK's NVIDIA Multisampling settings for smoother edges. If fog flickers, set Multisampling to 1x in the game's Video options.",
       "author": "Stormhand (fork of CoAVolFog)",
       "homepage": "https://github.com/Stormhand-dev/Luxvelum",
       "warning": "Heavy on performance: its fog and water effects can cut frame rates noticeably, more so alongside Project Reforged. Switch it off if the game runs slowly.",
