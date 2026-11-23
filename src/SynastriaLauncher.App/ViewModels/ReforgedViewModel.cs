@@ -133,6 +133,13 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
     [ObservableProperty]
     public partial bool IsLoaded { get; set; }
 
+    // Parts switched on with a newer download, for the sidebar badge and the Play bar.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasUpdates))]
+    public partial int UpdateCount { get; set; }
+
+    public bool HasUpdates => UpdateCount > 0;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasPatchWarning))]
     public partial string PatchWarning { get; set; } = "";
@@ -159,6 +166,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
     {
         _status = null;
         IsLoaded = false;
+        UpdateCount = 0;
         Sections.Clear();
         Summary = "";
         ShowFooter = false;
@@ -265,7 +273,8 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         }
     }
 
-    // Checks lazily, the first time the page opens: the first check hashes every installed file (~20 GB).
+    // Checks the first time the page opens, or at launcher start when parts are installed. The first check hashes
+    // every installed file (~20 GB); later ones reuse the hash cache.
     public async Task EnsureLoadedAsync()
     {
         if (!IsLoaded && !_loading && main.GameFolder is not null)
@@ -273,6 +282,9 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
             await CheckAsync();
         }
     }
+
+    public Task CheckIfInstalledAsync() =>
+        main.GameFolder is { } game && ReforgedCatalog.InstalledParts(game).Count > 0 ? EnsureLoadedAsync() : Task.CompletedTask;
 
     [RelayCommand]
     private async Task CheckAsync()
@@ -306,6 +318,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
             {
                 EndBusy();
                 _loading = false;
+                main.Play.Refresh();
             }
         }
     }
@@ -332,6 +345,7 @@ public sealed partial class ReforgedViewModel(MainViewModel main) : ObservableOb
         var on = status.Parts.Count(p => p.IsOn);
         var updates = status.Parts.Count(p => p.State is ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial);
         var linked = status.Parts.Count(p => p.Linked);
+        UpdateCount = status.Parts.Count(p => p.IsOn && p.State is ReforgedPartState.UpdateAvailable or ReforgedPartState.Partial);
         Summary = installed == 0 ? "Not installed. Pick the parts you want, or start with the Core set."
             : $"{on} of {status.Parts.Count} Parts On   ·   {StatusText.Updates(updates)}"
               + (installed > on ? $"   ·   {installed - on} Switched Off, Kept for Later" : "")

@@ -69,17 +69,29 @@
                      ToolTip.Tip="Made by other teams; the launcher installs it from their official downloads" />
           <Button Classes="nav" Classes.selected="{Binding IsReforged}"
                   Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Reforged}">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <PathIcon Data="{StaticResource IconReforged}" />
-              <TextBlock Classes="navLabel" Text="Project Reforged" />
-            </StackPanel>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="badge" IsVisible="{Binding Reforged.HasUpdates}"
+                      ToolTip.Tip="Parts with updates">
+                <TextBlock Text="{Binding Reforged.UpdateCount}" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconReforged}" />
+                <TextBlock Classes="navLabel" Text="Project Reforged" />
+              </StackPanel>
+            </DockPanel>
           </Button>
           <Button Classes="nav" Classes.selected="{Binding IsWdm}"
                   Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Wdm}">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <PathIcon Data="{StaticResource IconMap}" />
-              <TextBlock Classes="navLabel" Text="WoW Dungeon Maps" />
-            </StackPanel>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="badge" IsVisible="{Binding Wdm.HasUpdates}"
+                      ToolTip.Tip="Updates available">
+                <TextBlock Text="{Binding Wdm.UpdateCount}" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconMap}" />
+                <TextBlock Classes="navLabel" Text="WoW Dungeon Maps" />
+              </StackPanel>
+            </DockPanel>
           </Button>
         </StackPanel>
       </DockPanel>

@@ -109,10 +109,18 @@ public sealed partial class WdmViewModel(MainViewModel main) : ObservableObject
     public bool HasGame => main.HasGameFolder;
     private bool _loaded;
 
+    // Installed parts with a newer release, for the sidebar badge and the Play bar.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasUpdates))]
+    public partial int UpdateCount { get; set; }
+
+    public bool HasUpdates => UpdateCount > 0;
+
     // Another client was chosen; the page checks it again when it opens.
     public void GameFolderChanged()
     {
         _loaded = false;
+        UpdateCount = 0;
         OnPropertyChanged(nameof(HasGame));
     }
 
@@ -123,6 +131,11 @@ public sealed partial class WdmViewModel(MainViewModel main) : ObservableObject
             await CheckAsync();
         }
     }
+
+    // At launcher start, only when something from WDM is installed.
+    public Task CheckIfInstalledAsync() =>
+        main.GameFolder is { } game && WdmCatalog.Parts.Any(p => WdmService.IsInstalled(p, game, WdmCatalog.Locale(game)))
+            ? EnsureLoadedAsync() : Task.CompletedTask;
 
     [RelayCommand]
     private async Task CheckAsync()
@@ -158,6 +171,7 @@ public sealed partial class WdmViewModel(MainViewModel main) : ObservableObject
             {
                 IsBusy = false;
                 Refresh();
+                main.Play.Refresh();
             }
         }
     }
@@ -193,6 +207,7 @@ public sealed partial class WdmViewModel(MainViewModel main) : ObservableObject
                   + "WDM's copies only replace that art, so uninstall them.";
             var installed = Rows.Count(r => r.Status?.State is not (null or WdmState.NotInstalled or WdmState.InReforged));
             var updates = Rows.Count(r => r.Status?.State == WdmState.UpdateAvailable);
+            UpdateCount = updates;
             Summary = !_loaded ? Summary
                 : installed == 0 ? "Not installed. Start with the WDM addon, plus Dungeon Maps unless Project Reforged has them."
                 : $"{installed} of {Rows.Count()} Installed   ·   {StatusText.Updates(updates)}";

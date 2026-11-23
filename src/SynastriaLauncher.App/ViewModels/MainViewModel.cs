@@ -113,6 +113,13 @@ public sealed partial class MainViewModel : ObservableObject
         await ReloadAllAsync();
         await CheckLauncherUpdateAsync();
         await WowExt.CheckAsync();
+        await CheckThirdPartyAsync();
+    }
+
+    private async Task CheckThirdPartyAsync()
+    {
+        await Wdm.CheckIfInstalledAsync();
+        await Reforged.CheckIfInstalledAsync();
     }
 
     private async Task ReloadAllAsync()
@@ -184,6 +191,7 @@ public sealed partial class MainViewModel : ObservableObject
             Wdm.GameFolderChanged();
             await ReloadAllAsync();
             await WowExt.CheckAsync();
+            await CheckThirdPartyAsync();
         }
         else if (folder is not null)
         {

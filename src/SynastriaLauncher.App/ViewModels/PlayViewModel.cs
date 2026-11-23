@@ -42,10 +42,14 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         StatusTitle = !main.HasGameFolder ? "Choose Your Game Folder" : "Ready to Play";
         StatusLine = !main.HasGameFolder
             ? "Settings, Game Folder: pick the folder with WowExt.exe"
-            : string.Join("   ·   ",
+            : string.Join("   ·   ", new[]
+            {
                 Plural(patchesOn, "Patch", "Patches") + " On",
                 Plural(mods, "Mod", "Mods") + " Active",
-                AddonUpdates == 0 ? "Addons Up to Date" : Plural(AddonUpdates, "Addon Update", "Addon Updates"));
+                AddonUpdates == 0 ? "Addons Up to Date" : Plural(AddonUpdates, "Addon Update", "Addon Updates"),
+                main.Reforged.HasUpdates ? Plural(main.Reforged.UpdateCount, "Reforged Update", "Reforged Updates") : "",
+                main.Wdm.HasUpdates ? Plural(main.Wdm.UpdateCount, "Dungeon Maps Update", "Dungeon Maps Updates") : "",
+            }.Where(s => s.Length > 0));
         main.RefreshBackups();
         Warnings = string.Join("   ", main.Mods.Items
             .Where(m => !m.Mod.FollowsReforged && m.State is not (ModState.NotInstalled or ModState.Disabled) && m.HasRequirement)
