@@ -199,9 +199,9 @@ public sealed class ModTests : IDisposable
         Assert.Equal("tuned=1", File.ReadAllText(Path.Combine(Game, "DLLs", "Lux.ini.bak")));
     }
 
-    // LuxVelum offers its own settings and Project Reforged's, both downloaded from their sources.
+    // Luxvelum offers its own settings and Project Reforged's, both downloaded from their sources.
     [Fact]
-    public void LuxVelumHasReforgedPreset()
+    public void LuxvelumHasReforgedPreset()
     {
         var file = ModPresets.PresetFile(ModManifest.Embedded().Mods.Single(m => m.Id == "luxvelum"))!;
         Assert.Equal(["default", "reforged"], file.Presets!.Select(p => p.Id));

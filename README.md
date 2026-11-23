@@ -102,7 +102,7 @@ Optional extras that run inside the game:
 - **Community mods**, downloaded from their authors' own releases:
   - **DXVK:** runs the game's graphics through Vulkan, usually smoother on modern graphics cards.
   - **Lexara:** sharper, cleaner text.
-  - **LuxVelum:** better-looking fog and water.
+  - **Luxvelum:** better-looking fog and water.
   - **wow-optimize:** smoother game performance.
 
 ![Mods: the Made for Synastria cards, two installed with Uninstall buttons and Short Self Combat Text ready to install](docs/images/mods.png)

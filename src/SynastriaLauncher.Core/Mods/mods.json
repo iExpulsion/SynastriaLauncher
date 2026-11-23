@@ -1,5 +1,5 @@
 {
-  "revision": 13,
+  "revision": 14,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -19,8 +19,8 @@
           "presets": [
             { "id": "default", "name": "Mod Defaults", "description": "No settings file: DXVK uses its own defaults, including a double-size mouse cursor." },
             { "id": "original-cursor", "name": "Original Cursor Size", "description": "Turns the cursor enlargement off, for screens where the doubled cursor is too big (often 4K).", "file": "dxvk.original-cursor.conf" },
-            { "id": "luxvelum-msaa", "name": "LuxVelum MSAA Fix", "description": "Reports an AMD graphics card, so LuxVelum keeps antialiasing on NVIDIA and Intel cards; double-size cursor. If odd graphics glitches appear, go back to Mod Defaults.", "file": "dxvk.luxvelum-msaa.conf" },
-            { "id": "luxvelum-msaa-original-cursor", "name": "LuxVelum MSAA Fix, Original Cursor", "description": "The LuxVelum MSAA Fix with the cursor enlargement off.", "file": "dxvk.luxvelum-msaa-original-cursor.conf" }
+            { "id": "luxvelum-msaa", "name": "Luxvelum MSAA Fix", "description": "Reports an AMD graphics card, so Luxvelum keeps antialiasing on NVIDIA and Intel cards; double-size cursor. If odd graphics glitches appear, go back to Mod Defaults.", "file": "dxvk.luxvelum-msaa.conf" },
+            { "id": "luxvelum-msaa-original-cursor", "name": "Luxvelum MSAA Fix, Original Cursor", "description": "The Luxvelum MSAA Fix with the cursor enlargement off.", "file": "dxvk.luxvelum-msaa-original-cursor.conf" }
           ]
         }
       ]
@@ -43,25 +43,29 @@
     },
     {
       "id": "luxvelum",
-      "name": "LuxVelum",
+      "name": "Luxvelum",
       "summary": "Better-looking fog and water",
-      "details": "Press Ctrl+F7 in game for its settings (Insert with the Project Reforged preset). If fog flickers, set Multisampling to 1x in the game's Video options.",
-      "author": "Raz0r1337 (fork of Coa-vFog)",
-      "homepage": "https://github.com/Raz0r1337/LuxVelum",
+      "details": "Press Insert in game for its settings. If fog flickers, set Multisampling to 1x in the game's Video options.",
+      "author": "Stormhand (fork of CoAVolFog)",
+      "homepage": "https://github.com/Stormhand-dev/Luxvelum",
       "warning": "Heavy on performance: its fog and water effects can cut frame rates noticeably, more so alongside Project Reforged. Switch it off if the game runs slowly.",
-      "version": "build-1",
+      "version": "v1.0.0",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/LuxVelum.dll", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.dll",
-          "sha256": "2a40107e1692d6f8b80ea21621e1e05b01749c60b687aa1c69b68b7c9b7a7d3c" },
-        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "fogdata.bin",
-          "sha256": "4276f4b8511ae78c854faebaea7931ff9c57439179623ad7ffd64284e78d160a" },
-        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "waterdata.bin",
+        { "path": "{dlls}/Luxvelum.dll", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "Luxvelum.dll",
+          "sha256": "77b83b44c3a475d55f5f9618283b5ce548205315c99c4dc61a8c0dba23b372eb" },
+        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "fogdata.bin",
+          "sha256": "0cb7ce2cd2b673475032fce1c2d20288ad7fd00a4dfc0b9f4c49a54245d67785" },
+        { "path": "{dlls}/fogdata-without-darker-nights.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "fogdata-without-darker-nights.bin",
+          "sha256": "b441891ecdccc4645c76aa10e1156cd842b683698e5cee63d64acd7f1df2acab" },
+        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "waterdata.bin",
           "sha256": "6e09ad128d0d73c94231e76b4491a8bbac1a27fad9c1aaa54c846f04ad72d99c" },
-        { "path": "{dlls}/LuxVelum.ini", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini", "config": true,
+        { "path": "{dlls}/zones.ini", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "zones.ini",
+          "sha256": "2a26881b854907f42a63cf4bca997364bfa1b9f170c8883a1404bf72940c1677" },
+        { "path": "{dlls}/WTF/Luxvelum.ini", "config": true,
           "presets": [
-            { "id": "default", "name": "Mod Defaults", "description": "The settings LuxVelum ships with.", "url": "https://github.com/Raz0r1337/LuxVelum/releases/download/build-1/LuxVelum-Win32.zip", "entry": "LuxVelum.ini" },
-            { "id": "reforged", "name": "Project Reforged", "description": "Project Reforged's recommended settings, downloaded from their site: lighter fog, sun rays and color grading, brighter lamps in the fog, calmer water, and a faster fog quality. Its settings window opens with Insert instead of Ctrl+F7. Its per-region fog for Outland and Northrend needs a newer LuxVelum and is skipped by this one. If fog flickers, set Multisampling to 1x in the game's Video options.", "url": "https://pub-0f05631d243e4046993fc02ca7be9542.r2.dev/Wrath%20of%20the%20Lich%20King/mods/presets/LuxVelum.ini" }
+            { "id": "default", "name": "Mod Defaults", "description": "The settings Luxvelum ships with.", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum.ini" },
+            { "id": "reforged", "name": "Project Reforged", "description": "Project Reforged's recommended settings, downloaded from their site: lighter fog, sun rays and color grading, brighter lamps in the fog, calmer water, a faster fog quality, and per-region fog for Outland and Northrend. If fog flickers, set Multisampling to 1x in the game's Video options.", "url": "https://pub-0f05631d243e4046993fc02ca7be9542.r2.dev/Wrath%20of%20the%20Lich%20King/mods/presets/LuxVelum.ini" }
           ] }
       ]
     },
