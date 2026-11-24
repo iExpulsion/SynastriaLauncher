@@ -40,7 +40,7 @@ and it goes on into the world as them; without one it stops at character select.
 a name, add their class, race, faction or level in brackets, like `Expulsion (Hunter)` or `Lich (Horde)`, or more
 than one separated by commas, like `Lich (Death Knight, Alliance)`. When the name still fits more than one character,
 it stops at character select. Choose which account the Launch
-button uses in **Launch Logs In As**, or in the **Logs In As** box beside the Launch button, and press **Create Shortcut** on an account for a desktop shortcut that starts
+button uses in **Launch Logs In As**, or with the arrow on the Launch button, which shows the account under **LAUNCH**, and press **Create Shortcut** on an account for a desktop shortcut that starts
 the game through the launcher (with its usual checks) and logs in as that account, one per account if you play
 several. Hold Shift while the game starts to skip logging in. Passwords are encrypted for your Windows user.
 

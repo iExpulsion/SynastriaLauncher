@@ -117,21 +117,26 @@
     <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource PlayBar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0"
             Padding="24,14">
       <DockPanel>
-        <Button DockPanel.Dock="Right" Classes="primary" Command="{Binding Play.PlayCommand}"
-                Width="200" Height="52" CornerRadius="9" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-          <TextBlock Text="LAUNCH" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="Bold" LetterSpacing="3" Foreground="{StaticResource OnGold}" />
-        </Button>
-
-        <StackPanel DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" Spacing="4" IsVisible="{Binding Accounts.HasAccounts}">
-          <TextBlock Classes="small" Text="Logs In As" />
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <ComboBox ItemsSource="{Binding Accounts.LaunchChoices}" SelectedItem="{Binding Accounts.LaunchChoice}" MinWidth="160" CornerRadius="7"
-                      ToolTip.Tip="The account Launch logs in as. Hold Shift while the game starts to skip it." />
-            <Button Classes="icon" Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Settings}"
-                    ToolTip.Tip="Manage accounts in Settings">
-              <PathIcon Data="{StaticResource IconSettings}" Width="15" Height="15" />
-            </Button>
-          </StackPanel>
+        <!-- Launch; with saved accounts, a second line says who it logs in as and a chevron segment picks the account -->
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="1">
+          <Button Classes="primary" Command="{Binding Play.PlayCommand}" Height="52"
+                  Width="{Binding Accounts.LaunchWidth}" CornerRadius="{Binding Accounts.LaunchCorners}"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <StackPanel Spacing="0">
+              <TextBlock Text="LAUNCH" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="Bold" LetterSpacing="3"
+                         Foreground="{StaticResource OnGold}" HorizontalAlignment="Center" />
+              <TextBlock Text="{Binding Accounts.LaunchCaption}" IsVisible="{Binding Accounts.HasLaunchCaption}" FontSize="11.5"
+                         FontWeight="SemiBold" Foreground="{StaticResource OnGold}" Opacity="0.75" HorizontalAlignment="Center"
+                         MaxWidth="150" TextTrimming="CharacterEllipsis" Margin="0,-3,0,0" />
+            </StackPanel>
+          </Button>
+          <Button Classes="primary" Width="38" Height="52" CornerRadius="0,9,9,0" Padding="0" IsVisible="{Binding Accounts.HasAccounts}"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip.Tip="Choose the account Launch logs in as">
+            <PathIcon Data="{StaticResource IconChevron}" Width="18" Height="18" Foreground="{StaticResource OnGold}" />
+            <Button.Flyout>
+              <MenuFlyout Placement="TopEdgeAlignedRight" Opening="OnLaunchMenuOpening" />
+            </Button.Flyout>
+          </Button>
         </StackPanel>
 
         <Border DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" IsVisible="{Binding LauncherUpdate, Converter={x:Static ObjectConverters.IsNotNull}}">

@@ -36,6 +36,25 @@ public partial class MainWindow : Window, IDialogs
         };
     }
 
+    // The Launch button's account menu, built as it opens: each saved account and Don't Log In (the current one
+    // checked), then Manage Accounts.
+    private void OnLaunchMenuOpening(object? sender, EventArgs e)
+    {
+        var model = (MainViewModel)DataContext!;
+        var menu = (MenuFlyout)sender!;
+        menu.Items.Clear();
+        foreach (var choice in model.Accounts.LaunchChoices)
+        {
+            var item = new MenuItem { Header = choice, ToggleType = MenuItemToggleType.Radio, IsChecked = choice == model.Accounts.LaunchChoice };
+            item.Click += (_, _) => model.Accounts.LaunchChoice = choice;
+            menu.Items.Add(item);
+        }
+        menu.Items.Add(new Separator());
+        var manage = new MenuItem { Header = "Manage Accounts" };
+        manage.Click += (_, _) => model.Page = LauncherPage.Settings;
+        menu.Items.Add(manage);
+    }
+
     public Task AlertAsync(string title, string message) => ShowDialogAsync(title, message, null, "OK");
 
     public Task<bool> ConfirmAsync(string title, string message, string confirmLabel, string cancelLabel = "Cancel") =>
