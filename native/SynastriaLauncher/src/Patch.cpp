@@ -140,6 +140,7 @@ const std::vector<Patch>& Patches()
         InterfaceEditPatch(),
         NoAutoAfkPatch(),
         NoMailDelayPatch(),
+        InteractKeyPatch(),
         CursorOptimizationsPatch(),
         GraphicsLimitsPatch(),
         NoZoomFadePatch(),
@@ -150,7 +151,6 @@ const std::vector<Patch>& Patches()
         ShortNumbersPatch(),
         DamageColorsPatch(),
         GroundTargetsPatch(),
-        InteractKeyPatch(),
     };
     return all;
 }

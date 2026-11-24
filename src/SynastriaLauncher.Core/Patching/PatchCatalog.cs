@@ -109,6 +109,14 @@ public static class PatchCatalog
                 new("05 60 EA 00 00 68 3A 02 00 00", "05 01 00 00 00 68 3A 02 00 00"),
             ],
             []),
+        new(PatchIds.InteractKey, "Interact Key", PatchGroup.QualityOfLife,
+            "One key loots, gathers, opens and talks to whatever's nearest in front of you",
+            "Bind Interact With Mouseover in the game's Key Bindings (under Targeting Functions). With the mouse over a "
+                + "character it works as before; otherwise it interacts with the nearest thing in front of you, as a "
+                + "right-click would: loots and skins corpses, mines veins, picks herbs, opens chests, doors and mailboxes, and "
+                + "talks to NPCs. With nothing in reach it falls back to your target, as before. Macros can use "
+                + "/run InteractUnit(\"nearest\"). Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
         new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,
             "Keeps the frame rate up when you move the mouse",
             "Each time the mouse moves, the game hides the Windows cursor and has the graphics card show its own cursor again, "
@@ -301,14 +309,6 @@ public static class PatchCatalog
             "Adds [@cursor], [@playerlocation] and [@targetlocation] (or the short [@cur], [@ploc] and [@tloc]) to /cast "
                 + "macros for spells you place on the ground, like Flamestrike, Flare or Death and Decay: no targeting circle, "
                 + "and the game's usual range and placement rules apply. Only works with patches loaded in memory.",
-            true, [], [], MemoryOnly: true),
-        new(PatchIds.InteractKey, "Interact Key", PatchGroup.QualityOfLife,
-            "One key loots, gathers, opens and talks to whatever's nearest in front of you",
-            "Bind Interact With Mouseover in the game's Key Bindings (under Targeting Functions). With the mouse over a "
-                + "character it works as before; otherwise it interacts with the nearest thing in front of you, as a "
-                + "right-click would: loots and skins corpses, mines veins, picks herbs, opens chests, doors and mailboxes, and "
-                + "talks to NPCs. With nothing in reach it falls back to your target, as before. Macros can use "
-                + "/run InteractUnit(\"nearest\"). Only works with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
     ];
 

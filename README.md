@@ -41,9 +41,9 @@ Improvements to the game client, each with its own switch:
 |---|---|
 | No Auto AFK | You're no longer marked AFK or logged out for sitting idle. |
 | No Mail Refresh Delay | The mailbox refreshes right away instead of every 60 seconds. |
+| Interact Key | One key loots, gathers, opens and talks to whatever's nearest in front of you (see below). |
 | Cursor Optimizations | Keeps the frame rate up when you move the mouse. |
 | Ground Target Macros | Macros can drop ground spells at your cursor, on yourself or on your target (see below). |
-| Interact Key | One key loots, gathers, opens and talks to whatever's nearest in front of you (see below). |
 | Graphics Limits | Higher limits on the video settings sliders: view distance, ground clutter and more. |
 | No Zoom Transparency | Your character doesn't turn see-through when the camera is zoomed in close. |
 | HD Portraits | Sharper character portraits on unit frames. |
