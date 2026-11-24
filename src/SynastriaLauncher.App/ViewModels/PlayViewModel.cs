@@ -79,11 +79,9 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         {
             Core.GameProcesses.ReleaseClosed(folder);
         }
-        if (exe is not null && GameProcess.IsRunning(main.GameFolder))
-        {
-            await main.Dialogs.AlertAsync("Already Running", "The game is already running.");
-        }
-        else if (exe is not null && main.IsWritingGame)
+        // With the game already running this starts another client (multiboxing); the file syncs below wait for a
+        // time no game is open.
+        if (exe is not null && main.IsWritingGame)
         {
             await main.Dialogs.AlertAsync("Still Working", "The launcher is still changing files in the game folder. Start the game once it's done.");
         }
