@@ -135,6 +135,7 @@ public partial class MainWindow : Window, IDialogs
                 {
                     Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
                     Text = "With a character, the game enters the world as them; without one, it stops at character select. "
+                        + "If several of your characters share a name, add the class, like Expulsion (Hunter). "
                         + "The password is encrypted for your Windows user.",
                 },
                 problem,

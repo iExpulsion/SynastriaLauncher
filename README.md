@@ -36,13 +36,15 @@ have updates, and it warns you about anything that needs attention, such as a mo
 ### Auto Login
 
 Save your game accounts in Settings, under **Accounts**, and the game logs in by itself. Give an account a character
-and it goes on into the world as them; without one it stops at character select. Choose which account the Launch
+and it goes on into the world as them; without one it stops at character select. If several of your characters share
+a name, add the class, like `Expulsion (Hunter)`; a shared name without one stops at character select. Choose which account the Launch
 button uses in **Launch Logs In As**, and press **Create Shortcut** on an account for a desktop shortcut that starts
 the game through the launcher (with its usual checks) and logs in as that account, one per account if you play
 several. Hold Shift while the game starts to skip logging in. Passwords are encrypted for your Windows user.
 
 If you start `WowExt.exe` yourself, it can log in from its own command line instead:
-`WowExt.exe -login AccountName -password YourPassword -character CharacterName` (`-character` is optional). Your
+`WowExt.exe -login AccountName -password YourPassword -character CharacterName` (`-character` is optional and takes
+the class the same way: `-character "Expulsion (Hunter)"`). Your
 password is then in plain text wherever you keep that command, such as a shortcut. Auto login needs the DLL Loader
 patch either way.
 

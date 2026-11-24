@@ -51,16 +51,31 @@ frame:SetScript("OnUpdate", function(self, elapsed)
         end
     elseif wait <= 0 and stage == "character" and CharacterSelect and CharacterSelect:IsVisible() and GetNumCharacters() > 0 then
         self:SetScript("OnUpdate", nil)
-        for i = 1, GetNumCharacters() do
-            local name = GetCharacterInfo(i)
-            if name and string.lower(name) == string.lower(character) then
-                SelectCharacter(i)
-                EnterWorld()
-                break
-            end
+        local pick = PickCharacter(character)
+        if pick then
+            SelectCharacter(pick)
+            EnterWorld()
         end
     end
 end)
+)lua";
+
+    // "Name" or "Name (Class)", without case. A name shared by several characters needs its class, or none is
+    // picked and the player stays at character select.
+    constexpr const char* PickBody = R"lua(
+local function PickCharacter(wanted)
+    local name, class = string.match(wanted, "^%s*(.-)%s*%(%s*(.-)%s*%)%s*$")
+    name = string.lower(name or wanted)
+    class = class and string.lower(class)
+    local pick, matches = nil, 0
+    for i = 1, GetNumCharacters() do
+        local each, _, eachClass = GetCharacterInfo(i)
+        if each and string.lower(each) == name and (not class or string.lower(eachClass or "") == class) then
+            pick, matches = pick or i, matches + 1
+        end
+    end
+    return (class or matches == 1) and pick or nil
+end
 )lua";
 
     using ExecuteFn = void(__cdecl*)(const char* code, const char* chunk, int);
@@ -112,7 +127,7 @@ LoginRequest ParseLoginArguments(int count, const wchar_t* const* arguments)
 std::string AutoLoginScript(const LoginRequest& request)
 {
     return "local account, password, character = " + LuaString(request.account) + ", " + LuaString(request.password)
-        + ", " + LuaString(request.character) + "\n" + ScriptBody;
+        + ", " + LuaString(request.character) + "\n" + PickBody + ScriptBody;
 }
 
 extern "C" void __cdecl AutoLoginTick()

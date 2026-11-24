@@ -44,7 +44,12 @@ void AutoLoginTests()
     std::string script = AutoLoginScript(LoginRequest { "Acc", "pw\"x", "Lich" });
     Check(Contains(script, "\"\\065\\099\\099\"") && Contains(script, "\"\\112\\119\\034\\120\"")
         && !Contains(script, "pw\"x"), "login script: details as decimal escapes, quotes included");
-    Check(Contains(script, "DefaultServerLogin(account, password)") && Contains(script, "SelectCharacter(i)")
+    Check(Contains(script, "DefaultServerLogin(account, password)") && Contains(script, "SelectCharacter(pick)")
         && Contains(script, "EnterWorld()") && Contains(script, "IsShiftKeyDown()"),
         "login script: logs in, enters the world, and stops while Shift is held");
+
+    // The character can carry its class, and a shared name without one picks nobody.
+    Check(Contains(script, "local function PickCharacter(wanted)") && Contains(script, "(class or matches == 1) and pick or nil")
+        && script.find("PickCharacter(wanted)") < script.find("PickCharacter(character)"),
+        "login script: picks by name or \"Name (Class)\", defined before use");
 }
