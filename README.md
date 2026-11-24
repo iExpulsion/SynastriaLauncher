@@ -43,8 +43,7 @@ character, it stops at character select.
 
 Choose what the Launch button logs in as in **Launch Logs In As**, or with the arrow on the Launch button, which shows
 it under **LAUNCH**. **Create Shortcut** on an account or a character makes a desktop shortcut that starts the game
-through the launcher (with its usual checks) and logs in as it, so you can keep one per character. With the game
-already open, Launch and the shortcuts start another copy, for playing several accounts at once. Hold Shift while
+through the launcher (with its usual checks) and logs in as it, so you can keep one per character. Hold Shift while
 the game starts to skip logging in. Passwords are encrypted for your Windows user.
 
 If you start `WowExt.exe` yourself, it can log in from its own command line instead:

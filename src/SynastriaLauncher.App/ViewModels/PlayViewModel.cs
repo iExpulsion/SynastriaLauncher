@@ -79,7 +79,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
         {
             Core.GameProcesses.ReleaseClosed(folder);
         }
-        // With the game already running this starts another client (multiboxing); the file syncs below wait for a
+        // With the game already running this starts another client; the file syncs below wait for a
         // time no game is open.
         if (exe is not null && main.IsWritingGame)
         {
