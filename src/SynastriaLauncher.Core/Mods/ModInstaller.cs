@@ -124,7 +124,7 @@ public static class ModInstaller
                 }
                 else if (file.Sha256 is not null && hash != file.Sha256)
                 {
-                    throw new InvalidDataException($"{Path.GetFileName(file.Path)} doesn't match the expected file, so nothing was installed");
+                    throw new InvalidDataException($"{mod.Name}'s author changed {Path.GetFileName(file.Path)} since the launcher last checked it, so nothing was installed. Try again later: Check for Updates loads the launcher's updated mod list once it's out");
                 }
                 else if (bytes is not null)
                 {

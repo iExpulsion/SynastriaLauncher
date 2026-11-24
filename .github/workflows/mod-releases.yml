@@ -1,0 +1,57 @@
+name: Mod Releases
+
+# Daily check of the pinned mod downloads against their authors' latest releases. A change lands on the
+# mod-updates branch (tested by the Build workflow) and in an issue; nothing reaches main or players on its own.
+on:
+  schedule:
+    - cron: "23 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency: mod-releases
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TITLE: Mod Downloads Changed Upstream
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check pinned downloads
+        id: check
+        run: python3 -I -X utf8 tools/check-mod-releases.py "$RUNNER_TEMP/report.md"
+
+      # The report has no timestamps, so an unchanged report means this change was already pushed and reported.
+      - name: Report
+        shell: bash
+        run: |
+          report="$RUNNER_TEMP/report.md"
+          issue=$(gh issue list --state open --author "app/github-actions" --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
+          if [ -s "$report" ]; then
+            old=$([ -n "$issue" ] && gh issue view "$issue" --json body --jq .body || true)
+            if [ "$(printf '%s' "$old" | tr -d '\r' | sed -e 's/[[:space:]]*$//')" != "$(tr -d '\r' < "$report" | sed -e 's/[[:space:]]*$//')" ]; then
+              if [ "${{ steps.check.outputs.changed }}" = "true" ]; then
+                git config user.name "github-actions[bot]"
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                git switch -C mod-updates
+                git commit -am "Update pinned mod downloads"
+                git push --force origin mod-updates
+                gh workflow run build.yml --ref mod-updates
+              fi
+              if [ -n "$issue" ]; then
+                gh issue edit "$issue" --body-file "$report"
+                gh issue comment "$issue" --body "The upstream releases changed again; the report above is updated."
+              else
+                gh issue create --title "$TITLE" --body-file "$report"
+              fi
+            fi
+          elif [ -n "$issue" ]; then
+            gh issue close "$issue" --comment "Every pinned download matches its author's latest release again."
+            git push origin --delete mod-updates || true
+          fi
