@@ -16,10 +16,24 @@ public static class GameProcesses
         {
             using (process)
             {
-                found = found || gameFolder is null || BelongsTo(ImagePath(process.Id), gameFolder);
+                found = found || (!HasExited(process) && (gameFolder is null || BelongsTo(ImagePath(process.Id), gameFolder)));
             }
         }
         return found;
+    }
+
+    // A closed game can stay in the process list for minutes while a driver finishes with it (seen with DXVK); it has
+    // exited by then. One the launcher can't ask about counts as running.
+    private static bool HasExited(Process process)
+    {
+        try
+        {
+            return process.HasExited;
+        }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return false;
+        }
     }
 
     // An exe the launcher can't read the path of counts as this folder's, so files aren't changed under it.
