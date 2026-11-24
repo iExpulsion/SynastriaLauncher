@@ -48,9 +48,23 @@ the game starts to skip logging in. Passwords are encrypted for your Windows use
 
 If you start `WowExt.exe` yourself, it can log in from its own command line instead:
 `WowExt.exe -login AccountName -password YourPassword -character CharacterName` (`-character` is optional and takes
-the same details: `-character "Lich (Horde)"`). Your
-password is then in plain text wherever you keep that command, such as a shortcut. Auto login needs the DLL Loader
-patch either way.
+the same details: `-character "Lich (Horde)"`). Your password is then in plain text wherever you keep that command,
+such as a shortcut. Auto login needs the DLL Loader patch either way.
+
+#### How Your Password Is Kept
+
+- **Where:** saved accounts live in the launcher's settings file on your PC
+  (`%LOCALAPPDATA%\SynastriaLauncher\launcher.json`), and nothing is sent anywhere else. The password is encrypted
+  with Windows' own data protection (DPAPI), tied to your Windows user, so the file is no use on another PC or
+  Windows account. There the launcher asks you to enter the password again.
+- **On the way to the game:** when you press Launch, the launcher decrypts the password and hands it to that one game
+  process in its environment, never on a command line or in a file. The launcher's patcher DLL reads it as the game
+  starts, clears it, and logs in through the game's own login screen.
+- **What it doesn't protect against:** anything running as your Windows user can decrypt it, the same as passwords
+  saved in a browser. If your PC or Windows account is compromised, treat saved passwords as exposed.
+- **Not saving it:** don't add an account, or remove it in Settings, under Accounts, and the login screen works as it
+  always did. The Login and Character Select mod's old Remember Password box, which saved the password in plain text
+  in `WTF\Config.wtf`, is gone, and any password it saved is cleared.
 
 ### Patches
 
