@@ -94,7 +94,7 @@
       "details": "To log in without typing your password, save your account in Settings, under Accounts. The old Remember Password box is gone, and a password it saved is cleared from WTF\\Config.wtf.",
       "author": "Expulsion",
       "origin": "synastria",
-      "version": "2",
+      "version": "3",
       "requires": [ "InterfaceEdit" ],
       "files": [
         { "path": "Data/Interface/GlueXML/AccountLogin.lua", "bundled": "login-screens/AccountLogin.lua" },

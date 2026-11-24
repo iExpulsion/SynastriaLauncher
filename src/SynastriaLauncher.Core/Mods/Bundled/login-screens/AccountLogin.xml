@@ -506,7 +506,7 @@
 									</Shadow>
 									<Color r="1.0" g="0.78" b="0"/>
 								</FontString>
-								<FontString name="AccountLoginAutoLoginNote" inherits="GlueFontNormalSmall" text="Auto login is in the launcher's Settings, under Accounts">
+								<FontString name="AccountLoginAutoLoginNote" inherits="GlueFontNormalSmall" text="Set Up Auto Login in the Launcher's Settings">
 									<Anchors>
 										<Anchor point="TOP" relativeTo="AccountLoginSaveAccountNameText" relativePoint="BOTTOM">
 											<Offset>
