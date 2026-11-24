@@ -60,21 +60,32 @@ frame:SetScript("OnUpdate", function(self, elapsed)
 end)
 )lua";
 
-    // "Name" or "Name (Class)", without case. A name shared by several characters needs its class, or none is
-    // picked and the player stays at character select.
+    // "Name", or "Name (detail, detail)" where each detail is the character's class, race, faction or level, without
+    // case. Only a single match is entered; otherwise the player stays at character select.
     constexpr const char* PickBody = R"lua(
+local horde = { ["orc"] = true, ["undead"] = true, ["tauren"] = true, ["troll"] = true, ["blood elf"] = true }
+
+local function Fits(detail, race, class, level)
+    local faction = race and (horde[race] and "horde" or "alliance")
+    return detail == "" or detail == race or detail == class or detail == faction or detail == tostring(level)
+end
+
 local function PickCharacter(wanted)
-    local name, class = string.match(wanted, "^%s*(.-)%s*%(%s*(.-)%s*%)%s*$")
+    local name, details = string.match(wanted, "^%s*(.-)%s*%((.-)%)%s*$")
     name = string.lower(name or wanted)
-    class = class and string.lower(class)
     local pick, matches = nil, 0
     for i = 1, GetNumCharacters() do
-        local each, _, eachClass = GetCharacterInfo(i)
-        if each and string.lower(each) == name and (not class or string.lower(eachClass or "") == class) then
-            pick, matches = pick or i, matches + 1
+        local each, race, class, level = GetCharacterInfo(i)
+        local fits = each ~= nil and string.lower(each) == name
+        race, class = race and string.lower(race), class and string.lower(class)
+        for detail in string.gmatch(details or "", "[^,]+") do
+            fits = fits and Fits(string.lower(string.match(detail, "^%s*(.-)%s*$")), race, class, level)
+        end
+        if fits then
+            pick, matches = i, matches + 1
         end
     end
-    return (class or matches == 1) and pick or nil
+    return matches == 1 and pick or nil
 end
 )lua";
 

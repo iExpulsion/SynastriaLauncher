@@ -48,8 +48,8 @@ void AutoLoginTests()
         && Contains(script, "EnterWorld()") && Contains(script, "IsShiftKeyDown()"),
         "login script: logs in, enters the world, and stops while Shift is held");
 
-    // The character can carry its class, and a shared name without one picks nobody.
-    Check(Contains(script, "local function PickCharacter(wanted)") && Contains(script, "(class or matches == 1) and pick or nil")
-        && script.find("PickCharacter(wanted)") < script.find("PickCharacter(character)"),
-        "login script: picks by name or \"Name (Class)\", defined before use");
+    // The character can carry details (class, race, faction, level), and only a single match is entered.
+    Check(Contains(script, "local function PickCharacter(wanted)") && Contains(script, "matches == 1 and pick or nil")
+        && Contains(script, "[\"blood elf\"] = true") && script.find("PickCharacter(wanted)") < script.find("PickCharacter(character)"),
+        "login script: picks by name with optional details, only a single match, defined before use");
 }
