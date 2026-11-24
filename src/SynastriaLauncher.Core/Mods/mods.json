@@ -91,10 +91,10 @@
       "id": "login-screens",
       "name": "Login and Character Select",
       "summary": "A cleaner login screen and a nicer character list you can reorder by dragging",
-      "details": "The optional Remember Password box saves your password as plain text in WTF\\Config.wtf.",
+      "details": "To log in without typing your password, save your account in Settings, under Accounts. The old Remember Password box is gone, and a password it saved is cleared from WTF\\Config.wtf.",
       "author": "Expulsion",
       "origin": "synastria",
-      "version": "1",
+      "version": "2",
       "requires": [ "InterfaceEdit" ],
       "files": [
         { "path": "Data/Interface/GlueXML/AccountLogin.lua", "bundled": "login-screens/AccountLogin.lua" },

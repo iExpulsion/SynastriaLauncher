@@ -76,10 +76,13 @@ function AccountLogin_OnShow(self)
 	end
 
 	local accountName = GetSavedAccountName();
-	local Password = GetSavedAccountList();
 
 	AccountLoginAccountEdit:SetText(accountName);
-	AccountLoginPasswordEdit:SetText(Password);
+	AccountLoginPasswordEdit:SetText("");
+	-- An earlier version kept the password here in plain text (Remember Password); auto login replaced it.
+	if ( GetSavedAccountList() ~= "" ) then
+		SetSavedAccountList("");
+	end
 	
 	--[[AccountLoginTokenEdit:SetText("");
 	if ( accountName and accountName ~= "" and GetUsesToken() ) then
@@ -196,12 +199,6 @@ function AccountLogin_Login()
 	else
 		SetSavedAccountName("");
 		-- SetUsesToken(false);
-	end
-
-	if ( AccountLoginSavePassword:GetChecked() ) then
-		SetSavedAccountList(AccountLoginPasswordEdit:GetText());
-	else
-		SetSavedAccountList("");
 	end
 end
 

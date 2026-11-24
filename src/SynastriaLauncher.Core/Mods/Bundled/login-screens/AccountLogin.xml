@@ -506,11 +506,11 @@
 									</Shadow>
 									<Color r="1.0" g="0.78" b="0"/>
 								</FontString>
-								<FontString name="AccountLoginSavePasswordText" inherits="GlueFontNormalSmall" text="Remember Password">
+								<FontString name="AccountLoginAutoLoginNote" inherits="GlueFontNormalSmall" text="Auto login is in the launcher's Settings, under Accounts">
 									<Anchors>
 										<Anchor point="TOP" relativeTo="AccountLoginSaveAccountNameText" relativePoint="BOTTOM">
 											<Offset>
-												<AbsDimension x="0" y="-12"/>
+												<AbsDimension x="-8" y="-12"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -523,44 +523,11 @@
 										</Offset>
 										<Color r="0" g="0" b="0"/>
 									</Shadow>
-									<Color r="1.0" g="0.78" b="0"/>
+									<Color r="0.6" g="0.6" b="0.6"/>
 								</FontString>
 							</Layer>
 						</Layers>
 					</Frame>
-					<CheckButton name="AccountLoginSavePassword">
-						<Size>
-							<AbsDimension x="20" y="20"/>
-						</Size>
-						<Anchors>
-							<Anchor point="RIGHT" relativeTo="AccountLoginSavePasswordText" relativePoint="LEFT">
-								<Offset>
-									<AbsDimension x="0" y="0"/>
-								</Offset>
-							</Anchor>
-						</Anchors>
-						<Scripts>
-							<OnLoad>
-								if ( GetSavedAccountList() ~= "" ) then
-									self:SetChecked(1);
-								else
-									self:SetChecked(0);
-								end
-							</OnLoad>
-							<OnClick>
-								if ( self:GetChecked() ) then
-									PlaySound("igMainMenuOptionCheckBoxOff");
-								else
-									PlaySound("igMainMenuOptionCheckBoxOn");
-								end
-							</OnClick>
-						</Scripts>
-						<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-CheckBox-Down"/>
-						<HighlightTexture file="Interface\Buttons\UI-CheckBox-Highlight" alphaMode="ADD"/>
-						<CheckedTexture file="Interface\Buttons\UI-CheckBox-Check"/>
-						<DisabledCheckedTexture file="Interface\Buttons\UI-CheckBox-Check-Disabled"/>
-					</CheckButton>
 					<CheckButton name="AccountLoginSaveAccountName">
 						<Size>
 							<AbsDimension x="20" y="20"/>
