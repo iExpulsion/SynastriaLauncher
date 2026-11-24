@@ -84,6 +84,11 @@ if (args.Length > 1 && args[1] == "--readme")
     Pump(TimeSpan.FromSeconds(5));
     model.LauncherUpdate = null;
     model.LauncherUpdateStatus = "Up to Date";
+    // No saved accounts, so the Launch button shows no account name (in memory only; the tool never saves).
+    model.Data.Accounts.Clear();
+    model.Accounts.Load();
+    // This machine's Reforged parts may have updates waiting; a typical player's are up to date.
+    model.Reforged.UpdateCount = 0;
     string[] toInstall = ["SynScoots/ScootsCraft", "SynScoots/ScootsLibOptions", "RedeemedRiku/LootPop", "Sablinova-WoW/Soul-Forge",
         "RosemyneH/TheJournal", "speedyrulz/AttuneNext", "SynScoots/MehTrajectory", "RosemyneH/ResourceBankViewer",
         "SynScoots/ScootsRares", "SynScoots/ScootsProgressBar"];
@@ -131,6 +136,8 @@ if (args.Length > 1 && args[1] == "--readme")
 
     model.Page = LauncherPage.Wdm;
     Pump(TimeSpan.FromSeconds(20));
+    model.Reforged.UpdateCount = 0;
+    model.Play.Refresh();
     Shot("wdm");
     return;
 }

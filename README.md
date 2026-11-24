@@ -134,7 +134,7 @@ Optional extras that run inside the game:
   - **Luxvelum:** better-looking fog and water.
   - **wow-optimize:** smoother game performance.
 
-![Mods: the Made for Synastria cards, two installed with Uninstall buttons and Short Self Combat Text ready to install](docs/images/mods.png)
+![Mods: the two Made for Synastria cards installed, with Uninstall buttons, and DXVK and Lexara under Community Mods](docs/images/mods.png)
 
 Each mod can be switched off without uninstalling it, and some have presets to choose from. If a mod needs a patch
 that's off, its card says so and can switch the patch on for you. If the game acts strange after adding a mod,
