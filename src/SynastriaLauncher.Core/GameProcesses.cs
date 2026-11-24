@@ -36,6 +36,54 @@ public static class GameProcesses
         }
     }
 
+    // Lets closed games that are stuck finish closing. One has been seen with its last thread suspended once and
+    // never resumed (2026-11-24, cause unknown), which kept it from going away until something resumed it. Only
+    // this folder's processes that have already exited are touched, so a running game is never affected. Returns
+    // how many threads it resumed.
+    public static int ReleaseClosed(string gameFolder)
+    {
+        var resumed = 0;
+        foreach (var process in Names.SelectMany(Process.GetProcessesByName))
+        {
+            using (process)
+            {
+                if (HasExited(process) && BelongsTo(ImagePath(process.Id), gameFolder))
+                {
+                    foreach (ProcessThread thread in process.Threads)
+                    {
+                        resumed += Resume(thread.Id);
+                    }
+                }
+            }
+        }
+        return resumed;
+    }
+
+    private static int Resume(int threadId)
+    {
+        var handle = OpenThread(SuspendResume, false, (uint)threadId);
+        var resumed = 0;
+        if (handle != IntPtr.Zero)
+        {
+            var previous = ResumeThread(handle);
+            for (var i = 0; previous > 1 && i < 64; i++)
+            {
+                previous = ResumeThread(handle);
+            }
+            resumed = previous > 0 ? 1 : 0;
+            CloseHandle(handle);
+        }
+        return resumed;
+    }
+
+    private const uint SuspendResume = 0x0002;
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenThread(uint access, bool inherit, uint threadId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern int ResumeThread(IntPtr thread);
+
     // An exe the launcher can't read the path of counts as this folder's, so files aren't changed under it.
     public static bool BelongsTo(string? imagePath, string gameFolder) =>
         imagePath is null || string.Equals(Normalize(Path.GetDirectoryName(imagePath) ?? ""), Normalize(gameFolder),
