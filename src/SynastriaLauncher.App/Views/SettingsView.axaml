@@ -52,6 +52,55 @@
         </StackPanel>
       </Border>
 
+      <TextBlock Classes="section" Text="Accounts" />
+      <Border Classes="panel">
+        <StackPanel>
+          <Border Classes="row">
+            <DockPanel>
+              <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Accounts.LaunchChoices}" SelectedItem="{Binding Accounts.LaunchChoice}"
+                        MinWidth="180" VerticalAlignment="Center" CornerRadius="7" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Launch Logs In As" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="The Launch button logs in as this account. Hold Shift while the game starts to skip it." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Accounts.Items}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AccountItemViewModel">
+                <Border Classes="row">
+                  <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                      <Button Content="Create Shortcut" Command="{Binding CreateShortcutCommand}"
+                              ToolTip.Tip="A desktop shortcut that starts the game through the launcher and logs in as this account" />
+                      <Button Content="Edit" Command="{Binding EditCommand}" />
+                      <Button Content="Remove" Command="{Binding RemoveCommand}" />
+                    </StackPanel>
+                    <StackPanel Spacing="4" Margin="0,0,12,0">
+                      <TextBlock Classes="name" Text="{Binding Name}" />
+                      <TextBlock Classes="muted" Text="{Binding Detail}" />
+                      <TextBlock Classes="small" Foreground="{StaticResource Bad}" IsVisible="{Binding PasswordUnreadable}"
+                                 Text="The saved password can't be read on this Windows user; edit the account to enter it again" />
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Border Classes="row" BorderThickness="0">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Classes="primary" Content="Add Account" Command="{Binding Accounts.AddCommand}" VerticalAlignment="Center" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Auto Login" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Save an account to log in without typing, and optionally go straight into the world. Passwords are encrypted for your Windows user. Needs the DLL Loader patch." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
       <TextBlock Classes="section" Text="Addons" />
       <Border Classes="panel">
         <StackPanel>

@@ -33,6 +33,13 @@ public sealed class LauncherData
     // The WowExt package version installed in the game folder, once the launcher has installed or recognized one.
     public int? WowExtVersion { get; set; }
 
+    // Game accounts for auto login, and the one the Launch button logs in with (null: none).
+    public List<Accounts.SavedAccount> Accounts { get; set; } = [];
+    public string? LaunchAccount { get; set; }
+
+    public Accounts.SavedAccount? FindAccount(string? name) =>
+        name is null ? null : Accounts.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));
+
     // WoW Dungeon Maps parts the launcher installed, by part id, with the release tag.
     public Dictionary<string, string> WdmTags { get; set; } = [];
 

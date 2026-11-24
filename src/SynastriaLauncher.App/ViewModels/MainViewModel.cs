@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SynastriaLauncher.App.Services;
 using SynastriaLauncher.Core;
+using SynastriaLauncher.Core.Accounts;
 using SynastriaLauncher.Core.Addons;
 using SynastriaLauncher.Core.GitHub;
 using SynastriaLauncher.Core.Patching;
@@ -59,6 +60,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ReforgedViewModel Reforged { get; }
     public WowExtViewModel WowExt { get; }
     public WdmViewModel Wdm { get; }
+    public AccountsViewModel Accounts { get; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasGameFolder), nameof(GameFolderLabel))]
@@ -99,6 +101,8 @@ public sealed partial class MainViewModel : ObservableObject
         Reforged = new ReforgedViewModel(this);
         WowExt = new WowExtViewModel(this);
         Wdm = new WdmViewModel(this);
+        Accounts = new AccountsViewModel(this);
+        Accounts.Load();
         GameFolder = Core.GameFolder.Detect(Data.GameFolder);
         if (Environment.ProcessPath is { } exe)
         {
@@ -114,6 +118,28 @@ public sealed partial class MainViewModel : ObservableObject
         await CheckLauncherUpdateAsync();
         await WowExt.CheckAsync();
         await CheckThirdPartyAsync();
+    }
+
+    // Started from a shortcut: what the Launch button needs (the launcher's game files, patches and mods in step),
+    // then the game with the asked-for account, or the Launch button's own. True when the game started.
+    public async Task<bool> QuickLaunchAsync(LaunchRequest request)
+    {
+        await SyncGameFilesAsync();
+        Patches.Load();
+        await Mods.LoadAsync();
+        await Mods.SyncReforgedFixesAsync();
+        Play.Refresh();
+        var account = Data.FindAccount(request.Account ?? Data.LaunchAccount);
+        var started = false;
+        if (request.Account is not null && account is null)
+        {
+            await Dialogs.AlertAsync("Account Not Found", $"There's no saved account named {request.Account}. Add it in Settings, under Accounts.");
+        }
+        else
+        {
+            started = await Play.StartGameAsync(account);
+        }
+        return started;
     }
 
     private async Task CheckThirdPartyAsync()

@@ -22,6 +22,7 @@
 #include "../src/ShortNumbers.h"
 #include "../src/CursorOptimizations.h"
 #include "../src/InteractKey.h"
+#include "../src/AutoLogin.h"
 #include "NativeTests.h"
 
 #pragma warning(disable : 4731)
@@ -271,6 +272,17 @@ namespace
         }
         Check(applied == static_cast<int>(Patches().size()), "all " + std::to_string(Patches().size()) + " patches apply to the exe without its patch section");
 
+        // Auto login, applied after the catalog's patches as the DLL does: the per-frame update's entry jumps to its
+        // tick, which resumes the client's function after the moved prologue.
+        Patch autoLogin = AutoLoginPatch(LoginRequest { "Account", "Secret", "" });
+        std::vector<uint8_t*> fireEntry = image != nullptr ? FindAll(image, size, autoLogin.sites[0].find) : std::vector<uint8_t*>();
+        PatchReport loginReport = image != nullptr ? ApplyPatch(image, autoLogin, config) : PatchReport { "AutoLogin", Outcome::Skipped, "" };
+        Check(fireEntry.size() == 1 && loginReport.outcome == Outcome::Applied && fireEntry[0][0] == 0xE9
+            && fireEntry[0] + 5 + static_cast<int32_t>(Read32(fireEntry[0] + 1)) == reinterpret_cast<uint8_t*>(&AutoLoginFireOnUpdate)
+            && fireEntry[0][5] == 0x90 && g_fireOnUpdateResume == fireEntry[0] + 6 && g_autoLoginPending,
+            "Auto Login: the per-frame update's entry jumps to the tick, which resumes after the prologue");
+        g_autoLoginPending = false;
+
         struct Expected
         {
             const char* key;
@@ -360,6 +372,7 @@ int main(int argc, char** argv)
     GroundTests();
     CursorTests();
     InteractTests();
+    AutoLoginTests();
     if (argc > 1)
     {
         SiteTests(argv[1]);

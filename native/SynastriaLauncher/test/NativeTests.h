@@ -7,3 +7,4 @@ void VisualTests();
 void GroundTests();
 void CursorTests();
 void InteractTests();
+void AutoLoginTests();

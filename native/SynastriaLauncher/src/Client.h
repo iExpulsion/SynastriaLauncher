@@ -7,6 +7,8 @@
 namespace Client
 {
     constexpr uintptr_t FireOnUpdate = 0x495810;           // FrameScript_FireOnUpdate, registered as a per-frame callback
+    constexpr size_t FireOnUpdatePrologue = 6;             // push ebp; mov ebp, esp; fld dword ptr [ebp+0x14]
+    constexpr uintptr_t FrameScriptExecute = 0x819210;     // void FrameScript_Execute(const char* code, const char* chunk, int), as RunScript calls it
 
     // Object manager.
     constexpr uintptr_t GetActivePlayer = 0x4038F0;        // CGObject_C* ClntObjMgrGetActivePlayerObj()

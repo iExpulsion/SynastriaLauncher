@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SynastriaLauncher.App.Services;
+using SynastriaLauncher.Core.Accounts;
 using SynastriaLauncher.Core.Mods;
 using SynastriaLauncher.Core.Wdm;
 
@@ -64,9 +65,13 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
     private static string Plural(int count, string one, string many) => $"{count} {(count == 1 ? one : many)}";
 
     [RelayCommand]
-    private async Task PlayAsync()
+    private Task PlayAsync() => StartGameAsync(main.Data.FindAccount(main.Data.LaunchAccount));
+
+    // Starts the game, logged in as the account when one is given; true when it started.
+    public async Task<bool> StartGameAsync(SavedAccount? account)
     {
         var exe = main.Exe;
+        var started = false;
         if (exe is not null && GameProcess.IsRunning(main.GameFolder))
         {
             await main.Dialogs.AlertAsync("Already Running", "The game is already running.");
@@ -89,14 +94,22 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
                     ? "If you trust it, restore it from Windows Security's Protection History (or your antivirus's quarantine) and allow it."
                     : "Press Apply Changes on Patches to put it back."),
                 "Start Anyway");
+            var password = start && account is not null ? AccountSecrets.Unprotect(account.Password) : null;
+            var login = password is not null && account is not null && LoginHandoff.CanCarry(account.Name, password, account.Character)
+                ? LoginHandoff.Value(account.Name, password, account.Character) : null;
+            start = start && (account is null || login is not null || await main.Dialogs.ConfirmAsync("Start Without Logging In?",
+                $"The saved password for {account.Name} can't be read here: it was saved by another Windows user or on another PC. "
+                + "Edit the account in Settings to enter it again.", "Start Anyway"));
             if (start)
             {
-                GameProcess.Start(exe.ExePath);
+                GameProcess.StartGame(exe.ExePath, login);
+                started = true;
             }
         }
         else
         {
             main.Page = LauncherPage.Settings;
         }
+        return started;
     }
 }

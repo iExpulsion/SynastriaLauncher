@@ -219,6 +219,11 @@ std::vector<PatchReport> ApplyPatches(uint8_t* base, const PatchConfig& config)
     return reports;
 }
 
+PatchReport ApplyPatch(uint8_t* base, const Patch& patch, const PatchConfig& config)
+{
+    return Apply(Image(base), patch, config);
+}
+
 void WriteStatus(const std::string& path, const std::vector<PatchReport>& reports)
 {
     FILE* file = nullptr;

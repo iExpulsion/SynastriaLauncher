@@ -11,6 +11,7 @@
     <Product>Synastria Launcher</Product>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- dotnet publish -c Release: one self-contained, trimmed exe, no .NET install needed. -->

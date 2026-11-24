@@ -37,4 +37,9 @@ PatchConfig ReadConfig(const std::string& iniPath);
 // every part of it matches; otherwise whatever it wrote is put back and it is reported as skipped.
 std::vector<PatchReport> ApplyPatches(uint8_t* base, const PatchConfig& config);
 
+struct Patch;
+
+// Applies one patch that isn't in the catalog, the same way.
+PatchReport ApplyPatch(uint8_t* base, const Patch& patch, const PatchConfig& config);
+
 void WriteStatus(const std::string& path, const std::vector<PatchReport>& reports);

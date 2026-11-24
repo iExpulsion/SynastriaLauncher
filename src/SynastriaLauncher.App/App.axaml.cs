@@ -18,7 +18,7 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogCrash(e.ExceptionObject as Exception);
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = new MainWindow(Core.Accounts.LaunchRequest.Parse(desktop.Args ?? []));
         }
         base.OnFrameworkInitializationCompleted();
     }
