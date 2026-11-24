@@ -47,6 +47,7 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
             {
                 Plural(patchesOn, "Patch", "Patches") + " On",
                 Plural(mods, "Mod", "Mods") + " Active",
+                main.Mods.HasUpdates ? Plural(main.Mods.UpdateCount, "Mod Update", "Mod Updates") : "",
                 AddonUpdates == 0 ? "Addons Up to Date" : Plural(AddonUpdates, "Addon Update", "Addon Updates"),
                 main.Reforged.HasUpdates ? Plural(main.Reforged.UpdateCount, "Reforged Update", "Reforged Updates") : "",
                 main.Wdm.HasUpdates ? Plural(main.Wdm.UpdateCount, "Dungeon Maps Update", "Dungeon Maps Updates") : "",

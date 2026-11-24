@@ -31,6 +31,11 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
         nameof(CrowdedActions))]
     public partial ModState State { get; set; }
 
+    // Installed by the launcher at an earlier version than the list's, rather than changed by hand.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StateLabel))]
+    public partial bool IsUpdate { get; set; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRequirement))]
     public partial string Requirement { get; set; } = "";
@@ -144,6 +149,7 @@ public sealed partial class ModItemViewModel(ModDefinition mod, ModsViewModel ow
     {
         ModState.Disabled => "Disabled",
         ModState.Installed => "Installed",
+        ModState.OtherVersion when IsUpdate => "Update Available",
         ModState.OtherVersion => "Different Version",
         ModState.Partial => "Incomplete",
         _ => "Not Installed",
@@ -258,8 +264,9 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
         DllFolderNote = $"DLL mods install into {dlls}\\ in your game folder. Switching one off parks its files in {dlls}\\{ModInstaller.DisabledFolder}\\.";
         foreach (var item in Items)
         {
-            item.State = game is null ? ModState.NotInstalled
-                : ModInstaller.Detect(item.Mod, game, dlls, main.Data.Mods.GetValueOrDefault(item.Mod.Id));
+            var record = main.Data.Mods.GetValueOrDefault(item.Mod.Id);
+            item.State = game is null ? ModState.NotInstalled : ModInstaller.Detect(item.Mod, game, dlls, record);
+            item.IsUpdate = item.State == ModState.OtherVersion && record is not null && record.Version != item.Mod.Version;
             var missing = item.Mod.Requires.Where(r => !applied.Contains(r)).ToList();
             var met = item.Mod.Requires.Where(applied.Contains).ToList();
             var unsupported = game is not null && !ClientFeatures.Has(item.Mod.OnlyWith, game);
@@ -275,10 +282,15 @@ public sealed partial class ModsViewModel(MainViewModel main) : ObservableObject
                 : null);
         }
         RefreshLists(game);
+        OnPropertyChanged(nameof(UpdateCount));
+        OnPropertyChanged(nameof(HasUpdates));
         main.Reforged.RefreshPatchNeeds();
         main.Patches.RefreshDependents();
         main.Play.Refresh();
     }
+
+    public int UpdateCount => Items.Count(i => i.IsUpdate && !i.Mod.FollowsReforged);
+    public bool HasUpdates => UpdateCount > 0;
 
     public void TurnOnPatch(string? id)
     {

@@ -60,10 +60,16 @@
           </Button>
           <Button Classes="nav" Classes.selected="{Binding IsMods}"
                   Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Mods}">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <PathIcon Data="{StaticResource IconMods}" />
-              <TextBlock Classes="navLabel" Text="Mods" />
-            </StackPanel>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="badge" IsVisible="{Binding Mods.HasUpdates}"
+                      ToolTip.Tip="Mods with updates">
+                <TextBlock Text="{Binding Mods.UpdateCount}" />
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconMods}" />
+                <TextBlock Classes="navLabel" Text="Mods" />
+              </StackPanel>
+            </DockPanel>
           </Button>
           <TextBlock Text="Third Party" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource Faint}" Margin="24,20,24,4"
                      ToolTip.Tip="Made by other teams; the launcher installs it from their official downloads" />
