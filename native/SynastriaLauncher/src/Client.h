@@ -67,12 +67,19 @@ namespace Client
     // code called it, and otherwise calls OnInteract, as a right-click on the object does.
     constexpr size_t ScriptInteractUnitPrologue = 7;       // push ebp; mov ebp, esp; push edi; mov edi, [ebp+8]
     constexpr uintptr_t OnInteract = 0x5277B0;             // int OnInteract(uint64 guid): targets the object, then interacts
-    constexpr uintptr_t MouseoverGuid = 0xBD07A0;          // uint64
     constexpr uintptr_t TaintSource = 0xD4139C;            // nonzero while tainted Lua code runs
     constexpr uintptr_t ReportBlockedAction = 0x513530;    // void (int, int), called with 0, 0
     constexpr uintptr_t GameTimeMs = 0xCD76AC;             // uint32, what the loot check compares against
     constexpr uintptr_t LuaPushNil = 0x84E280;             // void lua_pushnil(lua_State*)
     constexpr uintptr_t LuaPushNumber = 0x84E2A0;          // void lua_pushnumber(lua_State*, double)
+
+    // Key bindings. The game UI loads Interface\FrameXML\Bindings.xml right after FrameXML.toc, before addons and the
+    // saved keys: the file is parsed into an XML tree and each <Binding> node registered (its script compiled).
+    constexpr uintptr_t LoadBindingNode = 0x564470;        // int __thiscall CGBindings::LoadBinding(file, XMLNode*, CStatus*)
+    constexpr uintptr_t XmlParse = 0x814D90;               // XMLTree* (const char* text, uint32 length); null on bad XML
+    constexpr uintptr_t XmlFree = 0x814D60;                // void (XMLTree*)
+    constexpr uint32_t XmlFirstChild = 0x8;                // XMLNode* of the tree's root node (*tree)
+    constexpr uint32_t XmlNextSibling = 0x34;
 
     // What the hover cursor logic asks before showing an interaction cursor.
     constexpr uintptr_t UnitCanLoot = 0x717B60;            // int __thiscall CGUnit_C::CanLoot(uint32 now)

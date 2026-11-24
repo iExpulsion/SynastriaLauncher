@@ -225,7 +225,7 @@ public sealed class MemoryPatcherTests
     }
 
     // Interact Key, which exists only in memory, changes just the 7-byte prologue of Script_InteractUnit (a jump to the
-    // DLL), with or without the DLL Loader's patch section.
+    // DLL) and the call that loads FrameXML's Bindings.xml, with or without the DLL Loader's patch section.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -241,10 +241,12 @@ public sealed class MemoryPatcherTests
         Assert.Equal(PatcherOutcome.Applied, run.Patches[PatchIds.InteractKey].Outcome);
         var mapped = TestExe.MapImage(baseExe);
         var entry = Bytes.FindAll(mapped, Bytes.FromHex("55 8B EC 57 8B 7D 08 6A 01 57 E8 51 60 32 00 83 C4 08 85 C0 75 13")).Single();
+        var bindings = Bytes.FindAll(mapped, Bytes.FromHex("8D 45 E4 50 8D 8D 44 FF FF FF 51 8B 0D D8 AD BE 00 68 EC 2F A0 00 E8 B6 9A 03 00")).Single() + 22;
         var changed = Enumerable.Range(0, mapped.Length).Where(i => mapped[i] != image[i]).ToList();
         Assert.NotEmpty(changed);
-        Assert.All(changed, i => Assert.InRange(i, entry, entry + 6));
+        Assert.All(changed, i => Assert.True(i >= entry && i <= entry + 6 || i >= bindings + 1 && i <= bindings + 4, $"byte {i:X} changed"));
         Assert.Equal(0xE9, image[entry]);
+        Assert.Equal(0xE8, image[bindings]);
     }
 
     // The DLL's own unit tests (each patch's logic, the assembly shims, and every site on the real exe when one is

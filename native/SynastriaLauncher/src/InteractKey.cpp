@@ -100,8 +100,7 @@ uint32_t RecentLoot::Recency(uint64_t guid, uint32_t now) const
 int InteractUnitWithNearest(void* L, const InteractClient& client)
 {
     const char* token = client.luaType(L, 1) == Client::LuaTypeString ? client.luaToString(L, 1) : nullptr;
-    bool nearest = token != nullptr
-        && (_stricmp(token, "nearest") == 0 || (_stricmp(token, "mouseover") == 0 && !client.exists(client.mouseover())));
+    bool nearest = token != nullptr && _stricmp(token, "nearest") == 0;
     int results = 0;
     if (!nearest)
     {
@@ -249,8 +248,6 @@ namespace
     int GameInteractUnit(void* L) { return reinterpret_cast<int(__cdecl*)(void*)>(&InteractOriginalInteractUnit)(L); }
     bool GameTainted() { return Read<uint32_t>(Client::TaintSource) != 0; }
     void GameBlocked() { reinterpret_cast<ReportBlockedFn>(Client::ReportBlockedAction)(0, 0); }
-    uint64_t GameMouseover() { return Read<uint64_t>(Client::MouseoverGuid); }
-    bool GameExists(uint64_t guid) { return ObjectByGuid(guid) != nullptr; }
     bool GameInteract(uint64_t guid) { return reinterpret_cast<OnInteractFn>(Client::OnInteract)(guid) != 0; }
 
     void GamePushResult(void* L, bool interacted)
@@ -315,9 +312,61 @@ extern "C" __declspec(naked) int InteractOriginalInteractUnit()
 
 const InteractClient g_gameInteractClient
 {
-    GameLuaType, GameLuaToString, GameInteractUnit, GameTainted, GameBlocked, GameMouseover, GameExists, GameNearest,
-    GameInteract, GamePushResult,
+    GameLuaType, GameLuaToString, GameInteractUnit, GameTainted, GameBlocked, GameNearest, GameInteract, GamePushResult,
 };
+
+const char* const InteractBindingsXml =
+    "<Bindings>"
+    "<Binding name=\"SYNASTRIALAUNCHER_INTERACT\" header=\"SYNASTRIALAUNCHER\">InteractUnit(\"nearest\")</Binding>"
+    "</Bindings>";
+
+const char* const InteractSetupScript = R"lua(
+BINDING_HEADER_SYNASTRIALAUNCHER = "Synastria Launcher"
+BINDING_NAME_SYNASTRIALAUNCHER_INTERACT = "Interact With Nearest"
+if SlashCmdList then
+    SLASH_SYNASTRIALAUNCHER_INTERACT1 = "/interact"
+    SlashCmdList["SYNASTRIALAUNCHER_INTERACT"] = function(msg)
+        local action, target = SecureCmdOptionParse(msg or "")
+        if action then
+            InteractUnit(target or (action ~= "" and action) or "nearest")
+        end
+    end
+end
+)lua";
+
+void* g_loadBindingsFile = nullptr;
+
+namespace
+{
+    using LoadBindingsFileFn = int(__thiscall*)(void* bindings, const char* file, void* hash, void* status);
+    using LoadBindingNodeFn = int(__thiscall*)(void* bindings, const char* file, void* node, void* status);
+    using XmlParseFn = void*(__cdecl*)(const char* text, uint32_t length);
+    using XmlFreeFn = void(__cdecl*)(void* tree);
+    using ExecuteFn = void(__cdecl*)(const char* code, const char* chunk, int);
+
+    void AddOwnBindings(void* bindings, void* status)
+    {
+        void* tree = reinterpret_cast<XmlParseFn>(Client::XmlParse)(InteractBindingsXml, static_cast<uint32_t>(strlen(InteractBindingsXml)));
+        if (tree != nullptr)
+        {
+            void* root = *static_cast<void**>(tree);
+            for (void* node = Field<void*>(root, Client::XmlFirstChild); node != nullptr; node = Field<void*>(node, Client::XmlNextSibling))
+            {
+                reinterpret_cast<LoadBindingNodeFn>(Client::LoadBindingNode)(bindings, "SynastriaLauncher.xml", node, status);
+            }
+            reinterpret_cast<XmlFreeFn>(Client::XmlFree)(tree);
+        }
+        reinterpret_cast<ExecuteFn>(Client::FrameScriptExecute)(InteractSetupScript, "SynastriaLauncher", 0);
+    }
+}
+
+// Stands in for the game UI's call that loads Interface\FrameXML\Bindings.xml: that file first, then ours.
+int __fastcall InteractKeyLoadBindings(void* bindings, void*, const char* file, void* hash, void* status)
+{
+    int loaded = reinterpret_cast<LoadBindingsFileFn>(g_loadBindingsFile)(bindings, file, hash, status);
+    AddOwnBindings(bindings, status);
+    return loaded;
+}
 
 const InteractClient* g_interactClient = &g_gameInteractClient;
 
@@ -333,7 +382,9 @@ Patch InteractKeyPatch()
         "InteractKey",
         {
             Code("InteractUnitEntry", Hex("55 8B EC 57 8B 7D 08 6A 01 57 E8 51 60 32 00 83 C4 08 85 C0 75 13"), DetourEntry),
+            Code("LoadFrameXmlBindings", Hex("8D 45 E4 50 8D 8D 44 FF FF FF 51 8B 0D D8 AD BE 00 68 EC 2F A0 00 E8 B6 9A 03 00"),
+                CallTo(22, reinterpret_cast<const void*>(&InteractKeyLoadBindings), &g_loadBindingsFile)),
         },
-        [](const PatchConfig&) { g_interactUnitResume = nullptr; },
+        [](const PatchConfig&) { g_interactUnitResume = nullptr; g_loadBindingsFile = nullptr; },
     };
 }

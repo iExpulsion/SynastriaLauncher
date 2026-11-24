@@ -250,6 +250,7 @@ namespace
         uint8_t* fireOnUpdate = originalAt("NameplateSort/RegisterFireOnUpdate", 6);
         uint8_t* layout = originalAt("NameplateStack/LayoutPass", 8);
         uint8_t* renderTarget = originalAt("HdPortraits/CreateRenderTarget", 3);
+        uint8_t* loadBindings = originalAt("InteractKey/LoadFrameXmlBindings", 22);
         uint8_t* texture = originalAt("HdPortraits/CreateTexture", 3);
 
         PatchConfig config;
@@ -310,6 +311,7 @@ namespace
             { "CursorOptimizations/CursorUpdate", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
             { "CursorOptimizations/CursorUpdateEx", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
             { "CursorOptimizations/WindowSetCursor", 15, reinterpret_cast<const void*>(&WindowSetCursor) },
+            { "InteractKey/LoadFrameXmlBindings", 22, reinterpret_cast<const void*>(&InteractKeyLoadBindings) },
         };
         for (const Expected& site : expected)
         {
@@ -321,6 +323,9 @@ namespace
         Check(layout != nullptr && reinterpret_cast<uint8_t*>(g_layoutNameplates) == layout, "Stacking hands on to the layout pass");
         Check(renderTarget != nullptr && reinterpret_cast<uint8_t*>(g_createRenderTarget) == renderTarget, "HD Portraits hands on to the render target call");
         Check(texture != nullptr && reinterpret_cast<uint8_t*>(g_createTexture) == texture, "HD Portraits hands on to the texture call");
+        Check(loadBindings != nullptr && reinterpret_cast<uint8_t*>(g_loadBindingsFile) == loadBindings
+            && reinterpret_cast<uintptr_t>(loadBindings) - reinterpret_cast<uintptr_t>(image) + 0x400000 == 0x564760,
+            "Interact Key hands on to the client's bindings file loader");
         Check(at["HdPortraits/MaskLookup"] != nullptr && g_maskLookupBody == at["HdPortraits/MaskLookup"] + 10,
             "HD Portraits resumes the mask lookup after its first 9 bytes");
         uint8_t* entry = at["GroundTargets/CastSpellByNameEntry"];

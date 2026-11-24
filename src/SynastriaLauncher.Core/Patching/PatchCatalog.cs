@@ -111,13 +111,12 @@ public static class PatchCatalog
             []),
         new(PatchIds.InteractKey, "Interact Key", PatchGroup.QualityOfLife,
             "One key loots, gathers, opens and talks to whatever's nearest in front of you",
-            "Bind Interact With Mouseover in the game's Key Bindings (under Targeting Functions). With the mouse over a "
-                + "character it works as before; otherwise it interacts with the nearest thing in front of you, as a "
-                + "right-click would: loots and skins corpses, mines veins, picks herbs, opens chests, doors and mailboxes, and "
-                + "talks to NPCs. Pressing again moves on to the next corpse or chest you haven't just opened, and corpses "
-                + "your skinning, herbalism or mining is too low for are passed over. With nothing in reach it falls back "
-                + "to your target, as before. Macros can use "
-                + "/run InteractUnit(\"nearest\"). Only works with patches loaded in memory.",
+            "Bind Interact With Nearest in the game's Key Bindings (under Synastria Launcher), or use /interact in macros. "
+                + "It interacts with the nearest thing in front of you, as a right-click would: loots and skins corpses, mines "
+                + "veins, picks herbs, opens chests, doors and mailboxes, and talks to NPCs. Pressing again moves on to the "
+                + "next corpse or chest you haven't just opened, and corpses your skinning, herbalism or mining is too low for "
+                + "are passed over. /interact takes the usual macro conditions, like /interact [@mouseover]. "
+                + "Only works with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
         new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,
             "Keeps the frame rate up when you move the mouse",

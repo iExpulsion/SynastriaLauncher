@@ -94,12 +94,13 @@ menu on Patches and choose **Restore Original Game**.
 For example, `/cast [@cur] Flamestrike` or `/cast [@tloc] Death and Decay`. This patch is still marked Experimental;
 if anything acts strange, switch it off.
 
-**Interact Key** works through the game's own **Interact With Mouseover** binding: set a key for it in Key Bindings,
-under Targeting Functions. With the mouse over a character the key works as before. Otherwise it interacts with the
-nearest thing in front of you, the same as right-clicking it: it loots and skins corpses, mines veins, picks herbs,
-opens chests, doors and mailboxes, and talks to NPCs. Pressing it again moves on to the next corpse or chest you
-haven't just opened, and it passes over corpses your skinning, herbalism or mining is too low for. With nothing in
-reach it falls back to your target, as the binding always did. In a macro, use `/run InteractUnit("nearest")`. This patch is Experimental too.
+**Interact Key** adds **Interact With Nearest** to the game's Key Bindings, under **Synastria Launcher**. The key
+interacts with the nearest thing in front of you, the same as right-clicking it: it loots and skins corpses, mines
+veins, picks herbs, opens chests, doors and mailboxes, and talks to NPCs. Pressing it again moves on to the next
+corpse or chest you haven't just opened, and it passes over corpses your skinning, herbalism or mining is too low
+for. In macros, use `/interact`, which takes the usual conditions: `/interact [@mouseover]`, or
+`/interact [mod:shift] target; nearest`. If you switch the patch off, the game forgets the key you set for it. This
+patch is Experimental too.
 
 ### Addons
 

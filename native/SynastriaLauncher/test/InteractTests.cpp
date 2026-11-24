@@ -1,5 +1,5 @@
 // Unit tests for the Interact Key: which candidate is picked (range, reach, facing, the any-direction circle, the
-// nearest of several), and the InteractUnit wrapper's flow (pass-through, "nearest", the mouseover fallback, the
+// nearest of several), the binding and /interact text, and the InteractUnit wrapper's flow (pass-through, "nearest", the
 // tainted case) against a mock client.
 #include <string>
 #include "../src/InteractKey.h"
@@ -12,8 +12,6 @@ namespace
         int argType = 4;
         std::string arg = "nearest";
         bool tainted = false;
-        uint64_t mouseover = 0;
-        bool mouseoverExists = false;
         uint64_t nearest = 42;
         bool interactWorks = true;
 
@@ -38,8 +36,6 @@ namespace
 
     bool MockTainted() { return s.tainted; }
     void MockBlocked() { ++s.blocks; }
-    uint64_t MockMouseover() { return s.mouseover; }
-    bool MockExists(uint64_t guid) { return guid != 0 && guid == s.mouseover && s.mouseoverExists; }
 
     uint64_t MockNearest()
     {
@@ -61,7 +57,7 @@ namespace
 
     const InteractClient s_mock
     {
-        MockType, MockToString, MockInteractUnit, MockTainted, MockBlocked, MockMouseover, MockExists, MockNearest,
+        MockType, MockToString, MockInteractUnit, MockTainted, MockBlocked, MockNearest,
         MockInteract, MockPush,
     };
 
@@ -186,21 +182,22 @@ void InteractTests()
     Check(Run(tainted) == 0 && s.blocks == 1 && s.searches == 0 && s.interacted == 0 && s.pushes == 0 && s.originals == 0,
         "InteractUnit(\"nearest\") from tainted code: blocked");
 
-    // "mouseover" with a unit under the mouse: the client's own function.
+    // "mouseover" is the client's own, as in the stock Interact With Mouseover binding.
     World hovered;
     hovered.arg = "mouseover";
-    hovered.mouseover = 7;
-    hovered.mouseoverExists = true;
-    Check(Run(hovered) == 1 && s.originals == 1 && s.searches == 0, "InteractUnit(\"mouseover\") over a unit: passed through");
+    Check(Run(hovered) == 1 && s.originals == 1 && s.searches == 0, "InteractUnit(\"mouseover\"): passed through");
 
-    // "mouseover" with nothing under the mouse, or a unit that's gone: the nearest instead.
-    World nothingHovered;
-    nothingHovered.arg = "mouseover";
-    Check(Run(nothingHovered) == 1 && s.originals == 0 && s.interacted == 42, "InteractUnit(\"mouseover\") over nothing: the nearest");
-    World gone;
-    gone.arg = "MouseOver";
-    gone.mouseover = 7;
-    Check(Run(gone) == 1 && s.originals == 0 && s.interacted == 42, "InteractUnit(\"MouseOver\") over a unit that's gone: the nearest");
+    // The key binding: one Binding under its own header, running InteractUnit("nearest").
+    std::string xml = InteractBindingsXml;
+    Check(xml.find("<Binding name=\"SYNASTRIALAUNCHER_INTERACT\" header=\"SYNASTRIALAUNCHER\">InteractUnit(\"nearest\")</Binding>")
+        != std::string::npos && xml.rfind("<Bindings>", 0) == 0, "binding: Interact With Nearest under its own header");
+
+    // The setup names the header and binding, and /interact parses conditions before interacting.
+    std::string setup = InteractSetupScript;
+    Check(setup.find("BINDING_HEADER_SYNASTRIALAUNCHER = \"Synastria Launcher\"") != std::string::npos
+        && setup.find("BINDING_NAME_SYNASTRIALAUNCHER_INTERACT = \"Interact With Nearest\"") != std::string::npos
+        && setup.find("SLASH_SYNASTRIALAUNCHER_INTERACT1 = \"/interact\"") != std::string::npos
+        && setup.find("SecureCmdOptionParse") < setup.find("InteractUnit("), "setup: names, /interact with conditions");
 
     // Other units and non-string arguments go to the client's function.
     World target;
