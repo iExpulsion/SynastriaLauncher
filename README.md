@@ -77,8 +77,9 @@ if anything acts strange, switch it off.
 **Interact Key** works through the game's own **Interact With Mouseover** binding: set a key for it in Key Bindings,
 under Targeting Functions. With the mouse over a character the key works as before. Otherwise it interacts with the
 nearest thing in front of you, the same as right-clicking it: it loots and skins corpses, mines veins, picks herbs,
-opens chests, doors and mailboxes, and talks to NPCs. With nothing in reach it falls back to your target, as the
-binding always did. In a macro, use `/run InteractUnit("nearest")`. This patch is Experimental too.
+opens chests, doors and mailboxes, and talks to NPCs. Pressing it again moves on to the next corpse or chest you
+haven't just opened, and it passes over corpses your skinning, herbalism or mining is too low for. With nothing in
+reach it falls back to your target, as the binding always did. In a macro, use `/run InteractUnit("nearest")`. This patch is Experimental too.
 
 ### Addons
 

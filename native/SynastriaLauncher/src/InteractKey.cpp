@@ -12,13 +12,11 @@ namespace
     constexpr float Pi = 3.14159265f;
 }
 
-uint64_t PickInteraction(const InteractViewer& viewer, const InteractCandidate* candidates, size_t count)
+namespace
 {
-    uint64_t pick = 0;
-    float best = FLT_MAX;
-    for (size_t i = 0; i < count; ++i)
+    // The candidate's distance, or a negative one when it's out of reach or behind the player.
+    float Reachable(const InteractViewer& viewer, const InteractCandidate& candidate)
     {
-        const InteractCandidate& candidate = candidates[i];
         float dx = candidate.position[0] - viewer.position[0];
         float dy = candidate.position[1] - viewer.position[1];
         float dz = candidate.position[2] - viewer.position[2];
@@ -26,13 +24,77 @@ uint64_t PickInteraction(const InteractViewer& viewer, const InteractCandidate* 
         float turn = remainderf(atan2f(dy, dx) - viewer.facing, 2 * Pi);
         bool inReach = distance <= InteractRange + candidate.reach;
         bool ahead = distance <= InteractAnyDirection || fabsf(turn) <= Pi / 2;
-        if (inReach && ahead && distance < best)
+        return inReach && ahead ? distance : -1.0f;
+    }
+}
+
+uint64_t PickInteraction(const InteractViewer& viewer, const InteractCandidate* candidates, size_t count)
+{
+    const InteractCandidate* nearest = nullptr;
+    float best = FLT_MAX;
+    for (size_t i = 0; i < count; ++i)
+    {
+        float distance = Reachable(viewer, candidates[i]);
+        if (distance >= 0 && distance < best)
         {
             best = distance;
-            pick = candidate.guid;
+            nearest = &candidates[i];
         }
     }
-    return pick;
+    const InteractCandidate* pick = nearest;
+    if (nearest != nullptr && nearest->loot && nearest->opened != 0)
+    {
+        uint32_t oldest = UINT32_MAX;
+        float closest = FLT_MAX;
+        for (size_t i = 0; i < count; ++i)
+        {
+            const InteractCandidate& candidate = candidates[i];
+            float distance = candidate.loot ? Reachable(viewer, candidate) : -1.0f;
+            bool better = candidate.opened < oldest || (candidate.opened == oldest && distance < closest);
+            if (distance >= 0 && better)
+            {
+                oldest = candidate.opened;
+                closest = distance;
+                pick = &candidate;
+            }
+        }
+    }
+    return pick != nullptr ? pick->guid : 0;
+}
+
+int GatherSkillNeeded(int level)
+{
+    return level <= 10 ? 1 : level < 20 ? (level - 10) * 10 : level * 5;
+}
+
+void RecentLoot::Opened(uint64_t guid, uint32_t now)
+{
+    Entry* slot = &m_entries[0];
+    for (Entry& entry : m_entries)
+    {
+        if (entry.guid == guid)
+        {
+            slot = &entry;
+            break;
+        }
+        if (entry.order < slot->order)
+        {
+            slot = &entry;
+        }
+    }
+    *slot = Entry { guid, now, m_next++ };
+}
+
+uint32_t RecentLoot::Recency(uint64_t guid, uint32_t now) const
+{
+    for (const Entry& entry : m_entries)
+    {
+        if (entry.order != 0 && entry.guid == guid && now - entry.at < InteractRecentLootMs)
+        {
+            return entry.order;
+        }
+    }
+    return 0;
 }
 
 int InteractUnitWithNearest(void* L, const InteractClient& client)
@@ -77,6 +139,10 @@ namespace
     using UnitGatherLockFn = uint32_t(__cdecl*)(void* unit);
     using GameObjectCursorFn = int(__thiscall*)(void* object);
     using UsableNowFn = bool(__thiscall*)(void* behavior, int, int, int);
+    using UnitGatherTypeFn = int(__thiscall*)(void* unit);
+    using SkillIndexFn = int(__thiscall*)(void* player, uint32_t skillLine);
+    using SkillValueFn = int(__thiscall*)(void* player, int index);
+    using GetTimeMsFn = uint32_t(__cdecl*)();
 
     template <typename T>
     T Read(uintptr_t address)
@@ -104,35 +170,57 @@ namespace
             : reinterpret_cast<ObjectPtrFn>(Client::ObjectPtr)(guid, Client::TypeMaskObject, reinterpret_cast<const char*>(Client::ObjectPtrFile), 0);
     }
 
-    bool UnitInteractable(void* player, void* unit, uint32_t now)
+    enum class Verdict
+    {
+        None,
+        Interact,
+        Loot,
+    };
+
+    bool CanGather(void* player, void* unit, const void* fields)
+    {
+        int type = reinterpret_cast<UnitGatherTypeFn>(Client::UnitGatherType)(unit);
+        bool known = type >= 0 && type < static_cast<int>(sizeof(Client::GatherSkills) / sizeof(Client::GatherSkills[0]));
+        int index = known ? reinterpret_cast<SkillIndexFn>(Client::PlayerSkillIndex)(player, Client::GatherSkills[type]) : -1;
+        int skill = index >= 0 ? reinterpret_cast<SkillValueFn>(Client::PlayerSkillValue)(player, index) : 0;
+        return skill > 0 && skill >= GatherSkillNeeded(Field<int32_t>(fields, Client::UnitFieldLevel));
+    }
+
+    Verdict JudgeUnit(void* player, void* unit, uint32_t now)
     {
         void* fields = Field<void*>(unit, Client::UnitFields);
         bool alive = Field<int32_t>(fields, Client::UnitFieldHealth) > 0;
         bool skinnable = !alive && (Field<uint32_t>(fields, Client::UnitFieldFlags) & Client::UnitFlagSkinnable) != 0;
-        return reinterpret_cast<UnitCanLootFn>(Client::UnitCanLoot)(unit, now) != 0
-            || (alive && Field<uint32_t>(fields, Client::UnitFieldNpcFlags) != 0
-                && reinterpret_cast<PlayerCanInteractFn>(Client::PlayerCanInteract)(player, unit))
-            || (skinnable && reinterpret_cast<UnitGatherLockFn>(Client::UnitGatherLock)(unit) != 0);
+        bool loot = reinterpret_cast<UnitCanLootFn>(Client::UnitCanLoot)(unit, now) != 0;
+        bool talk = alive && Field<uint32_t>(fields, Client::UnitFieldNpcFlags) != 0
+            && reinterpret_cast<PlayerCanInteractFn>(Client::PlayerCanInteract)(player, unit);
+        bool gather = skinnable && reinterpret_cast<UnitGatherLockFn>(Client::UnitGatherLock)(unit) != 0
+            && CanGather(player, unit, fields);
+        return loot ? Verdict::Loot : talk || gather ? Verdict::Interact : Verdict::None;
     }
 
-    bool GameObjectInteractable(void* object)
+    Verdict JudgeGameObject(void* object)
     {
         int cursor = reinterpret_cast<GameObjectCursorFn>(Client::GameObjectCursor)(object);
         void* behavior = Field<void*>(object, Client::GameObjectBehavior);
-        return (cursor > Client::CursorNone && cursor < Client::CursorFirstUnable)
+        bool usable = (cursor > Client::CursorNone && cursor < Client::CursorFirstUnable)
             || (cursor == Client::CursorCustom && behavior != nullptr
                 && Virtual<UsableNowFn>(behavior, Client::VtableUsableNow)(behavior, 0, 0, 0));
+        bool loot = cursor == Client::CursorPickup || cursor == Client::CursorLootAll;
+        return loot ? Verdict::Loot : usable ? Verdict::Interact : Verdict::None;
     }
 
     struct Scan
     {
         void* player;
         uint32_t now;
+        uint32_t clock;
         InteractCandidate found[256];
         size_t count;
     };
 
     Scan g_scan;
+    RecentLoot g_recentLoot;
 
     int __cdecl Collect(uint64_t guid, void* context)
     {
@@ -141,15 +229,17 @@ namespace
         uint32_t type = object != nullptr ? Field<uint32_t>(object, Client::ObjectTypeId) : 0;
         bool known = (type == Client::TypeUnit || type == Client::TypeGameObject) && object != scan->player
             && Virtual<CanHoverFn>(object, Client::VtableCanHover)(object) != 0;
-        bool interactable = known
-            && (type == Client::TypeUnit ? UnitInteractable(scan->player, object, scan->now) : GameObjectInteractable(object));
-        if (interactable && scan->count < sizeof(scan->found) / sizeof(scan->found[0]))
+        Verdict verdict = !known ? Verdict::None
+            : type == Client::TypeUnit ? JudgeUnit(scan->player, object, scan->now) : JudgeGameObject(object);
+        if (verdict != Verdict::None && scan->count < sizeof(scan->found) / sizeof(scan->found[0]))
         {
             InteractCandidate& candidate = scan->found[scan->count++];
             candidate.guid = guid;
             Virtual<GetPositionFn>(object, Client::VtableGetPosition)(object, candidate.position);
             candidate.reach = type == Client::TypeUnit
                 ? Field<float>(Field<void*>(object, Client::UnitFields), Client::UnitFieldCombatReach) : 0.0f;
+            candidate.loot = verdict == Verdict::Loot;
+            candidate.opened = candidate.loot ? g_recentLoot.Recency(guid, scan->clock) : 0;
         }
         return 1;
     }
@@ -183,12 +273,20 @@ namespace
         {
             g_scan.player = player;
             g_scan.now = Read<uint32_t>(Client::GameTimeMs);
+            g_scan.clock = reinterpret_cast<GetTimeMsFn>(Client::GetTimeMs)();
             g_scan.count = 0;
             reinterpret_cast<EnumVisibleFn>(Client::EnumVisibleObjects)(Collect, &g_scan);
             InteractViewer viewer {};
             Virtual<GetPositionFn>(player, Client::VtableGetPosition)(player, viewer.position);
             viewer.facing = Virtual<GetFacingFn>(player, Client::VtableGetFacing)(player);
             pick = PickInteraction(viewer, g_scan.found, g_scan.count);
+        }
+        for (size_t i = 0; i < g_scan.count && pick != 0; ++i)
+        {
+            if (g_scan.found[i].guid == pick && g_scan.found[i].loot)
+            {
+                g_recentLoot.Opened(pick, g_scan.clock);
+            }
         }
         return pick;
     }

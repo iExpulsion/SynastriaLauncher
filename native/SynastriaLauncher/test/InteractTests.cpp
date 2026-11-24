@@ -76,7 +76,12 @@ namespace
 
     InteractCandidate At(uint64_t guid, float x, float y, float z = 0, float reach = 0)
     {
-        return InteractCandidate { guid, { x, y, z }, reach };
+        return InteractCandidate { guid, { x, y, z }, reach, false, 0 };
+    }
+
+    InteractCandidate Loot(uint64_t guid, float x, float y, uint32_t opened = 0)
+    {
+        return InteractCandidate { guid, { x, y, 0 }, 0, true, opened };
     }
 }
 
@@ -116,6 +121,49 @@ void InteractTests()
     Check(PickInteraction(Facing, several, 4) == 3, "interact: the nearest qualifying candidate wins");
     InteractCandidate none[] = { At(1, -5, 0), At(2, 20, 0) };
     Check(PickInteraction(Facing, none, 2) == 0 && PickInteraction(Facing, nullptr, 0) == 0, "interact: nothing qualifying picks nothing");
+
+    // Loot opened lately gives way to the nearest loot not opened lately.
+    InteractCandidate reopened[] = { Loot(1, 2, 0, 5), Loot(2, 4, 0), Loot(3, 3, 0) };
+    Check(PickInteraction(Facing, reopened, 3) == 3, "loot cycle: the nearest unopened loot replaces loot just opened");
+
+    // With everything opened lately, the one opened longest ago comes round again.
+    InteractCandidate allOpened[] = { Loot(1, 2, 0, 5), Loot(2, 4, 0, 3), Loot(3, 3, 0, 4) };
+    Check(PickInteraction(Facing, allOpened, 3) == 2, "loot cycle: all opened, the one opened longest ago");
+
+    // Only loot moves on; anything else nearer still wins, and unopened loot nearest is taken as usual.
+    InteractCandidate npcFirst[] = { At(1, 1, 0), Loot(2, 2, 0, 5), Loot(3, 3, 0) };
+    Check(PickInteraction(Facing, npcFirst, 3) == 1, "loot cycle: a nearer NPC is still picked");
+    InteractCandidate herbAfter[] = { Loot(1, 2, 0, 5), At(2, 3, 0) };
+    Check(PickInteraction(Facing, herbAfter, 2) == 1, "loot cycle: just-opened loot with no other loot is reopened, not swapped for a herb");
+    InteractCandidate freshFirst[] = { Loot(1, 2, 0), Loot(2, 3, 0, 5) };
+    Check(PickInteraction(Facing, freshFirst, 2) == 1, "loot cycle: unopened loot nearest is picked");
+
+    // Loot out of reach or behind isn't cycled to.
+    InteractCandidate cycleReach[] = { Loot(1, 2, 0, 5), Loot(2, 9, 0), Loot(3, -4, 0) };
+    Check(PickInteraction(Facing, cycleReach, 3) == 1, "loot cycle: unreachable loot is ignored");
+
+    // The skill a corpse needs, as its tooltip works it out.
+    Check(GatherSkillNeeded(1) == 1 && GatherSkillNeeded(10) == 1, "gather skill: up to level 10 needs 1");
+    Check(GatherSkillNeeded(11) == 10 && GatherSkillNeeded(19) == 90, "gather skill: levels 11-19 need 10 per level over 10");
+    Check(GatherSkillNeeded(20) == 100 && GatherSkillNeeded(80) == 400, "gather skill: level 20 and up need 5 per level");
+
+    // Recent loot: remembered with an increasing order, forgotten after 30 seconds.
+    RecentLoot recent;
+    recent.Opened(10, 1000);
+    recent.Opened(11, 2000);
+    Check(recent.Recency(10, 3000) != 0 && recent.Recency(11, 3000) > recent.Recency(10, 3000), "recent loot: later openings rank higher");
+    Check(recent.Recency(12, 3000) == 0, "recent loot: loot never opened has no rank");
+    Check(recent.Recency(10, 31000) == 0 && recent.Recency(11, 31000) != 0, "recent loot: forgotten after 30 seconds");
+    recent.Opened(10, 4000);
+    Check(recent.Recency(10, 5000) > recent.Recency(11, 5000), "recent loot: reopening moves it to the newest");
+
+    // A full list forgets the oldest opening.
+    RecentLoot full;
+    for (uint64_t guid = 1; guid <= 17; ++guid)
+    {
+        full.Opened(guid, 100);
+    }
+    Check(full.Recency(1, 200) == 0 && full.Recency(2, 200) != 0 && full.Recency(17, 200) != 0, "recent loot: the 17th opening replaces the oldest");
 
     // "nearest": interacts with what the search found and returns 1.
     Check(Run(World()) == 1 && s.interacted == 42 && s.pushes == 1 && s.pushed && s.originals == 0 && s.blocks == 0,

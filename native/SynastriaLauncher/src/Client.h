@@ -77,7 +77,13 @@ namespace Client
     constexpr uintptr_t PlayerCanInteract = 0x729620;      // bool __thiscall (player, unit): a friendly NPC the player can use
     constexpr uintptr_t UnitGatherLock = 0x53BCE0;         // uint32 (unit): the lock skinning it needs, 0 for none
     constexpr uintptr_t GameObjectCursor = 0x70CE10;       // int __thiscall CGGameObject_C::GetCursor()
+    constexpr uintptr_t UnitGatherType = 0x715E50;         // int __thiscall (unit): what gathering a corpse takes, 0-3
+    constexpr uint32_t GatherSkills[] = { 393, 182, 186, 202 }; // by gather type: Skinning, Herbalism, Mining, Engineering
+    constexpr uintptr_t PlayerSkillIndex = 0x6DC1C0;       // int __thiscall (player, skill line): its slot, or -1
+    constexpr uintptr_t PlayerSkillValue = 0x51A250;       // int __thiscall (player, slot): the skill with bonuses
     constexpr int CursorNone = 0;
+    constexpr int CursorPickup = 8;
+    constexpr int CursorLootAll = 16;
     constexpr int CursorFirstUnable = 27;                  // "Unable" cursors follow the usable ones
     constexpr int CursorCustom = 0x35;                     // a cursor named by the object's template
     constexpr uint32_t GameObjectBehavior = 0x1A0;         // the object type's handler
@@ -94,6 +100,7 @@ namespace Client
     constexpr uint32_t UnitFlagSkinnable = 0x04000000;
     constexpr uint32_t UnitFieldCombatReach = 0xF0;        // float
     constexpr uint32_t UnitFieldNpcFlags = 0x130;
+    constexpr uint32_t UnitFieldLevel = 0xC0;
 
     // Idle tracking: the time of the last keyboard or mouse input.
     constexpr uintptr_t LastHardwareAction = 0xB499A4;     // uint32 ms

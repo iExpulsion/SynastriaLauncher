@@ -114,7 +114,9 @@ public static class PatchCatalog
             "Bind Interact With Mouseover in the game's Key Bindings (under Targeting Functions). With the mouse over a "
                 + "character it works as before; otherwise it interacts with the nearest thing in front of you, as a "
                 + "right-click would: loots and skins corpses, mines veins, picks herbs, opens chests, doors and mailboxes, and "
-                + "talks to NPCs. With nothing in reach it falls back to your target, as before. Macros can use "
+                + "talks to NPCs. Pressing again moves on to the next corpse or chest you haven't just opened, and corpses "
+                + "your skinning, herbalism or mining is too low for are passed over. With nothing in reach it falls back "
+                + "to your target, as before. Macros can use "
                 + "/run InteractUnit(\"nearest\"). Only works with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
         new(PatchIds.CursorOptimizations, "Cursor Optimizations", PatchGroup.QualityOfLife,

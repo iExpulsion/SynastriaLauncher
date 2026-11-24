@@ -6,14 +6,18 @@
 // Interact With Mouseover binding (InteractUnit("mouseover"), then "target") does the same when the mouse isn't over
 // a unit. InteractUnit's entry jumps to a wrapper (a detour, like Ground Target Macros) that keeps the function's
 // protection: from tainted code it reports a blocked action, as the client does. What counts as interactable follows
-// the client's hover cursor logic: a lootable corpse, a friendly NPC with something to offer, a skinnable corpse, or
-// a game object whose cursor isn't an "unable" one. The interaction goes through the client's right-click path.
+// the client's hover cursor logic: a lootable corpse, a friendly NPC with something to offer, a corpse the player's
+// gathering skill is high enough for, or a game object whose cursor isn't an "unable" one. The interaction goes
+// through the client's right-click path. Pressing again on loot just opened (a corpse or chest) moves on to the next
+// one not opened lately, so repeated presses work through everything lootable nearby.
 
 struct InteractCandidate
 {
     uint64_t guid;
     float position[3];
     float reach;        // the unit's combat reach, added to the range
+    bool loot;          // a lootable corpse or chest
+    uint32_t opened;    // for loot opened lately, how recently: higher is more recent; 0 when not
 };
 
 struct InteractViewer
@@ -24,9 +28,33 @@ struct InteractViewer
 
 constexpr float InteractRange = 6.0f;          // yards from the object's position, plus its reach
 constexpr float InteractAnyDirection = 2.5f;   // closer than this counts whatever way the player faces
+constexpr uint32_t InteractRecentLootMs = 30000;
 
-// The nearest candidate in range and in front of the player (or right beside them); 0 when there's none.
+// The nearest candidate in range and in front of the player (or right beside them); 0 when there's none. When
+// that's loot opened lately, the reachable loot opened longest ago (or never) is taken instead, nearest first.
 uint64_t PickInteraction(const InteractViewer& viewer, const InteractCandidate* candidates, size_t count);
+
+// The skill a corpse of this level needs for skinning, herbalism, mining or engineering, as its tooltip works it out.
+int GatherSkillNeeded(int level);
+
+// Remembers loot as it's opened and says how recently each was; the oldest is forgotten when it's full.
+class RecentLoot
+{
+public:
+    void Opened(uint64_t guid, uint32_t now);
+    uint32_t Recency(uint64_t guid, uint32_t now) const;
+
+private:
+    struct Entry
+    {
+        uint64_t guid = 0;
+        uint32_t at = 0;
+        uint32_t order = 0;
+    };
+
+    Entry m_entries[16];
+    uint32_t m_next = 1;
+};
 
 // Everything the wrapper needs from the client; tests supply their own.
 struct InteractClient
