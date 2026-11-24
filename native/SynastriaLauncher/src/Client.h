@@ -61,6 +61,40 @@ namespace Client
     constexpr uint32_t SimpleTopMouseFocus = 0x78;         // CSimpleFrame*, the frame under the mouse (GetMouseFocus)
     constexpr uint32_t TypeMaskObject = 0x1;
 
+    // Interacting. InteractUnit (a protected Lua function) resolves its unit, reports a blocked action when tainted
+    // code called it, and otherwise calls OnInteract, as a right-click on the object does.
+    constexpr size_t ScriptInteractUnitPrologue = 7;       // push ebp; mov ebp, esp; push edi; mov edi, [ebp+8]
+    constexpr uintptr_t OnInteract = 0x5277B0;             // int OnInteract(uint64 guid): targets the object, then interacts
+    constexpr uintptr_t MouseoverGuid = 0xBD07A0;          // uint64
+    constexpr uintptr_t TaintSource = 0xD4139C;            // nonzero while tainted Lua code runs
+    constexpr uintptr_t ReportBlockedAction = 0x513530;    // void (int, int), called with 0, 0
+    constexpr uintptr_t GameTimeMs = 0xCD76AC;             // uint32, what the loot check compares against
+    constexpr uintptr_t LuaPushNil = 0x84E280;             // void lua_pushnil(lua_State*)
+    constexpr uintptr_t LuaPushNumber = 0x84E2A0;          // void lua_pushnumber(lua_State*, double)
+
+    // What the hover cursor logic asks before showing an interaction cursor.
+    constexpr uintptr_t UnitCanLoot = 0x717B60;            // int __thiscall CGUnit_C::CanLoot(uint32 now)
+    constexpr uintptr_t PlayerCanInteract = 0x729620;      // bool __thiscall (player, unit): a friendly NPC the player can use
+    constexpr uintptr_t UnitGatherLock = 0x53BCE0;         // uint32 (unit): the lock skinning it needs, 0 for none
+    constexpr uintptr_t GameObjectCursor = 0x70CE10;       // int __thiscall CGGameObject_C::GetCursor()
+    constexpr int CursorNone = 0;
+    constexpr int CursorFirstUnable = 27;                  // "Unable" cursors follow the usable ones
+    constexpr int CursorCustom = 0x35;                     // a cursor named by the object's template
+    constexpr uint32_t GameObjectBehavior = 0x1A0;         // the object type's handler
+    constexpr uint32_t VtableUsableNow = 0x1C;             // bool __thiscall (handler, 0, 0, 0)
+
+    constexpr uint32_t ObjectTypeId = 0x14;                // 3 unit, 4 player, 5 game object
+    constexpr uint32_t TypeUnit = 3;
+    constexpr uint32_t TypeGameObject = 5;
+    constexpr uint32_t VtableGetFacing = 0x34;             // float GetFacing()
+    constexpr uint32_t VtableCanHover = 0xA4;              // int CanHover(): zero for objects that show no cursor
+    constexpr uint32_t UnitFields = 0xD0;                  // the unit's update fields (descriptors + 0x18)
+    constexpr uint32_t UnitFieldHealth = 0x48;
+    constexpr uint32_t UnitFieldFlags = 0xD4;
+    constexpr uint32_t UnitFlagSkinnable = 0x04000000;
+    constexpr uint32_t UnitFieldCombatReach = 0xF0;        // float
+    constexpr uint32_t UnitFieldNpcFlags = 0x130;
+
     // Idle tracking: the time of the last keyboard or mouse input.
     constexpr uintptr_t LastHardwareAction = 0xB499A4;     // uint32 ms
 

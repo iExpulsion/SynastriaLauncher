@@ -6,3 +6,4 @@ void NameplateTests();
 void VisualTests();
 void GroundTests();
 void CursorTests();
+void InteractTests();

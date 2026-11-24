@@ -41,7 +41,9 @@ Improvements to the game client, each with its own switch:
 |---|---|
 | No Auto AFK | You're no longer marked AFK or logged out for sitting idle. |
 | No Mail Refresh Delay | The mailbox refreshes right away instead of every 60 seconds. |
+| Cursor Optimizations | Keeps the frame rate up when you move the mouse. |
 | Ground Target Macros | Macros can drop ground spells at your cursor, on yourself or on your target (see below). |
+| Interact Key | One key loots, gathers, opens and talks to whatever's nearest in front of you (see below). |
 | Graphics Limits | Higher limits on the video settings sliders: view distance, ground clutter and more. |
 | No Zoom Transparency | Your character doesn't turn see-through when the camera is zoomed in close. |
 | HD Portraits | Sharper character portraits on unit frames. |
@@ -71,6 +73,12 @@ menu on Patches and choose **Restore Original Game**.
 
 For example, `/cast [@cur] Flamestrike` or `/cast [@tloc] Death and Decay`. This patch is still marked Experimental;
 if anything acts strange, switch it off.
+
+**Interact Key** works through the game's own **Interact With Mouseover** binding: set a key for it in Key Bindings,
+under Targeting Functions. With the mouse over a character the key works as before. Otherwise it interacts with the
+nearest thing in front of you, the same as right-clicking it: it loots and skins corpses, mines veins, picks herbs,
+opens chests, doors and mailboxes, and talks to NPCs. With nothing in reach it falls back to your target, as the
+binding always did. In a macro, use `/run InteractUnit("nearest")`. This patch is Experimental too.
 
 ### Addons
 

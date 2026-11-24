@@ -22,7 +22,8 @@ add_library(patcher_engine STATIC
     src/NameplateSort.cpp
     src/NameplateStack.cpp
     src/GroundTargets.cpp
-    src/CursorOptimizations.cpp)
+    src/CursorOptimizations.cpp
+    src/InteractKey.cpp)
 
 string(REPLACE "." "," LAUNCHER_VERSION_COMMAS "${LAUNCHER_VERSION}")
 configure_file(src/Version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/Version.rc" @ONLY)
@@ -34,5 +35,5 @@ add_library(image_file STATIC src/ImageFile.cpp)
 add_executable(PatcherHost src/Host.cpp)
 target_link_libraries(PatcherHost PRIVATE patcher_engine image_file)
 
-add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp)
+add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp test/InteractTests.cpp)
 target_link_libraries(PatcherTests PRIVATE patcher_engine image_file)

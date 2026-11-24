@@ -51,6 +51,7 @@ public static class PatchIds
     public const string DamageColors = "DamageColors";
     public const string GroundTargets = "GroundTargets";
     public const string CursorOptimizations = "CursorOptimizations";
+    public const string InteractKey = "InteractKey";
 }
 
 // Patches are planned and applied in this order.
@@ -300,6 +301,14 @@ public static class PatchCatalog
             "Adds [@cursor], [@playerlocation] and [@targetlocation] (or the short [@cur], [@ploc] and [@tloc]) to /cast "
                 + "macros for spells you place on the ground, like Flamestrike, Flare or Death and Decay: no targeting circle, "
                 + "and the game's usual range and placement rules apply. Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
+        new(PatchIds.InteractKey, "Interact Key", PatchGroup.QualityOfLife,
+            "One key loots, gathers, opens and talks to whatever's nearest in front of you",
+            "Bind Interact With Mouseover in the game's Key Bindings (under Targeting Functions). With the mouse over a "
+                + "character it works as before; otherwise it interacts with the nearest thing in front of you, as a "
+                + "right-click would: loots and skins corpses, mines veins, picks herbs, opens chests, doors and mailboxes, and "
+                + "talks to NPCs. With nothing in reach it falls back to your target, as before. Macros can use "
+                + "/run InteractUnit(\"nearest\"). Only works with patches loaded in memory.",
             true, [], [], MemoryOnly: true),
     ];
 

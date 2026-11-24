@@ -68,3 +68,4 @@ Patch ShortNumbersPatch();
 Patch DamageColorsPatch();
 Patch GroundTargetsPatch();
 Patch CursorOptimizationsPatch();
+Patch InteractKeyPatch();

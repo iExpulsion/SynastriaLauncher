@@ -21,6 +21,7 @@
 #include "../src/Patch.h"
 #include "../src/ShortNumbers.h"
 #include "../src/CursorOptimizations.h"
+#include "../src/InteractKey.h"
 #include "NativeTests.h"
 
 #pragma warning(disable : 4731)
@@ -317,6 +318,11 @@ namespace
             && g_castSpellByName == reinterpret_cast<void*>(&GroundOriginalCastSpellByName)
             && g_castSpellByNameResume == entry + 9,
             "Ground Targets: CastSpellByName's entry jumps to the wrapper, which resumes the client's function after its prologue");
+        uint8_t* interact = at["InteractKey/InteractUnitEntry"];
+        Check(interact != nullptr && interact[0] == 0xE9
+            && interact + 5 + static_cast<int32_t>(Read32(interact + 1)) == reinterpret_cast<uint8_t*>(&InteractKeyInteractUnit)
+            && interact[5] == 0x90 && interact[6] == 0x90 && g_interactUnitResume == interact + 7,
+            "Interact Key: InteractUnit's entry jumps to the wrapper, which resumes the client's function after its prologue");
         uint8_t* distance = at["NameplateDistance/SquaredDistance"];
         float squared = 0;
         if (distance != nullptr)
@@ -353,6 +359,7 @@ int main(int argc, char** argv)
     VisualTests();
     GroundTests();
     CursorTests();
+    InteractTests();
     if (argc > 1)
     {
         SiteTests(argv[1]);

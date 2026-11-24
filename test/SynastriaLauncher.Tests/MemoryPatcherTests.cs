@@ -224,6 +224,29 @@ public sealed class MemoryPatcherTests
         Assert.Equal(0xE9, image[entry]);
     }
 
+    // Interact Key, which exists only in memory, changes just the 7-byte prologue of Script_InteractUnit (a jump to the
+    // DLL), with or without the DLL Loader's patch section.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InteractKeyChangesOnlyItsEntry(bool withSection)
+    {
+        var original = TestExe.OriginalBytes();
+        var host = TestExe.PatcherHost();
+        var baseExe = withSection ? ExePatcher.Apply(original, Base, new PatchSettings(DllFolder: "DLLs")).Bytes : original;
+        var config = new PatcherConfig([PatchIds.InteractKey], 60, 100, DamageColors.Default);
+
+        var (image, run) = RunHost(host, baseExe, config);
+
+        Assert.Equal(PatcherOutcome.Applied, run.Patches[PatchIds.InteractKey].Outcome);
+        var mapped = TestExe.MapImage(baseExe);
+        var entry = Bytes.FindAll(mapped, Bytes.FromHex("55 8B EC 57 8B 7D 08 6A 01 57 E8 51 60 32 00 83 C4 08 85 C0 75 13")).Single();
+        var changed = Enumerable.Range(0, mapped.Length).Where(i => mapped[i] != image[i]).ToList();
+        Assert.NotEmpty(changed);
+        Assert.All(changed, i => Assert.InRange(i, entry, entry + 6));
+        Assert.Equal(0xE9, image[entry]);
+    }
+
     // The DLL's own unit tests (each patch's logic, the assembly shims, and every site on the real exe when one is
     // given) all pass.
     [Fact]
