@@ -22,11 +22,6 @@ public sealed partial class AccountsViewModel(MainViewModel main) : ObservableOb
 
     public string LaunchCaption => LaunchChoice is null or NoLogin ? "" : $"as {LaunchChoice}";
     public bool HasLaunchCaption => LaunchCaption.Length > 0;
-
-    // The Launch button gives up room on its right for the account chevron once there are accounts.
-    public double LaunchWidth => HasAccounts ? 161 : 200;
-    public Avalonia.CornerRadius LaunchCorners => HasAccounts ? new(9, 0, 0, 9) : new(9);
-
     private bool _loading;
 
     partial void OnLaunchChoiceChanged(string? value)
@@ -52,8 +47,6 @@ public sealed partial class AccountsViewModel(MainViewModel main) : ObservableOb
         LaunchChoice = main.Data.FindAccount(main.Data.LaunchAccount)?.Name ?? NoLogin;
         _loading = false;
         OnPropertyChanged(nameof(HasAccounts));
-        OnPropertyChanged(nameof(LaunchWidth));
-        OnPropertyChanged(nameof(LaunchCorners));
     }
 
     [RelayCommand]

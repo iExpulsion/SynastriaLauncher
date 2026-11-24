@@ -21,6 +21,14 @@ public partial class MainWindow : Window, IDialogs
         var model = new MainViewModel(this);
         DataContext = model;
         WindowState = launch is null ? WindowState.Normal : WindowState.Minimized;
+        BuildLaunchMenu(model);
+        model.Accounts.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(AccountsViewModel.LaunchChoice) or nameof(AccountsViewModel.HasAccounts))
+            {
+                BuildLaunchMenu(model);
+            }
+        };
         Opened += async (_, _) =>
         {
             var launched = launch is not null && await model.QuickLaunchAsync(launch);
@@ -36,20 +44,26 @@ public partial class MainWindow : Window, IDialogs
         };
     }
 
-    // The Launch button's account menu, built as it opens: each saved account and Don't Log In (the current one
-    // checked), then Manage Accounts.
-    private void OnLaunchMenuOpening(object? sender, EventArgs e)
+    // The Launch button's account menu: with saved accounts, each of them and Don't Log In (the current one checked);
+    // always Add Account and Manage Accounts. Rebuilt whenever the accounts or the choice change, since items added
+    // while the menu opens don't show.
+    private void BuildLaunchMenu(MainViewModel model)
     {
-        var model = (MainViewModel)DataContext!;
-        var menu = (MenuFlyout)sender!;
+        var menu = (MenuFlyout)LaunchMenuButton.Flyout!;
         menu.Items.Clear();
-        foreach (var choice in model.Accounts.LaunchChoices)
+        foreach (var choice in model.Accounts.HasAccounts ? model.Accounts.LaunchChoices : [])
         {
             var item = new MenuItem { Header = choice, ToggleType = MenuItemToggleType.Radio, IsChecked = choice == model.Accounts.LaunchChoice };
             item.Click += (_, _) => model.Accounts.LaunchChoice = choice;
             menu.Items.Add(item);
         }
-        menu.Items.Add(new Separator());
+        if (model.Accounts.HasAccounts)
+        {
+            menu.Items.Add(new Separator());
+        }
+        var add = new MenuItem { Header = "Add Account" };
+        add.Click += (_, _) => model.Accounts.AddCommand.Execute(null);
+        menu.Items.Add(add);
         var manage = new MenuItem { Header = "Manage Accounts" };
         manage.Click += (_, _) => model.Page = LauncherPage.Settings;
         menu.Items.Add(manage);

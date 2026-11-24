@@ -117,10 +117,9 @@
     <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource PlayBar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0"
             Padding="24,14">
       <DockPanel>
-        <!-- Launch; with saved accounts, a second line says who it logs in as and a chevron segment picks the account -->
+        <!-- Launch, with the account it logs in as on a second line, and a chevron segment for auto login -->
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="1">
-          <Button Classes="primary" Command="{Binding Play.PlayCommand}" Height="52"
-                  Width="{Binding Accounts.LaunchWidth}" CornerRadius="{Binding Accounts.LaunchCorners}"
+          <Button Classes="primary" Command="{Binding Play.PlayCommand}" Height="52" Width="161" CornerRadius="9,0,0,9"
                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
             <StackPanel Spacing="0">
               <TextBlock Text="LAUNCH" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="Bold" LetterSpacing="3"
@@ -130,11 +129,11 @@
                          MaxWidth="150" TextTrimming="CharacterEllipsis" Margin="0,-3,0,0" />
             </StackPanel>
           </Button>
-          <Button Classes="primary" Width="38" Height="52" CornerRadius="0,9,9,0" Padding="0" IsVisible="{Binding Accounts.HasAccounts}"
-                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip.Tip="Choose the account Launch logs in as">
+          <Button x:Name="LaunchMenuButton" Classes="primary" Width="38" Height="52" CornerRadius="0,9,9,0" Padding="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip.Tip="Auto login: the account Launch logs in as">
             <PathIcon Data="{StaticResource IconChevron}" Width="18" Height="18" Foreground="{StaticResource OnGold}" />
             <Button.Flyout>
-              <MenuFlyout Placement="TopEdgeAlignedRight" Opening="OnLaunchMenuOpening" />
+              <MenuFlyout Placement="TopEdgeAlignedRight" />
             </Button.Flyout>
           </Button>
         </StackPanel>
