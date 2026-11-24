@@ -33,9 +33,18 @@ public sealed class LauncherData
     // The WowExt package version installed in the game folder, once the launcher has installed or recognized one.
     public int? WowExtVersion { get; set; }
 
-    // Game accounts for auto login, and the one the Launch button logs in with (null: none).
+    // Game accounts for auto login, and what the Launch button logs in as: an account (null: none) and one of its
+    // characters (null: character select).
     public List<Accounts.SavedAccount> Accounts { get; set; } = [];
     public string? LaunchAccount { get; set; }
+    public string? LaunchCharacter { get; set; }
+
+    // The Launch button's target, when its account (and character) still exist.
+    public Accounts.LaunchTarget? LaunchTarget =>
+        FindAccount(LaunchAccount) is { } account
+            ? new Accounts.LaunchTarget(account.Name,
+                account.Characters.FirstOrDefault(c => LaunchCharacter is not null && Core.Accounts.SavedAccount.SameCharacter(c, LaunchCharacter)))
+            : null;
 
     public Accounts.SavedAccount? FindAccount(string? name) =>
         name is null ? null : Accounts.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));

@@ -129,7 +129,9 @@ public sealed partial class MainViewModel : ObservableObject
         await Mods.LoadAsync();
         await Mods.SyncReforgedFixesAsync();
         Play.Refresh();
-        var account = Data.FindAccount(request.Account ?? Data.LaunchAccount);
+        var target = Data.LaunchTarget;
+        var account = Data.FindAccount(request.Account ?? target?.Account);
+        var character = request.Account is not null ? request.Character : request.Character ?? target?.Character;
         var started = false;
         if (request.Account is not null && account is null)
         {
@@ -137,7 +139,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         else
         {
-            started = await Play.StartGameAsync(account);
+            started = await Play.StartGameAsync(account, character);
         }
         return started;
     }

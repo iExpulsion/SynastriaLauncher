@@ -44,16 +44,17 @@ public partial class MainWindow : Window, IDialogs
         };
     }
 
-    // The Launch button's account menu: with saved accounts, each of them and Don't Log In (the current one checked);
+    // The Launch button's account menu: with saved accounts, each account and character and Don't Log In (the current one checked);
     // always Add Account and Manage Accounts. Rebuilt whenever the accounts or the choice change, since items added
     // while the menu opens don't show.
     private void BuildLaunchMenu(MainViewModel model)
     {
         var menu = (MenuFlyout)LaunchMenuButton.Flyout!;
         menu.Items.Clear();
-        foreach (var choice in model.Accounts.HasAccounts ? model.Accounts.LaunchChoices : [])
+        var choices = model.Accounts.LaunchChoices.Where(c => c.Target is not null).Append(AccountsViewModel.NoLogin);
+        foreach (var choice in model.Accounts.HasAccounts ? choices : [])
         {
-            var item = new MenuItem { Header = choice, ToggleType = MenuItemToggleType.Radio, IsChecked = choice == model.Accounts.LaunchChoice };
+            var item = new MenuItem { Header = choice.Label, ToggleType = MenuItemToggleType.Radio, IsChecked = choice == model.Accounts.LaunchChoice };
             item.Click += (_, _) => model.Accounts.LaunchChoice = choice;
             menu.Items.Add(item);
         }
@@ -113,6 +114,87 @@ public partial class MainWindow : Window, IDialogs
 
     public async Task<AccountForm?> EditAccountAsync(string title, AccountForm? existing, Func<string, bool> nameFree)
     {
+        var name = new TextBox { Text = existing?.Name ?? "" };
+        var password = new TextBox
+        {
+            PasswordChar = '•',
+            PlaceholderText = existing is null ? "" : "Leave empty to keep the saved password",
+        };
+        var problem = ProblemText();
+        AccountForm? result = null;
+        var dialog = FormWindow(title, out var save, out var body);
+        save.Click += (_, _) =>
+        {
+            var account = (name.Text ?? "").Trim();
+            var secret = password.Text ?? "";
+            var error = account.Length == 0 ? "Enter the account name you log in with."
+                : !nameFree(account) ? $"There's already an account named {account}."
+                : existing is null && secret.Length == 0 ? "Enter the account's password."
+                : !LoginHandoff.CanCarry(account, secret, null) ? "The details hold a character the game can't be given."
+                : null;
+            problem.Text = error ?? "";
+            problem.IsVisible = error is not null;
+            if (error is null)
+            {
+                result = new AccountForm(account, secret.Length > 0 ? secret : null);
+                dialog.Close();
+            }
+        };
+        body.Children.InsertRange(0,
+        [
+            new TextBlock { Classes = { "name" }, Text = "Account Name" },
+            name,
+            new TextBlock { Classes = { "name" }, Text = "Password", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
+            password,
+            new TextBlock
+            {
+                Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Text = "The password is encrypted for your Windows user. Add characters to the account afterwards to go straight into the world.",
+            },
+            problem,
+        ]);
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
+    public async Task<string?> PromptAsync(string title, string label, string help, Func<string, string?> check)
+    {
+        var text = new TextBox();
+        var problem = ProblemText();
+        string? result = null;
+        var dialog = FormWindow(title, out var save, out var body);
+        save.Click += (_, _) =>
+        {
+            var value = (text.Text ?? "").Trim();
+            var error = check(value);
+            problem.Text = error ?? "";
+            problem.IsVisible = error is not null;
+            if (error is null)
+            {
+                result = value;
+                dialog.Close();
+            }
+        };
+        body.Children.InsertRange(0,
+        [
+            new TextBlock { Classes = { "name" }, Text = label },
+            text,
+            new TextBlock { Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap, Text = help },
+            problem,
+        ]);
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
+    private TextBlock ProblemText() => new()
+    {
+        Classes = { "small" }, Foreground = this.FindResource("Bad") as Avalonia.Media.IBrush, IsVisible = false,
+        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+    };
+
+    // A small dialog window: its body ends with Save and Cancel; the caller puts its fields in front.
+    private Window FormWindow(string title, out Button save, out StackPanel body)
+    {
         var dialog = new Window
         {
             Title = title,
@@ -122,57 +204,15 @@ public partial class MainWindow : Window, IDialogs
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Background = Background,
         };
-        var name = new TextBox { Text = existing?.Name ?? "" };
-        var password = new TextBox
-        {
-            PasswordChar = '•',
-            PlaceholderText = existing is null ? "" : "Leave empty to keep the saved password",
-        };
-        var character = new TextBox { Text = existing?.Character ?? "", PlaceholderText = "Optional" };
-        var problem = new TextBlock { Classes = { "small" }, Foreground = this.FindResource("Bad") as Avalonia.Media.IBrush, IsVisible = false, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
-        AccountForm? result = null;
-        var save = new Button { Content = "Save", Classes = { "primary" } };
-        save.Click += (_, _) =>
-        {
-            var account = (name.Text ?? "").Trim();
-            var secret = password.Text ?? "";
-            var hero = (character.Text ?? "").Trim();
-            var error = account.Length == 0 ? "Enter the account name you log in with."
-                : !nameFree(account) ? $"There's already an account named {account}."
-                : existing is null && secret.Length == 0 ? "Enter the account's password."
-                : !LoginHandoff.CanCarry(account, secret, hero) ? "The details hold a character the game can't be given."
-                : null;
-            problem.Text = error ?? "";
-            problem.IsVisible = error is not null;
-            if (error is null)
-            {
-                result = new AccountForm(account, secret.Length > 0 ? secret : null, hero.Length > 0 ? hero : null);
-                dialog.Close();
-            }
-        };
+        save = new Button { Content = "Save", Classes = { "primary" } };
         var cancel = new Button { Content = "Cancel" };
         cancel.Click += (_, _) => dialog.Close();
-        dialog.Content = new StackPanel
+        body = new StackPanel
         {
             Margin = new Avalonia.Thickness(20),
             Spacing = 8,
             Children =
             {
-                new TextBlock { Classes = { "name" }, Text = "Account Name" },
-                name,
-                new TextBlock { Classes = { "name" }, Text = "Password", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
-                password,
-                new TextBlock { Classes = { "name" }, Text = "Character", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
-                character,
-                new TextBlock
-                {
-                    Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    Text = "With a character, the game enters the world as them; without one, it stops at character select. "
-                        + "If several of your characters share a name, add their class, race, faction or level, like "
-                        + "Expulsion (Hunter) or Lich (Horde). "
-                        + "The password is encrypted for your Windows user.",
-                },
-                problem,
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8,
@@ -181,8 +221,8 @@ public partial class MainWindow : Window, IDialogs
                 },
             },
         };
-        await dialog.ShowDialog(this);
-        return result;
+        dialog.Content = body;
+        return dialog;
     }
 
     public async Task<string?> PickFolderAsync(string title, string? startFolder)

@@ -34,7 +34,7 @@ public class AccountTests
         Assert.False(LoginHandoff.CanCarry("Acc", "p\x1Fw", null));
     }
 
-    // --launch alone uses the Launch button's account; --account names one; neither means a normal start.
+    // --launch alone uses the Launch button's target; --account and --character name one; no --launch means a normal start.
     [Fact]
     public void LaunchArgumentsParse()
     {
@@ -43,7 +43,37 @@ public class AccountTests
         Assert.Equal(new LaunchRequest(null), LaunchRequest.Parse(["--launch"]));
         Assert.Equal(new LaunchRequest("My Acc"), LaunchRequest.Parse(["--LAUNCH", "--account", "My Acc"]));
         Assert.Equal(new LaunchRequest(null), LaunchRequest.Parse(["--launch", "--account"]));
+        Assert.Equal(new LaunchRequest("Acc", "Lich (Horde)"), LaunchRequest.Parse(["--launch", "--account", "Acc", "--character", "Lich (Horde)"]));
         Assert.Equal("--launch --account \"My Acc\"", LaunchRequest.Arguments("My Acc"));
+        Assert.Equal("--launch --account \"Acc\" --character \"Lich (Horde)\"", LaunchRequest.Arguments("Acc", "Lich (Horde)"));
+    }
+
+    // The Launch target is the saved account and, when it still has it, the saved character (by name, without case).
+    [Fact]
+    public void LaunchTargetFollowsSavedAccounts()
+    {
+        var data = new LauncherData
+        {
+            Accounts = [new SavedAccount { Name = "Expulsion", Characters = ["Lich (Horde)", "Expulsion (Hunter)"] }],
+            LaunchAccount = "expulsion",
+            LaunchCharacter = "LICH (HORDE)",
+        };
+        Assert.Equal(new LaunchTarget("Expulsion", "Lich (Horde)"), data.LaunchTarget);
+        data.LaunchCharacter = "Gone";
+        Assert.Equal(new LaunchTarget("Expulsion", null), data.LaunchTarget);
+        data.LaunchAccount = "Other";
+        Assert.Null(data.LaunchTarget);
+        Assert.True(data.Accounts[0].HasCharacter(" expulsion (hunter) "));
+    }
+
+    // Labels and captions read the way the Launch menu and button show them.
+    [Fact]
+    public void LaunchTargetLabels()
+    {
+        Assert.Equal("Expulsion: Character Select", new LaunchTarget("Expulsion", null).Label);
+        Assert.Equal("Expulsion: Lich (Horde)", new LaunchTarget("Expulsion", "Lich (Horde)").Label);
+        Assert.Equal("as Expulsion", new LaunchTarget("Expulsion", null).Caption);
+        Assert.Equal("as Lich (Horde)", new LaunchTarget("Expulsion", "Lich (Horde)").Caption);
     }
 
     // Accounts are found by name without case; none for a null name.

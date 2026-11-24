@@ -66,10 +66,12 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
     private static string Plural(int count, string one, string many) => $"{count} {(count == 1 ? one : many)}";
 
     [RelayCommand]
-    private Task PlayAsync() => StartGameAsync(main.Data.FindAccount(main.Data.LaunchAccount));
+    private Task PlayAsync() =>
+        StartGameAsync(main.Data.FindAccount(main.Data.LaunchTarget?.Account), main.Data.LaunchTarget?.Character);
 
-    // Starts the game, logged in as the account when one is given; true when it started.
-    public async Task<bool> StartGameAsync(SavedAccount? account)
+    // Starts the game, logged in as the account when one is given and into the world as the character when one is;
+    // true when it started.
+    public async Task<bool> StartGameAsync(SavedAccount? account, string? character)
     {
         var exe = main.Exe;
         var started = false;
@@ -96,8 +98,8 @@ public sealed partial class PlayViewModel(MainViewModel main) : ObservableObject
                     : "Press Apply Changes on Patches to put it back."),
                 "Start Anyway");
             var password = start && account is not null ? AccountSecrets.Unprotect(account.Password) : null;
-            var login = password is not null && account is not null && LoginHandoff.CanCarry(account.Name, password, account.Character)
-                ? LoginHandoff.Value(account.Name, password, account.Character) : null;
+            var login = password is not null && account is not null && LoginHandoff.CanCarry(account.Name, password, character)
+                ? LoginHandoff.Value(account.Name, password, character) : null;
             start = start && (account is null || login is not null || await main.Dialogs.ConfirmAsync("Start Without Logging In?",
                 $"The saved password for {account.Name} can't be read here: it was saved by another Windows user or on another PC. "
                 + "Edit the account in Settings to enter it again.", "Start Anyway"));

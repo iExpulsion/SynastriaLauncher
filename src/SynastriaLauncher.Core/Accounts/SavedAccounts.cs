@@ -8,8 +8,21 @@ namespace SynastriaLauncher.Core.Accounts;
 public sealed class SavedAccount
 {
     public string Name { get; set; } = "";
-    public string? Character { get; set; }
     public string Password { get; set; } = "";
+
+    // Characters to enter the world as, each "Name" or "Name (detail, ...)" as the DLL matches them.
+    public List<string> Characters { get; set; } = [];
+
+    public bool HasCharacter(string character) => Characters.Any(c => SameCharacter(c, character));
+
+    public static bool SameCharacter(string a, string b) => string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase);
+}
+
+// What Launch logs in as: an account, and a character or none (stays at character select).
+public sealed record LaunchTarget(string Account, string? Character)
+{
+    public string Label => Character is null ? $"{Account}: Character Select" : $"{Account}: {Character}";
+    public string Caption => $"as {Character ?? Account}";
 }
 
 public static class AccountSecrets
@@ -99,19 +112,25 @@ public static class LoginHandoff
 }
 
 // The launcher's own arguments for starting the game straight away, as desktop shortcuts use them.
-public sealed record LaunchRequest(string? Account)
+public sealed record LaunchRequest(string? Account, string? Character = null)
 {
     public const string LaunchArg = "--launch";
     public const string AccountArg = "--account";
+    public const string CharacterArg = "--character";
 
     // Null when the arguments don't ask to launch.
     public static LaunchRequest? Parse(IReadOnlyList<string> args)
     {
         var launch = args.Any(a => string.Equals(a, LaunchArg, StringComparison.OrdinalIgnoreCase));
-        var at = args.ToList().FindIndex(a => string.Equals(a, AccountArg, StringComparison.OrdinalIgnoreCase));
-        var account = at >= 0 && at + 1 < args.Count ? args[at + 1] : null;
-        return launch ? new LaunchRequest(account) : null;
+        return launch ? new LaunchRequest(Value(args, AccountArg), Value(args, CharacterArg)) : null;
     }
 
-    public static string Arguments(string account) => $"{LaunchArg} {AccountArg} \"{account}\"";
+    private static string? Value(IReadOnlyList<string> args, string name)
+    {
+        var at = args.ToList().FindIndex(a => string.Equals(a, name, StringComparison.OrdinalIgnoreCase));
+        return at >= 0 && at + 1 < args.Count ? args[at + 1] : null;
+    }
+
+    public static string Arguments(string account, string? character = null) =>
+        $"{LaunchArg} {AccountArg} \"{account}\"" + (character is null ? "" : $" {CharacterArg} \"{character}\"");
 }

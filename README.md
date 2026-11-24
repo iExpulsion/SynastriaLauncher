@@ -35,14 +35,16 @@ have updates, and it warns you about anything that needs attention, such as a mo
 
 ### Auto Login
 
-Save your game accounts in Settings, under **Accounts**, and the game logs in by itself. Give an account a character
-and it goes on into the world as them; without one it stops at character select. If several of your characters share
-a name, add their class, race, faction or level in brackets, like `Expulsion (Hunter)` or `Lich (Horde)`, or more
-than one separated by commas, like `Lich (Death Knight, Alliance)`. When the name still fits more than one character,
-it stops at character select. Choose which account the Launch
-button uses in **Launch Logs In As**, or with the arrow on the Launch button, which shows the account under **LAUNCH**, and press **Create Shortcut** on an account for a desktop shortcut that starts
-the game through the launcher (with its usual checks) and logs in as that account, one per account if you play
-several. Hold Shift while the game starts to skip logging in. Passwords are encrypted for your Windows user.
+Save your game accounts in Settings, under **Accounts**, and the game logs in by itself, stopping at character select.
+**Add Character** on an account saves a character to go straight into the world as. If several of your characters
+share a name, add their class, race, faction or level in brackets, like `Expulsion (Hunter)` or `Lich (Horde)`, or
+more than one separated by commas, like `Lich (Death Knight, Alliance)`. When the name still fits more than one
+character, it stops at character select.
+
+Choose what the Launch button logs in as in **Launch Logs In As**, or with the arrow on the Launch button, which shows
+it under **LAUNCH**. **Create Shortcut** on an account or a character makes a desktop shortcut that starts the game
+through the launcher (with its usual checks) and logs in as it, so you can keep one per character. Hold Shift while
+the game starts to skip logging in. Passwords are encrypted for your Windows user.
 
 If you start `WowExt.exe` yourself, it can log in from its own command line instead:
 `WowExt.exe -login AccountName -password YourPassword -character CharacterName` (`-character` is optional and takes

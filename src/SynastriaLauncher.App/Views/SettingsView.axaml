@@ -58,33 +58,68 @@
           <Border Classes="row">
             <DockPanel>
               <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Accounts.LaunchChoices}" SelectedItem="{Binding Accounts.LaunchChoice}"
-                        MinWidth="180" VerticalAlignment="Center" CornerRadius="7" />
+                        MinWidth="220" VerticalAlignment="Center" CornerRadius="7">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:LaunchOption">
+                    <TextBlock Text="{Binding Label}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
               <StackPanel Spacing="4" Margin="0,0,12,0">
                 <TextBlock Classes="name" Text="Launch Logs In As" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="The Launch button logs in as this account. Hold Shift while the game starts to skip it." />
+                           Text="What the Launch button logs in as. Hold Shift while the game starts to skip it." />
               </StackPanel>
             </DockPanel>
           </Border>
           <ItemsControl ItemsSource="{Binding Accounts.Items}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:AccountItemViewModel">
-                <Border Classes="row">
-                  <DockPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                      <Button Content="Create Shortcut" Command="{Binding CreateShortcutCommand}"
-                              ToolTip.Tip="A desktop shortcut that starts the game through the launcher and logs in as this account" />
-                      <Button Content="Edit" Command="{Binding EditCommand}" />
-                      <Button Content="Remove" Command="{Binding RemoveCommand}" />
-                    </StackPanel>
-                    <StackPanel Spacing="4" Margin="0,0,12,0">
-                      <TextBlock Classes="name" Text="{Binding Name}" />
-                      <TextBlock Classes="muted" Text="{Binding Detail}" />
-                      <TextBlock Classes="small" Foreground="{StaticResource Bad}" IsVisible="{Binding PasswordUnreadable}"
-                                 Text="The saved password can't be read on this Windows user; edit the account to enter it again" />
-                    </StackPanel>
-                  </DockPanel>
-                </Border>
+                <StackPanel>
+                  <Border Classes="row">
+                    <DockPanel>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="Add Character" Command="{Binding AddCharacterCommand}"
+                                ToolTip.Tip="A character this account can go straight into the world as" />
+                        <Button Content="Create Shortcut" Command="{Binding CreateShortcutCommand}"
+                                ToolTip.Tip="A desktop shortcut that starts the game through the launcher, logs in and stops at character select" />
+                        <Button Classes="icon" ToolTip.Tip="More">
+                          <PathIcon Data="{StaticResource IconMore}" />
+                          <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                              <MenuItem Header="Edit Account" Command="{Binding EditCommand}" />
+                              <MenuItem Header="Remove Account" Command="{Binding RemoveCommand}" />
+                            </MenuFlyout>
+                          </Button.Flyout>
+                        </Button>
+                      </StackPanel>
+                      <StackPanel Spacing="4" Margin="0,0,12,0">
+                        <TextBlock Classes="name" Text="{Binding Name}" />
+                        <TextBlock Classes="muted" Text="{Binding Detail}" TextWrapping="Wrap" />
+                        <TextBlock Classes="small" Foreground="{StaticResource Bad}" IsVisible="{Binding PasswordUnreadable}"
+                                   Text="The saved password can't be read on this Windows user; edit the account to enter it again" />
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                  <ItemsControl ItemsSource="{Binding Characters}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:CharacterItemViewModel">
+                        <Border Classes="row" Padding="40,8,16,8">
+                          <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                              <Button Content="Create Shortcut" Command="{Binding CreateShortcutCommand}"
+                                      ToolTip.Tip="A desktop shortcut that starts the game through the launcher and goes straight into the world as this character" />
+                              <Button Classes="icon" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove this character">
+                                <PathIcon Data="{StaticResource IconClose}" Width="14" Height="14" />
+                              </Button>
+                            </StackPanel>
+                            <TextBlock Classes="name" Text="{Binding Name}" VerticalAlignment="Center" />
+                          </DockPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
@@ -94,7 +129,7 @@
               <StackPanel Spacing="4" Margin="0,0,12,0">
                 <TextBlock Classes="name" Text="Auto Login" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Save an account to log in without typing, and optionally go straight into the world. Passwords are encrypted for your Windows user. Needs the DLL Loader patch." />
+                           Text="Save an account to log in without typing, and add its characters to go straight into the world. Passwords are encrypted for your Windows user. Needs the DLL Loader patch." />
               </StackPanel>
             </DockPanel>
           </Border>
