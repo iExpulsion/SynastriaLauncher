@@ -141,12 +141,12 @@ def main():
             report += describe(change)
         report += [
             "",
-            f"Branch [`{BRANCH}`](https://github.com/{repository}/compare/main...{BRANCH}) has mods.json with the new "
-            f"pins (list revision {revision}); the Build workflow runs the tests on it.",
+            f"This pull request moves the pins in mods.json (list revision {revision}). The Build workflow runs the "
+            "tests on it; its result shows on the commit.",
             "",
-            "To try it first: save that branch's `src/SynastriaLauncher.Core/Mods/mods.json` as "
-            "`%LOCALAPPDATA%\\SynastriaLauncher\\mods.json`, reinstall the mod in the launcher and play, then delete "
-            f"that file and merge `{BRANCH}` into main.",
+            f"To try it first: save [this branch's mods.json](https://github.com/{repository}/raw/{BRANCH}/"
+            "src/SynastriaLauncher.Core/Mods/mods.json) as `%LOCALAPPDATA%\\SynastriaLauncher\\mods.json`, reinstall "
+            "the mod in the launcher and play, then delete that file and merge.",
         ]
     if problems:
         report += ([""] if report else []) + ["Couldn't check:", ""] + problems
