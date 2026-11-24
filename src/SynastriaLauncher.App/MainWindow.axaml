@@ -122,6 +122,18 @@
           <TextBlock Text="LAUNCH" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="Bold" LetterSpacing="3" Foreground="{StaticResource OnGold}" />
         </Button>
 
+        <StackPanel DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" Spacing="4" IsVisible="{Binding Accounts.HasAccounts}">
+          <TextBlock Classes="small" Text="Logs In As" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <ComboBox ItemsSource="{Binding Accounts.LaunchChoices}" SelectedItem="{Binding Accounts.LaunchChoice}" MinWidth="160" CornerRadius="7"
+                      ToolTip.Tip="The account Launch logs in as. Hold Shift while the game starts to skip it." />
+            <Button Classes="icon" Command="{Binding NavigateCommand}" CommandParameter="{x:Static vm:LauncherPage.Settings}"
+                    ToolTip.Tip="Manage accounts in Settings">
+              <PathIcon Data="{StaticResource IconSettings}" Width="15" Height="15" />
+            </Button>
+          </StackPanel>
+        </StackPanel>
+
         <Border DockPanel.Dock="Right" Margin="0,0,16,0" VerticalAlignment="Center" IsVisible="{Binding LauncherUpdate, Converter={x:Static ObjectConverters.IsNotNull}}">
           <Button Command="{Binding UpdateLauncherCommand}" ToolTip.Tip="Download and restart into the new launcher">
             <StackPanel Orientation="Horizontal" Spacing="8">
