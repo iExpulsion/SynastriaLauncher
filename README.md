@@ -132,6 +132,14 @@ list itself is kept up to date too, so new addons show up without a launcher upd
 - **Hide** addons you'll never want from the list, and fold away any section you don't need.
 - **Linked folders are left alone:** an addon folder that's linked to a folder somewhere else (for example, shared
   between two game installs) is listed under **Linked Folders** and never updated, replaced or removed.
+- **Removed addons' settings:** the game keeps an addon's saved settings in `WTF` after the addon is gone. When you
+  remove one, tick **Also Move Its Saved Settings Aside** to clear them too, or use **Move Aside** under **Backups**
+  in Settings to gather every addon's leftovers. They're moved to `WTF\_RemovedAddonSettings`; put a file back to
+  restore it.
+- **Copy Character Settings** (Settings, under **Addons**) gives other characters one character's game options,
+  addon profiles (ElvUI, Skada and others), enabled addons, frame positions and chat windows. Pick any characters on
+  any of your accounts, with the game closed. On the same account, addon profiles are shared, so later changes show
+  up on all of them; another account gets a copy. Everything replaced is backed up first.
 
 You don't need a GitHub account.
 
