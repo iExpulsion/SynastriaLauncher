@@ -153,16 +153,28 @@
 
       <TextBlock Classes="section" Text="Backups" />
       <Border Classes="panel">
-        <Border Classes="row" BorderThickness="0">
-          <DockPanel>
-            <Button DockPanel.Dock="Right" Content="Clean Up" Command="{Binding CleanUpBackupsCommand}" IsEnabled="{Binding HasBackups}"
-                    VerticalAlignment="Center" ToolTip.Tip="Lists them first; they go to the Recycle Bin" />
-            <StackPanel Spacing="4" Margin="0,0,12,0">
-              <TextBlock Classes="name" Text="Old Backups" />
-              <TextBlock Classes="muted" Text="{Binding BackupSummary}" />
-            </StackPanel>
-          </DockPanel>
-        </Border>
+        <StackPanel>
+          <Border Classes="row">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Move Aside" Command="{Binding MoveLeftoverSettingsCommand}" IsEnabled="{Binding HasLeftoverSettings}"
+                      VerticalAlignment="Center" ToolTip.Tip="Lists them first; they move to WTF\_RemovedAddonSettings" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Removed Addons' Settings" />
+                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding LeftoverSettingsSummary}" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+          <Border Classes="row" BorderThickness="0">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Clean Up" Command="{Binding CleanUpBackupsCommand}" IsEnabled="{Binding HasBackups}"
+                      VerticalAlignment="Center" ToolTip.Tip="Lists them first; they go to the Recycle Bin" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Old Backups" />
+                <TextBlock Classes="muted" Text="{Binding BackupSummary}" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </StackPanel>
       </Border>
 
       <TextBlock Classes="section" Text="Launcher" />

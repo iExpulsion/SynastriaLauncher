@@ -75,7 +75,14 @@ public partial class MainWindow : Window, IDialogs
     public Task<bool> ConfirmAsync(string title, string message, string confirmLabel, string cancelLabel = "Cancel") =>
         ShowDialogAsync(title, message, confirmLabel, cancelLabel);
 
-    private async Task<bool> ShowDialogAsync(string title, string message, string? confirmLabel, string cancelLabel)
+    public async Task<bool?> ConfirmWithOptionAsync(string title, string message, string option, string confirmLabel)
+    {
+        var box = new CheckBox { Content = option };
+        var confirmed = await ShowDialogAsync(title, message, confirmLabel, "Cancel", box);
+        return confirmed ? box.IsChecked == true : null;
+    }
+
+    private async Task<bool> ShowDialogAsync(string title, string message, string? confirmLabel, string cancelLabel, Control? extra = null)
     {
         WindowState = WindowState == WindowState.Minimized ? WindowState.Normal : WindowState;
         var dialog = new Window
@@ -98,16 +105,18 @@ public partial class MainWindow : Window, IDialogs
         var close = new Button { Content = cancelLabel };
         close.Click += (_, _) => dialog.Close();
         buttons.Children.Add(close);
-        dialog.Content = new StackPanel
+        var body = new StackPanel
         {
             Margin = new Avalonia.Thickness(20),
             Spacing = 16,
-            Children =
-            {
-                new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                buttons,
-            },
+            Children = { new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap } },
         };
+        if (extra is not null)
+        {
+            body.Children.Add(extra);
+        }
+        body.Children.Add(buttons);
+        dialog.Content = body;
         await dialog.ShowDialog(this);
         return confirmed;
     }

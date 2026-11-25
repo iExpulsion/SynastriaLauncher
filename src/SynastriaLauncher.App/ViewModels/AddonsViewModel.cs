@@ -440,19 +440,35 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     public async Task RemoveAsync(AddonItemViewModel item)
     {
         var folders = main.Data.Installed.GetValueOrDefault(item.Id)?.Folders ?? item.Source.Folders;
-        var confirmed = await main.Dialogs.ConfirmAsync($"Remove {item.Name}",
-            $"Delete {string.Join(", ", folders)} from your AddOns folder? Its saved settings in WTF stay.", "Remove");
-        if (confirmed)
+        var settings = main.GameFolder is { } game ? SavedSettings.Of(game, folders) : [];
+        var question = $"Delete {string.Join(", ", folders)} from your AddOns folder?";
+        var choice = settings.Count == 0
+            ? await main.Dialogs.ConfirmAsync($"Remove {item.Name}", question, "Remove") ? (bool?)false : null
+            : await main.Dialogs.ConfirmWithOptionAsync($"Remove {item.Name}",
+                $"{question} Its saved settings stay in WTF unless you move them aside too, so a reinstall would start fresh.",
+                "Also Move Its Saved Settings Aside", "Remove");
+        if (choice is { } moveSettings)
         {
+            var removed = false;
             try
             {
                 AddonInstaller.Uninstall(AddOnsPath!, folders);
                 main.Data.Installed.Remove(item.Id);
                 main.Data.Save();
+                removed = true;
             }
             catch (IOException e)
             {
                 await main.Dialogs.AlertAsync($"Couldn't Remove {item.Name}", e.Message);
+            }
+            if (removed && moveSettings)
+            {
+                await main.RunGameWriteAsync($"move {item.Name}'s saved settings", () =>
+                {
+                    SavedSettings.MoveAside(main.GameFolder!, settings, DateTime.Now);
+                    return Task.CompletedTask;
+                });
+                main.RefreshBackups();
             }
             await RecheckAsync(item);
         }

@@ -280,7 +280,7 @@ public sealed partial class MainViewModel : ObservableObject
     public string BackupSummary => BackupItems.Count switch
     {
         0 => "Nothing to clean up. The original WowExt.exe backup is always kept for Restore Original Game.",
-        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files, old WowExt files and switched-off Project Reforged parts. "
+        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files, old WowExt files, switched-off Project Reforged parts and removed addons' settings moved aside. "
             + "The original WowExt.exe backup is always kept.",
     };
 
@@ -288,6 +288,43 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var dlls = Exe is { } exe ? ExePatcher.ReadSettings(exe.Read()).DllFolder ?? DllFolder.Default : DllFolder.Default;
         BackupItems = GameFolder is null ? [] : Backups.Find(GameFolder, Mods.Items.Select(i => i.Mod), dlls);
+        LeftoverSettings = GameFolder is null ? [] : SavedSettings.Leftover(GameFolder);
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasLeftoverSettings), nameof(LeftoverSettingsSummary))]
+    public partial IReadOnlyList<SavedSettingsFile> LeftoverSettings { get; set; } = [];
+
+    public bool HasLeftoverSettings => LeftoverSettings.Count > 0;
+
+    public string LeftoverSettingsSummary => SavedSettings.Addons(LeftoverSettings) switch
+    {
+        [] => "No saved settings left behind by removed addons.",
+        var addons => $"{addons.Count} removed addon{(addons.Count == 1 ? "" : "s")} left settings in WTF: "
+            + string.Join(", ", addons.Take(5)) + (addons.Count > 5 ? $" and {addons.Count - 5} more" : "")
+            + ". Moving them aside keeps them in WTF\\_RemovedAddonSettings until you clean up backups.",
+    };
+
+    [RelayCommand]
+    private async Task MoveLeftoverSettingsAsync()
+    {
+        RefreshBackups();
+        var files = LeftoverSettings;
+        var addons = SavedSettings.Addons(files);
+        var list = string.Join("\n", addons.Take(12).Select(a => $"•  {a}"))
+            + (addons.Count > 12 ? $"\n•  and {addons.Count - 12} more" : "");
+        var confirmed = files.Count > 0 && await Dialogs.ConfirmAsync("Move Aside Removed Addons' Settings",
+            $"These addons aren't in your AddOns folder anymore. Move their saved settings ({files.Count} file{(files.Count == 1 ? "" : "s")}) "
+            + $"to WTF\\_RemovedAddonSettings?\n\n{list}\n\nPut a file back where it was to restore it.", "Move Aside");
+        if (confirmed)
+        {
+            await RunGameWriteAsync("move saved settings", () =>
+            {
+                SavedSettings.MoveAside(GameFolder!, files, DateTime.Now);
+                return Task.CompletedTask;
+            });
+            RefreshBackups();
+        }
     }
 
     [RelayCommand]

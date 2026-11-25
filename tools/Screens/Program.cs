@@ -223,6 +223,12 @@ var interfacePart = model.Reforged.Sections.SelectMany(s => s.Parts).First(p => 
 ScrollTo(window.GetVisualDescendants().OfType<Avalonia.Controls.Border>().First(b => b.DataContext == interfacePart), 20);
 Shot("reforged-optional");
 
+// Settings at its bottom, for Backups and the removed addons' settings.
+model.Page = LauncherPage.Settings;
+model.RefreshBackups();
+ScrollToEnd();
+Shot("settings-backups");
+
 // Full-height pages, then Patches with staged changes and settings open.
 window.Height = 1500;
 foreach (var page in new[] { LauncherPage.Addons, LauncherPage.Mods, LauncherPage.Wdm })

@@ -7,6 +7,9 @@ public interface IDialogs
 {
     Task AlertAsync(string title, string message);
     Task<bool> ConfirmAsync(string title, string message, string confirmLabel, string cancelLabel = "Cancel");
+
+    // A confirm with a checkbox under the message, off at first: null when cancelled, else whether it was ticked.
+    Task<bool?> ConfirmWithOptionAsync(string title, string message, string option, string confirmLabel);
     Task<string?> PickFolderAsync(string title, string? startFolder);
     Task<string?> PickFileAsync(string title, string typeName, string pattern);
 

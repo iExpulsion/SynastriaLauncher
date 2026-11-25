@@ -7,7 +7,8 @@ public sealed record BackupItem(string Path, string Label, long Bytes);
 
 // Backups the launcher leaves behind: old addon versions (AddOns\<name>.bak, when Keep the Previous Version is on),
 // settings files a preset replaced (<config>.bak), the files a WowExt update replaced (_WowExtBackups\<version>) and
-// Project Reforged parts switched off (Data\_Disabled). WowExt.exe.bak is never listed: Restore Original Game needs it.
+// Project Reforged parts switched off (Data\_Disabled) and removed addons' saved settings moved aside
+// (WTF\_RemovedAddonSettings\<date>). WowExt.exe.bak is never listed: Restore Original Game needs it.
 public static class Backups
 {
     public static IReadOnlyList<BackupItem> Find(string gameFolder, IEnumerable<ModDefinition> mods, string dllFolder)
@@ -41,7 +42,12 @@ public static class Backups
             .Select(f => Reforged.ReforgedService.IsLink(f.Path)
                 ? new BackupItem(f.Path, $"Link to {Path.GetFileName(f.Path)} for Project Reforged's {f.Part.Name}, switched off (the shared file stays)", 0)
                 : new BackupItem(f.Path, $"{Path.GetFileName(f.Path)} for Project Reforged's {f.Part.Name}, switched off", new FileInfo(f.Path).Length));
-        return addonBackups.Concat(configBackups).Concat(wowExtBackups).Concat(reforged)
+        var moved = Addons.SavedSettings.MovedPath(gameFolder);
+        var movedSettings = Directory.Exists(moved)
+            ? Directory.EnumerateDirectories(moved)
+                .Select(d => new BackupItem(d, $"Saved settings of removed addons, moved aside {Path.GetFileName(d)}", FolderSize(d)))
+            : [];
+        return addonBackups.Concat(configBackups).Concat(wowExtBackups).Concat(reforged).Concat(movedSettings)
             .OrderBy(b => b.Label, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
