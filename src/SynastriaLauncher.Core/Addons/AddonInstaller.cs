@@ -9,15 +9,17 @@ public static class AddonInstaller
 {
     // A repo with releases installs its latest one: the packaged download when there is one (it often bundles
     // libraries the source lacks), else the release's source. A repo without releases, or one the player switched to
-    // Latest Commits, installs the default branch's head.
+    // Latest Commits, installs the default branch's head. A packaged zip in the repo installs that file as of its last
+    // commit.
     public static async Task<InstallRecord> InstallAsync(GitHubKeyless github, AddonCheck check, string addOnsPath,
         bool keepBackup, CancellationToken cancel = default)
     {
         var repo = check.Source.Repo;
         var tag = check.LatestCommits ? null : check.ReleaseTag;
         var asset = tag is null ? null : Archives.Best(await github.GetReleaseAssetsAsync(repo, tag, cancel), a => a.Name);
-        var url = asset?.Url ?? (tag is not null ? GitHubKeyless.TagSourceZipUrl(repo, tag)
-            : GitHubKeyless.SourceZipUrl(repo, check.HeadSha ?? check.DefaultBranch ?? "HEAD"));
+        var gitRef = check.HeadSha ?? check.DefaultBranch ?? "HEAD";
+        var url = check.Source.Zip is { } zip ? GitHubKeyless.RawUrl(repo, gitRef, zip)
+            : asset?.Url ?? (tag is not null ? GitHubKeyless.TagSourceZipUrl(repo, tag) : GitHubKeyless.SourceZipUrl(repo, gitRef));
         var temp = Directory.CreateTempSubdirectory("launcher-addon-").FullName;
         try
         {
@@ -25,7 +27,7 @@ public static class AddonInstaller
             await github.DownloadAsync(url, download, cancel);
             var folders = InstallFromArchive(download, addOnsPath, keepBackup);
             return new InstallRecord(tag, tag is null ? check.HeadSha : null, folders, DateTime.Now,
-                InstalledFiles.Stamp(addOnsPath, folders));
+                InstalledFiles.Stamp(addOnsPath, folders), Zip: check.Source.Zip);
         }
         finally
         {

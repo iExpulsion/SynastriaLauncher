@@ -295,10 +295,14 @@ public sealed class AddonTests : IDisposable
             Good with { Toc = "../../secret.toc" },
             Good with { Requires = ["nobody/missing"] },
             Good with { Description = " " },
+            Good with { Zip = "../other/Good.zip" },
+            Good with { Zip = "src/Good.txt" },
+            Good with { Zip = "src\\Good.zip" },
         ];
         Assert.All(bad, entry => Assert.NotEmpty(Catalog(2, null, entry).Problems()));
         Assert.NotEmpty(Catalog(2, null, Good, Good).Problems());
         Assert.Empty(Catalog(2, null, Good).Problems());
+        Assert.Empty(Catalog(2, null, Good with { Zip = "src/Addons/Good.zip" }).Problems());
         Assert.NotEmpty(Catalog(2, null, Good with { Folders = ["..."] }).Problems());
         Assert.NotEmpty(Catalog(2, null, Good with { Folders = ["Good."] }).Problems());
     }
@@ -406,5 +410,79 @@ public sealed class AddonTests : IDisposable
         (AddonSource, AddonState?)[] all = [(Lib, library), (User, user)];
         Assert.Equal(folded, AddonDependencies.IsFolded(Lib, library, needsUpdate, all));
         Assert.False(AddonDependencies.IsFolded(User, user, false, all));
+    }
+
+    // Serves one repo of packaged addons: its refs, the zip's commit feed (naming Commit) and the zip at that commit.
+    private sealed class FakeZipRepo(byte[] zip) : HttpMessageHandler
+    {
+        public const string Repo = "someone/Collection";
+        public const string ZipPath = "src/Addons/Pkg.zip";
+        public string Commit { get; set; } = new('c', 40);
+        public List<string> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var url = request.RequestUri!.AbsoluteUri;
+            Requests.Add(url);
+            var head = new string('a', 40);
+            HttpContent? content = url switch
+            {
+                $"https://github.com/{Repo}.git/info/refs?service=git-upload-pack" => new ByteArrayContent(Encoding.ASCII.GetBytes(
+                    Pkt("# service=git-upload-pack\n") + "0000" + Pkt($"{head} HEAD\0symref=HEAD:refs/heads/main\n")
+                    + Pkt($"{head} refs/heads/main\n") + "0000")),
+                $"https://github.com/{Repo}/commits/main/{ZipPath}.atom" => new StringContent(
+                    $"<feed><id>feed</id><updated>2025-05-15T09:29:59Z</updated><entry>\n<id>tag:github.com,2008:Grit::Commit/{Commit}</id>"
+                    + "<title>update</title><updated>2025-05-15T09:29:59Z</updated></entry></feed>"),
+                _ when url == $"https://raw.githubusercontent.com/{Repo}/{Commit}/{ZipPath}" => new ByteArrayContent(zip),
+                _ => null,
+            };
+            return Task.FromResult(new HttpResponseMessage(content is null ? System.Net.HttpStatusCode.NotFound : System.Net.HttpStatusCode.OK)
+            {
+                Content = content,
+            });
+        }
+    }
+
+    // A packaged zip in a repo installs from that file at its last commit, never from releases or the repo's own
+    // source, and shows an update once a newer commit changes the file.
+    [Fact]
+    public async Task PackagedZipInRepoInstallsAndFollowsItsCommits()
+    {
+        var zip = Path.Combine(_root, "Pkg.zip");
+        using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            using var writer = new StreamWriter(archive.CreateEntry("Pkg/Pkg.toc").Open());
+            writer.Write("## Title: Pkg\n## Version: 1.6\n");
+        }
+        var addOns = Directory.CreateDirectory(Path.Combine(_root, "AddOns")).FullName;
+        using var repo = new FakeZipRepo(File.ReadAllBytes(zip));
+        using var github = new GitHubKeyless(repo);
+        var source = new AddonSource(FakeZipRepo.Repo, "Pkg", ["Pkg"], "Pkg/Pkg.toc", true, Zip: FakeZipRepo.ZipPath);
+
+        var fresh = await AddonChecker.CheckAsync(github, source, addOns, null);
+        Assert.Equal(AddonState.NotInstalled, fresh.State);
+        Assert.Equal(repo.Commit, fresh.HeadSha);
+        Assert.Null(fresh.ReleaseTag);
+
+        var record = await AddonInstaller.InstallAsync(github, fresh, addOns, keepBackup: false);
+        Assert.True(File.Exists(Path.Combine(addOns, "Pkg", "Pkg.toc")));
+        Assert.Equal(repo.Commit, record.Sha);
+        Assert.Equal(FakeZipRepo.ZipPath, record.Zip);
+        Assert.DoesNotContain(repo.Requests, r => r.Contains("/releases") || r.Contains("codeload.github.com"));
+
+        Assert.Equal(AddonState.UpToDate, (await AddonChecker.CheckAsync(github, source, addOns, record)).State);
+        repo.Commit = new string('d', 40);
+        Assert.Equal(AddonState.UpdateAvailable, (await AddonChecker.CheckAsync(github, source, addOns, record)).State);
+    }
+
+    // An installed packaged addon that left the list keeps its zip path, so it still updates from that file.
+    [Fact]
+    public void DroppedPackagedAddonKeepsItsZip()
+    {
+        var data = new LauncherData();
+        data.Installed["x/Collection"] = new InstallRecord(null, new string('c', 40), ["Pkg"], DateTime.Now, Name: "Pkg",
+            Zip: "src/Pkg.zip");
+        var dropped = Assert.Single(data.AddonSources([]));
+        Assert.Equal("src/Pkg.zip", dropped.Zip);
     }
 }

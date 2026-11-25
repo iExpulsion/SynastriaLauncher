@@ -5,7 +5,8 @@ namespace SynastriaLauncher.Core.Addons;
 public static class AddonChecker
 {
     // About two requests per repo (refs and the latest-release redirect), plus a raw .toc or commit feed only for a
-    // copy the launcher didn't install. None of them count against the API limit.
+    // copy the launcher didn't install. A packaged zip in the repo reads that file's commit feed instead of releases.
+    // None of them count against the API limit.
     public static async Task<AddonCheck> CheckAsync(GitHubKeyless github, AddonSource source, string addOnsPath,
         InstallRecord? recorded, bool latestCommits = false, CancellationToken cancel = default)
     {
@@ -21,22 +22,26 @@ public static class AddonChecker
             }
             else
             {
-                var tag = await github.GetLatestReleaseTagAsync(source.Repo, cancel);
+                var zipCommit = source.Zip is null ? null
+                    : await github.GetLastCommitAsync(source.Repo, refs.DefaultBranch ?? "HEAD", source.Zip, cancel);
+                var tag = source.Zip is null ? await github.GetLatestReleaseTagAsync(source.Repo, cancel) : null;
+                var headSha = source.Zip is null ? refs.HeadSha : zipCommit?.Sha;
                 var followsRelease = tag is not null && !latestCommits;
                 var needsFallback = local.Installed && !local.Linked
-                    && AddonStatus.RecordSays(recorded, tag, refs.HeadSha, latestCommits) is null;
-                var remoteToc = needsFallback && source.TocPath is not null
+                    && AddonStatus.RecordSays(recorded, tag, headSha, latestCommits) is null;
+                var remoteToc = needsFallback && source.TocPath is not null && source.Zip is null
                     ? AddonStatus.TocVersion((await github.GetRawFileAsync(source.Repo,
                         (followsRelease ? tag : null) ?? refs.DefaultBranch ?? "HEAD", source.TocPath, cancel) ?? "").Split('\n'))
                     : null;
                 var tocDiffers = local.TocVersion is not null && remoteToc is not null &&
                     AddonStatus.VersionKey(local.TocVersion) != AddonStatus.VersionKey(remoteToc);
                 var tocMatchesRelease = followsRelease && local.TocVersion is not null && remoteToc is not null;
-                var lastCommit = needsFallback && !tocDiffers && !tocMatchesRelease && refs.DefaultBranch is not null
-                    ? await github.GetLastCommitDateAsync(source.Repo, refs.DefaultBranch, cancel)
+                var lastCommit = !needsFallback || tocDiffers || tocMatchesRelease ? null
+                    : source.Zip is not null ? zipCommit?.Date
+                    : refs.DefaultBranch is not null ? await github.GetLastCommitDateAsync(source.Repo, refs.DefaultBranch, cancel)
                     : null;
-                var state = AddonStatus.Evaluate(local, recorded, tag, refs.HeadSha, remoteToc, lastCommit, latestCommits);
-                check = new AddonCheck(source, state, tag, refs.HeadSha, refs.DefaultBranch, local.TocVersion,
+                var state = AddonStatus.Evaluate(local, recorded, tag, headSha, remoteToc, lastCommit, latestCommits);
+                check = new AddonCheck(source, state, tag, headSha, refs.DefaultBranch, local.TocVersion,
                     ChangedFiles: local.Installed && !local.Linked ? InstalledFiles.Changed(addOnsPath, recorded) : null,
                     LatestCommits: latestCommits);
             }

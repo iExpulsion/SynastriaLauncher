@@ -2,17 +2,21 @@ namespace SynastriaLauncher.Core.Addons;
 
 // A GitHub repo the launcher tracks. Folders are the addon folders it installs into AddOns; TocPath is the main
 // .toc inside the repo, used to compare versions of a copy installed some other way. Requires lists the repos
-// installed along with it; a Library is only there for the addons that require it.
+// installed along with it; a Library is only there for the addons that require it. Zip is a packaged addon kept as a
+// file inside the repo (a collection of addons): it installs that file, and follows the commits that change it.
 public sealed record AddonSource(string Repo, string Name, IReadOnlyList<string> Folders, string? TocPath, bool Curated,
-    string? Description = null, IReadOnlyList<string>? Requires = null, bool Library = false, bool Wotlk = false)
+    string? Description = null, IReadOnlyList<string>? Requires = null, bool Library = false, bool Wotlk = false,
+    string? Zip = null)
 {
     public string Author => Repo.Split('/')[0];
+
+    public string PageUrl => Zip is null ? $"https://github.com/{Repo}" : $"https://github.com/{Repo}/blob/HEAD/{Zip}";
 }
 
 // Files holds each installed file's size and write time (paths relative to AddOns), so later edits can be spotted.
-// Name keeps the addon's name for when it leaves the curated list.
+// Name and Zip keep the addon's name and packaged file for when it leaves the curated list.
 public sealed record InstallRecord(string? Tag, string? Sha, IReadOnlyList<string>? Folders, DateTime InstalledAt,
-    Dictionary<string, FileStamp>? Files = null, string? Name = null);
+    Dictionary<string, FileStamp>? Files = null, string? Name = null, string? Zip = null);
 
 public sealed record FileStamp(long Size, DateTime WrittenUtc);
 

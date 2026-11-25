@@ -60,7 +60,7 @@ public sealed class LauncherData
         var listed = curated.Concat(user).ToList();
         var dropped = Installed.Where(p => p.Value.Folders is { Count: > 0 } && !listed.Any(s => SameRepo(s.Repo, p.Key)))
             .Select(p => new AddonSource(p.Key, p.Value.Name ?? p.Value.Folders![0], p.Value.Folders!, null, true,
-                "No longer on the launcher's list. It's still kept up to date."));
+                "No longer on the launcher's list. It's still kept up to date.", Zip: p.Value.Zip));
         return listed.Concat(dropped);
     }
 

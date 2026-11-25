@@ -15,7 +15,8 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     public string Description => Source.Description ?? "";
     public bool HasDescription => Description.Length > 0;
     public string ByAuthor => $"by {Source.Author}";
-    public string Origin => Source.Curated ? $"github.com/{Source.Repo}" : $"github.com/{Source.Repo}, added by you";
+    public string Origin => (Source.Zip is null ? $"github.com/{Source.Repo}" : $"github.com/{Source.Repo}/{Source.Zip}")
+        + (Source.Curated ? "" : ", added by you");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StateLabel), nameof(PrimaryLabel), nameof(HasPrimary), nameof(CanReinstall), nameof(CanRemove),
@@ -129,7 +130,7 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     private Task ToggleLatestCommitsAsync() => owner.ToggleLatestCommitsAsync(this);
 
     [RelayCommand]
-    private void OpenPage() => GameProcess.OpenUrl($"https://github.com/{Repo}");
+    private void OpenPage() => GameProcess.OpenUrl(Source.PageUrl);
 }
 
 public sealed partial class AddonSectionViewModel(string title, IReadOnlyList<AddonItemViewModel> items, AddonsViewModel owner)

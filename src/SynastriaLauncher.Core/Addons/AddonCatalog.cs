@@ -12,9 +12,10 @@ public sealed record AddonEntry(
     [property: JsonPropertyName("description")] string Description,
     [property: JsonPropertyName("requires")] IReadOnlyList<string>? Requires = null,
     [property: JsonPropertyName("library")] bool Library = false,
-    [property: JsonPropertyName("wotlk")] bool Wotlk = false)
+    [property: JsonPropertyName("wotlk")] bool Wotlk = false,
+    [property: JsonPropertyName("zip")] string? Zip = null)
 {
-    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library, Wotlk);
+    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library, Wotlk, Zip);
 }
 
 // The curated addons: Addons/addons.json, built in and published in the launcher's repo (LiveList).
@@ -42,7 +43,7 @@ public sealed record AddonCatalog(
         CancellationToken cancel = default) =>
         LiveList.LoadAsync(github, RemoteUrl, overridePath, Parse, Embedded(), launcher, cancel);
 
-    // Only GitHub owner/repo names, single folder names inside AddOns, .toc paths inside the repo, and requirements
+    // Only GitHub owner/repo names, single folder names inside AddOns, .toc and zip paths inside the repo, and requirements
     // that are on the list, so a published list can't point the launcher anywhere else.
     public IReadOnlyList<string> Problems()
     {
@@ -66,6 +67,11 @@ public sealed record AddonCatalog(
             if (addon.Toc is not null && !SafePaths.IsRelative(addon.Toc))
             {
                 problems.Add($"{label}: the .toc path must stay inside the repo");
+            }
+            if (addon.Zip is not null && !(SafePaths.IsRelative(addon.Zip) && !addon.Zip.Contains('\\')
+                && addon.Zip.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)))
+            {
+                problems.Add($"{label}: the zip must be a .zip file inside the repo");
             }
             problems.AddRange((addon.Requires ?? []).Where(r => !repos.Contains(r) || r.Equals(addon.Repo, StringComparison.OrdinalIgnoreCase))
                 .Select(r => $"{label}: requires {r}, which isn't another addon on the list"));

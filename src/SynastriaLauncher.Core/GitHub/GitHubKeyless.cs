@@ -9,6 +9,8 @@ public sealed record ReleaseZip(string Url, bool FromRelease);
 
 public sealed record ReleaseAsset(string Name, string Url);
 
+public sealed record PathCommit(string Sha, DateTimeOffset? Date);
+
 // Reads GitHub without the REST API (and its 60-requests-an-hour limit for clients without a token): Git's smart
 // HTTP ref listing, the releases/latest redirect, the release assets fragment, raw files and Atom feeds. The API
 // is used only as a fallback for one release's assets and when a repo is added by hand.
@@ -101,14 +103,31 @@ public sealed partial class GitHubKeyless : IDisposable
     public static string TagSourceZipUrl(string repo, string tag) =>
         $"https://codeload.github.com/{repo}/zip/refs/tags/{Uri.EscapeDataString(tag)}";
 
-    public Task<string?> GetRawFileAsync(string repo, string gitRef, string path, CancellationToken cancel = default)
-    {
-        var escaped = string.Join('/', path.Split('/').Select(Uri.EscapeDataString));
-        return GetTextOrNullAsync($"https://raw.githubusercontent.com/{repo}/{Uri.EscapeDataString(gitRef)}/{escaped}", cancel);
-    }
+    public static string RawUrl(string repo, string gitRef, string path) =>
+        $"https://raw.githubusercontent.com/{repo}/{Uri.EscapeDataString(gitRef)}/{EscapePath(path)}";
+
+    private static string EscapePath(string path) => string.Join('/', path.Split('/').Select(Uri.EscapeDataString));
+
+    public Task<string?> GetRawFileAsync(string repo, string gitRef, string path, CancellationToken cancel = default) =>
+        GetTextOrNullAsync(RawUrl(repo, gitRef, path), cancel);
 
     [GeneratedRegex(@"<entry>[\s\S]*?<updated>([^<]+)</updated>")]
     private static partial Regex FirstEntryUpdated();
+
+    [GeneratedRegex(@"<entry>\s*<id>[^<]*Commit/([0-9a-fA-F]{40})</id>[\s\S]*?<updated>([^<]+)</updated>")]
+    private static partial Regex FirstEntryCommit();
+
+    // The newest commit on the branch that changed the file, from its Atom feed; null when there's none.
+    public async Task<PathCommit?> GetLastCommitAsync(string repo, string branch, string path, CancellationToken cancel = default)
+    {
+        var atom = await GetTextOrNullAsync(
+            $"https://github.com/{repo}/commits/{Uri.EscapeDataString(branch)}/{EscapePath(path)}.atom", cancel) ?? "";
+        var match = FirstEntryCommit().Match(atom);
+        return match.Success
+            ? new PathCommit(match.Groups[1].Value.ToLowerInvariant(),
+                DateTimeOffset.TryParse(match.Groups[2].Value, out var date) ? date : null)
+            : null;
+    }
 
     public async Task<DateTimeOffset?> GetLastCommitDateAsync(string repo, string branch, CancellationToken cancel = default)
     {
