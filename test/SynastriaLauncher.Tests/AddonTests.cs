@@ -480,9 +480,38 @@ public sealed class AddonTests : IDisposable
     public void DroppedPackagedAddonKeepsItsZip()
     {
         var data = new LauncherData();
-        data.Installed["x/Collection"] = new InstallRecord(null, new string('c', 40), ["Pkg"], DateTime.Now, Name: "Pkg",
-            Zip: "src/Pkg.zip");
+        data.Installed["x/Collection:src/Pkg.zip"] = new InstallRecord(null, new string('c', 40), ["Pkg"], DateTime.Now,
+            Name: "Pkg", Zip: "src/Pkg.zip");
         var dropped = Assert.Single(data.AddonSources([]));
+        Assert.Equal("x/Collection", dropped.Repo);
         Assert.Equal("src/Pkg.zip", dropped.Zip);
+        Assert.Equal("x/Collection:src/Pkg.zip", dropped.Id);
+    }
+
+    // One collection repo can list several addons, each its own id; the same zip twice, or a requirement on a
+    // collection addon that isn't listed, is reported.
+    [Fact]
+    public void CollectionAddonsAreListedByRepoAndZip()
+    {
+        var a = Good with { Repo = "x/Collection", Name = "A", Folders = ["A"], Zip = "src/A.zip" };
+        var b = Good with { Repo = "x/Collection", Name = "B", Folders = ["B"], Zip = "src/B.zip", Requires = ["x/Collection:src/A.zip"] };
+        Assert.Empty(Catalog(2, null, a, b).Problems());
+        Assert.NotEmpty(Catalog(2, null, a, a).Problems());
+        Assert.NotEmpty(Catalog(2, null, b).Problems());
+        Assert.NotEmpty(Catalog(2, null, a with { Author = " " }).Problems());
+    }
+
+    // A collection addon credits its author and names the repo's owner as curator; an addon in its own repo, or a
+    // zip the owner wrote, has no curator.
+    [Fact]
+    public void CollectionAddonsCreditAuthorAndCurator()
+    {
+        var collected = new AddonSource("NoM0Re/Pack", "MacroBank", ["MacroBank"], null, true, Zip: "src/MacroBank.zip", AuthorName: "Odlaw");
+        Assert.Equal("NoM0Re/Pack:src/MacroBank.zip", collected.Id);
+        Assert.Equal("Odlaw", collected.Author);
+        Assert.Equal("NoM0Re", collected.Curator);
+        Assert.Null((collected with { AuthorName = null }).Curator);
+        Assert.Null((collected with { Zip = null }).Curator);
+        Assert.Equal("NoM0Re/Pack", (collected with { Zip = null }).Id);
     }
 }

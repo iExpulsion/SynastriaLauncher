@@ -12,9 +12,10 @@ public sealed partial class AddonItemViewModel(AddonSource source, AddonsViewMod
     public AddonSource Source { get; } = source;
     public string Name => Source.Name;
     public string Repo => Source.Repo;
+    public string Id => Source.Id;
     public string Description => Source.Description ?? "";
     public bool HasDescription => Description.Length > 0;
-    public string ByAuthor => $"by {Source.Author}";
+    public string ByAuthor => Source.Curator is { } curator ? $"by {Source.Author}  ·  curated by {curator}" : $"by {Source.Author}";
     public string Origin => (Source.Zip is null ? $"github.com/{Source.Repo}" : $"github.com/{Source.Repo}/{Source.Zip}")
         + (Source.Curated ? "" : ", added by you");
 
@@ -210,15 +211,16 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
 
     private string? AddOnsPath => main.GameFolder is null ? null : GameFolder.AddOnsPath(main.GameFolder);
 
-    private AddonItemViewModel? Find(string repo) => Items.FirstOrDefault(i => LauncherData.SameRepo(i.Repo, repo));
+    private AddonItemViewModel? Find(string id) => Items.FirstOrDefault(i => LauncherData.SameRepo(i.Id, id));
 
-    private AddonState? StateOf(string repo) => Find(repo)?.State;
+    private AddonState? StateOf(string id) => Find(id)?.State;
 
     private bool Matches(AddonItemViewModel item)
     {
         var filter = Filter.Trim();
         return filter.Length == 0 || item.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
-            || item.Repo.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || item.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || item.Source.Author.Contains(filter, StringComparison.OrdinalIgnoreCase)
             || item.Description.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -301,8 +303,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
         {
             Items.Add(new AddonItemViewModel(source, this)
             {
-                IsHidden = main.Data.HiddenRepos.Any(h => LauncherData.SameRepo(h, source.Repo)),
-                IsHeld = main.Data.HeldRepos.Any(h => LauncherData.SameRepo(h, source.Repo)),
+                IsHidden = main.Data.HiddenRepos.Any(h => LauncherData.SameRepo(h, source.Id)),
+                IsHeld = main.Data.HeldRepos.Any(h => LauncherData.SameRepo(h, source.Id)),
             });
         }
         IsChecking = path is not null;
@@ -324,8 +326,8 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
 
     private async Task RecheckAsync(AddonItemViewModel item)
     {
-        item.Check = await AddonChecker.CheckAsync(main.GitHub, item.Source, AddOnsPath!, main.Data.Installed.GetValueOrDefault(item.Repo),
-            main.Data.UsesLatestCommits(item.Repo));
+        item.Check = await AddonChecker.CheckAsync(main.GitHub, item.Source, AddOnsPath!, main.Data.Installed.GetValueOrDefault(item.Id),
+            main.Data.UsesLatestCommits(item.Id));
         RefreshVisible();
     }
 
@@ -362,7 +364,7 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
                     }
                 }
                 var record = await AddonInstaller.InstallAsync(main.GitHub, check, AddOnsPath!, main.Data.KeepAddonBackups);
-                main.Data.Installed[item.Repo] = record with { Name = item.Name };
+                main.Data.Installed[item.Id] = record with { Name = item.Name };
                 main.Data.Save();
             }
             catch (OperationCanceledException)
@@ -409,11 +411,11 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     {
         if (item.IsHeld)
         {
-            main.Data.HeldRepos.RemoveAll(h => LauncherData.SameRepo(h, item.Repo));
+            main.Data.HeldRepos.RemoveAll(h => LauncherData.SameRepo(h, item.Id));
         }
         else
         {
-            main.Data.HeldRepos.Add(item.Repo);
+            main.Data.HeldRepos.Add(item.Id);
         }
         item.IsHeld = !item.IsHeld;
         main.Data.Save();
@@ -423,13 +425,13 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     // Switching back to releases leaves the installed copy alone until the next release is out.
     public async Task ToggleLatestCommitsAsync(AddonItemViewModel item)
     {
-        if (main.Data.UsesLatestCommits(item.Repo))
+        if (main.Data.UsesLatestCommits(item.Id))
         {
-            main.Data.LatestCommitRepos.RemoveAll(r => LauncherData.SameRepo(r, item.Repo));
+            main.Data.LatestCommitRepos.RemoveAll(r => LauncherData.SameRepo(r, item.Id));
         }
         else
         {
-            main.Data.LatestCommitRepos.Add(item.Repo);
+            main.Data.LatestCommitRepos.Add(item.Id);
         }
         main.Data.Save();
         await RecheckAsync(item);
@@ -437,7 +439,7 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
 
     public async Task RemoveAsync(AddonItemViewModel item)
     {
-        var folders = main.Data.Installed.GetValueOrDefault(item.Repo)?.Folders ?? item.Source.Folders;
+        var folders = main.Data.Installed.GetValueOrDefault(item.Id)?.Folders ?? item.Source.Folders;
         var confirmed = await main.Dialogs.ConfirmAsync($"Remove {item.Name}",
             $"Delete {string.Join(", ", folders)} from your AddOns folder? Its saved settings in WTF stay.", "Remove");
         if (confirmed)
@@ -445,7 +447,7 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
             try
             {
                 AddonInstaller.Uninstall(AddOnsPath!, folders);
-                main.Data.Installed.Remove(item.Repo);
+                main.Data.Installed.Remove(item.Id);
                 main.Data.Save();
             }
             catch (IOException e)
@@ -461,17 +463,17 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     {
         if (!item.Source.Curated)
         {
-            main.Data.UserAddons.RemoveAll(u => LauncherData.SameRepo(u.Repo, item.Repo));
+            main.Data.UserAddons.RemoveAll(u => LauncherData.SameRepo(u.Id, item.Id));
             Items.Remove(item);
         }
         else if (item.IsHidden)
         {
-            main.Data.HiddenRepos.RemoveAll(h => LauncherData.SameRepo(h, item.Repo));
+            main.Data.HiddenRepos.RemoveAll(h => LauncherData.SameRepo(h, item.Id));
             item.IsHidden = false;
         }
         else
         {
-            main.Data.HiddenRepos.Add(item.Repo);
+            main.Data.HiddenRepos.Add(item.Id);
             item.IsHidden = true;
         }
         main.Data.Save();
@@ -490,7 +492,7 @@ public sealed partial class AddonsViewModel(MainViewModel main) : ObservableObje
     private async Task AddRepoAsync()
     {
         var repo = UserAddons.ParseRepo(NewRepo);
-        var known = repo is not null && main.Data.AddonSources(_curated).Any(s => LauncherData.SameRepo(s.Repo, repo));
+        var known = repo is not null && main.Data.AddonSources(_curated).Any(s => LauncherData.SameRepo(s.Id, repo));
         if (repo is null)
         {
             await main.Dialogs.AlertAsync("Not a GitHub Repo", "Type it as owner/repo, or paste the repo's GitHub link.");

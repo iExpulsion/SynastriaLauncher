@@ -56,14 +56,16 @@ public sealed class LauncherData
     // curated list: those stay tracked and updated, just no longer offered to anyone new.
     public IEnumerable<AddonSource> AddonSources(IReadOnlyList<AddonSource> curated)
     {
-        var user = UserAddons.Where(u => !curated.Any(c => SameRepo(c.Repo, u.Repo))).ToList();
+        var user = UserAddons.Where(u => !curated.Any(c => SameRepo(c.Id, u.Id))).ToList();
         var listed = curated.Concat(user).ToList();
-        var dropped = Installed.Where(p => p.Value.Folders is { Count: > 0 } && !listed.Any(s => SameRepo(s.Repo, p.Key)))
-            .Select(p => new AddonSource(p.Key, p.Value.Name ?? p.Value.Folders![0], p.Value.Folders!, null, true,
-                "No longer on the launcher's list. It's still kept up to date.", Zip: p.Value.Zip));
+        var dropped = Installed.Where(p => p.Value.Folders is { Count: > 0 } && !listed.Any(s => SameRepo(s.Id, p.Key)))
+            .Select(p => new AddonSource(AddonSource.RepoOf(p.Key), p.Value.Name ?? p.Value.Folders![0], p.Value.Folders!,
+                null, true, "No longer on the launcher's list. It's still kept up to date.", Zip: p.Value.Zip));
         return listed.Concat(dropped);
     }
 
+    // Compares addon ids (AddonSource.Id: the repo, or repo:zip for a collection's addon), which the saved lists and
+    // install records hold.
     public static bool SameRepo(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
     public static LauncherData Load(string? path = null)

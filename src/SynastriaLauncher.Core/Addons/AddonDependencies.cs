@@ -5,7 +5,7 @@ public static class AddonDependencies
     public static bool IsInstalled(AddonState? state) =>
         state is AddonState.UpToDate or AddonState.UpdateAvailable or AddonState.Unknown or AddonState.Linked;
 
-    // The required repos that aren't installed yet, which an install brings along first.
+    // The required addons (by id) that aren't installed yet, which an install brings along first.
     public static IReadOnlyList<string> Missing(AddonSource source, Func<string, AddonState?> stateOf) =>
         (source.Requires ?? []).Where(r => stateOf(r) == AddonState.NotInstalled).ToList();
 
@@ -17,7 +17,7 @@ public static class AddonDependencies
     {
         var quiet = state is null or AddonState.UpToDate or AddonState.Unknown
             || state == AddonState.UpdateAvailable && !needsUpdate;
-        var needed = all.Any(o => IsInstalled(o.State) && (o.Source.Requires ?? []).Any(r => SameRepo(r, library.Repo)));
+        var needed = all.Any(o => IsInstalled(o.State) && (o.Source.Requires ?? []).Any(r => SameRepo(r, library.Id)));
         return library.Library && (state == AddonState.NotInstalled || quiet && needed);
     }
 

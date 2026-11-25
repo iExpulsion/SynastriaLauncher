@@ -13,9 +13,12 @@ public sealed record AddonEntry(
     [property: JsonPropertyName("requires")] IReadOnlyList<string>? Requires = null,
     [property: JsonPropertyName("library")] bool Library = false,
     [property: JsonPropertyName("wotlk")] bool Wotlk = false,
-    [property: JsonPropertyName("zip")] string? Zip = null)
+    [property: JsonPropertyName("zip")] string? Zip = null,
+    [property: JsonPropertyName("author")] string? Author = null)
 {
-    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library, Wotlk, Zip);
+    public AddonSource ToSource() => new(Repo, Name, Folders, Toc, true, Description, Requires, Library, Wotlk, Zip, Author);
+
+    public string Id => ToSource().Id;
 }
 
 // The curated addons: Addons/addons.json, built in and published in the launcher's repo (LiveList).
@@ -47,11 +50,11 @@ public sealed record AddonCatalog(
     // that are on the list, so a published list can't point the launcher anywhere else.
     public IReadOnlyList<string> Problems()
     {
-        var repos = Addons.Select(a => a.Repo).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var ids = Addons.Select(a => a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var problems = new List<string>();
         foreach (var addon in Addons)
         {
-            var label = addon.Repo;
+            var label = addon.Id;
             if (UserAddons.ParseRepo(addon.Repo) != addon.Repo || addon.Repo.Contains("://"))
             {
                 problems.Add($"{label}: not an owner/repo name");
@@ -59,6 +62,10 @@ public sealed record AddonCatalog(
             if (string.IsNullOrWhiteSpace(addon.Name) || string.IsNullOrWhiteSpace(addon.Description))
             {
                 problems.Add($"{label}: needs a name and a description");
+            }
+            if (addon.Author is not null && string.IsNullOrWhiteSpace(addon.Author))
+            {
+                problems.Add($"{label}: the author can't be blank");
             }
             if (addon.Folders.Count == 0 || !addon.Folders.All(SafePaths.IsFolderName))
             {
@@ -73,28 +80,28 @@ public sealed record AddonCatalog(
             {
                 problems.Add($"{label}: the zip must be a .zip file inside the repo");
             }
-            problems.AddRange((addon.Requires ?? []).Where(r => !repos.Contains(r) || r.Equals(addon.Repo, StringComparison.OrdinalIgnoreCase))
+            problems.AddRange((addon.Requires ?? []).Where(r => !ids.Contains(r) || r.Equals(addon.Id, StringComparison.OrdinalIgnoreCase))
                 .Select(r => $"{label}: requires {r}, which isn't another addon on the list"));
         }
-        problems.AddRange(Addons.GroupBy(a => a.Repo, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
+        problems.AddRange(Addons.GroupBy(a => a.Id, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
             .Select(g => $"{g.Key} is listed twice"));
-        problems.AddRange(Addons.SelectMany(a => a.Folders.Distinct(StringComparer.OrdinalIgnoreCase).Select(f => (Folder: f, a.Repo)))
+        problems.AddRange(Addons.SelectMany(a => a.Folders.Distinct(StringComparer.OrdinalIgnoreCase).Select(f => (Folder: f, a.Id)))
             .GroupBy(x => x.Folder, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
-            .Select(g => $"{g.Key} is claimed by {string.Join(" and ", g.Select(x => x.Repo))}"));
-        problems.AddRange(Addons.Where(a => InCycle(a.Repo)).Select(a => $"{a.Repo}: its requirements lead back to itself"));
+            .Select(g => $"{g.Key} is claimed by {string.Join(" and ", g.Select(x => x.Id))}"));
+        problems.AddRange(Addons.Where(a => InCycle(a.Id)).Select(a => $"{a.Id}: its requirements lead back to itself"));
         return problems;
     }
 
-    // Follows requirements from repo; true when they come back to it.
-    private bool InCycle(string repo)
+    // Follows requirements from an addon's id; true when they come back to it.
+    private bool InCycle(string id)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var next = new Queue<string>(Requirements(repo));
+        var next = new Queue<string>(Requirements(id));
         var cycle = false;
         while (next.Count > 0 && !cycle)
         {
             var current = next.Dequeue();
-            cycle = current.Equals(repo, StringComparison.OrdinalIgnoreCase);
+            cycle = current.Equals(id, StringComparison.OrdinalIgnoreCase);
             if (!cycle && seen.Add(current))
             {
                 foreach (var further in Requirements(current))
@@ -106,6 +113,6 @@ public sealed record AddonCatalog(
         return cycle;
     }
 
-    private IEnumerable<string> Requirements(string repo) =>
-        Addons.FirstOrDefault(a => a.Repo.Equals(repo, StringComparison.OrdinalIgnoreCase))?.Requires ?? [];
+    private IEnumerable<string> Requirements(string id) =>
+        Addons.FirstOrDefault(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Requires ?? [];
 }

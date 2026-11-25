@@ -2,13 +2,24 @@ namespace SynastriaLauncher.Core.Addons;
 
 // A GitHub repo the launcher tracks. Folders are the addon folders it installs into AddOns; TocPath is the main
 // .toc inside the repo, used to compare versions of a copy installed some other way. Requires lists the repos
-// installed along with it; a Library is only there for the addons that require it. Zip is a packaged addon kept as a
-// file inside the repo (a collection of addons): it installs that file, and follows the commits that change it.
+// installed along with it (by Id); a Library is only there for the addons that require it. Zip is a packaged addon
+// kept as a file inside the repo (a collection of addons): it installs that file, and follows the commits that change
+// it. Such an addon's Id is the repo and the zip, so one collection can hold many; any other addon's Id is its repo.
+// AuthorName credits whoever wrote an addon the repo's owner only collects.
 public sealed record AddonSource(string Repo, string Name, IReadOnlyList<string> Folders, string? TocPath, bool Curated,
     string? Description = null, IReadOnlyList<string>? Requires = null, bool Library = false, bool Wotlk = false,
-    string? Zip = null)
+    string? Zip = null, string? AuthorName = null)
 {
-    public string Author => Repo.Split('/')[0];
+    public string Id => Zip is null ? Repo : $"{Repo}:{Zip}";
+
+    public static string RepoOf(string id) => id.Split(':')[0];
+
+    public string Owner => Repo.Split('/')[0];
+
+    public string Author => AuthorName ?? Owner;
+
+    // Who gathered the addon into their collection, when that's someone other than its author.
+    public string? Curator => Zip is not null && !string.Equals(Author, Owner, StringComparison.OrdinalIgnoreCase) ? Owner : null;
 
     public string PageUrl => Zip is null ? $"https://github.com/{Repo}" : $"https://github.com/{Repo}/blob/HEAD/{Zip}";
 }

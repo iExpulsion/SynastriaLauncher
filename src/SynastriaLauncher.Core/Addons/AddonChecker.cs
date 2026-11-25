@@ -64,8 +64,8 @@ public static class AddonChecker
             await gate.WaitAsync(cancel);
             try
             {
-                return await CheckAsync(github, source, addOnsPath, records.GetValueOrDefault(source.Repo),
-                    latestCommits(source.Repo), cancel);
+                return await CheckAsync(github, source, addOnsPath, records.GetValueOrDefault(source.Id),
+                    latestCommits(source.Id), cancel);
             }
             finally
             {

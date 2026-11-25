@@ -64,6 +64,7 @@
     {
       "repo": "NoM0Re/WoW-3.3.5a-Addons",
       "name": "MacroBank",
+      "author": "Odlaw",
       "folders": ["MacroBank"],
       "toc": "MacroBank/MacroBank.toc",
       "zip": "src/Addons/MacroBank.zip",
