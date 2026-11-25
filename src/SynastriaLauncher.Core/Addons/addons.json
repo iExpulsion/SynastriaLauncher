@@ -1,5 +1,5 @@
 {
-  "revision": 8,
+  "revision": 9,
   "minLauncher": "0.1.0",
   "addons": [
     {
@@ -51,6 +51,22 @@
       "toc": "ElvUI_Enhanced/ElvUI_Enhanced.toc",
       "description": "Extras for ElvUI: a fuller character window, death recap, minimap button bar, quest levels and more.",
       "requires": ["ElvUI-WotLK/ElvUI"],
+      "wotlk": true
+    },
+    {
+      "repo": "NoM0Re/UnifiedProfileManager-WotLK",
+      "name": "Unified Profile Manager",
+      "folders": ["UnifiedProfileManager"],
+      "toc": "UnifiedProfileManager/UnifiedProfileManager.toc",
+      "description": "Manages the profiles of every Ace3 addon from one window, opened with /profiles.",
+      "wotlk": true
+    },
+    {
+      "repo": "pabhoz/Soulstone-WoW-Addon",
+      "name": "Soulstone",
+      "folders": ["Soulstone"],
+      "toc": "Soulstone.toc",
+      "description": "Moves your action bars (both specs), character macros, keybindings and talents to another character or realm.",
       "wotlk": true
     },
     {
