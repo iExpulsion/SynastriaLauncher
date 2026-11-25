@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using SynastriaLauncher.App.Services;
 using SynastriaLauncher.App.ViewModels;
 using SynastriaLauncher.Core.Accounts;
+using SynastriaLauncher.Core.Addons;
 
 namespace SynastriaLauncher.App;
 
@@ -189,6 +190,57 @@ public partial class MainWindow : Window, IDialogs
             new TextBlock { Classes = { "name" }, Text = label },
             text,
             new TextBlock { Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap, Text = help },
+            problem,
+        ]);
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
+    public async Task<CharacterCopyForm?> CopyCharacterSettingsAsync(IReadOnlyList<WtfCharacter> characters, WtfCharacter? from)
+    {
+        var labels = characters.Select(c => c.Label).ToList();
+        var fromIndex = from is null ? 0 : Math.Max(0, characters.ToList().FindIndex(c => c.SameAs(from)));
+        var source = new ComboBox { ItemsSource = labels, SelectedIndex = fromIndex, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var target = new ComboBox { ItemsSource = labels, SelectedIndex = fromIndex == 0 ? 1 : 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+        (CheckBox Box, CharacterParts Part)[] parts =
+        [
+            (new CheckBox { Content = "Addon Profiles", IsChecked = true }, CharacterParts.AddonProfiles),
+            (new CheckBox { Content = "Enabled Addons", IsChecked = true }, CharacterParts.EnabledAddons),
+            (new CheckBox { Content = "Frame Positions and Chat Windows", IsChecked = true }, CharacterParts.Layout),
+            (new CheckBox { Content = "Game Options", IsChecked = true }, CharacterParts.GameOptions),
+        ];
+        var problem = ProblemText();
+        CharacterCopyForm? result = null;
+        var dialog = FormWindow("Copy Character Settings", out var copy, out var body);
+        copy.Content = "Copy";
+        copy.Click += (_, _) =>
+        {
+            var chosen = parts.Where(p => p.Box.IsChecked == true).Aggregate(CharacterParts.None, (all, p) => all | p.Part);
+            var error = source.SelectedIndex == target.SelectedIndex ? "Pick two different characters."
+                : chosen == CharacterParts.None ? "Pick at least one thing to copy."
+                : null;
+            problem.Text = error ?? "";
+            problem.IsVisible = error is not null;
+            if (error is null)
+            {
+                result = new CharacterCopyForm(characters[source.SelectedIndex], characters[target.SelectedIndex], chosen);
+                dialog.Close();
+            }
+        };
+        body.Children.InsertRange(0,
+        [
+            new TextBlock { Classes = { "name" }, Text = "Copy From" },
+            source,
+            new TextBlock { Classes = { "name" }, Text = "Copy To", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
+            target,
+            new StackPanel { Margin = new Avalonia.Thickness(0, 8, 0, 0), Children = { parts[0].Box, parts[1].Box, parts[2].Box, parts[3].Box } },
+            new TextBlock
+            {
+                Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Text = "Addon profiles are linked, not copied: addons that use profiles (ElvUI, Skada and others) give both characters "
+                    + "the same one, so later changes show up on both. That works only on the same account. Game options leave "
+                    + "out tracked quests and other character state. Everything replaced is backed up first.",
+            },
             problem,
         ]);
         await dialog.ShowDialog(this);

@@ -139,6 +139,17 @@
       <TextBlock Classes="section" Text="Addons" />
       <Border Classes="panel">
         <StackPanel>
+          <Border Classes="row">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Copy Settings" Command="{Binding CopyCharacterSettingsCommand}" VerticalAlignment="Center"
+                      ToolTip.Tip="Pick the characters and what to copy first; replaced files are backed up" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Copy Character Settings" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Give one character another's addon profiles, enabled addons, frame positions, chat windows and game options." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
           <Border Classes="row" BorderThickness="0">
             <DockPanel>
               <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding KeepAddonBackups}" VerticalAlignment="Center" />

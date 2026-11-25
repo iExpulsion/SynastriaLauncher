@@ -8,7 +8,7 @@ public sealed record BackupItem(string Path, string Label, long Bytes);
 // Backups the launcher leaves behind: old addon versions (AddOns\<name>.bak, when Keep the Previous Version is on),
 // settings files a preset replaced (<config>.bak), the files a WowExt update replaced (_WowExtBackups\<version>) and
 // Project Reforged parts switched off (Data\_Disabled) and removed addons' saved settings moved aside
-// (WTF\_RemovedAddonSettings\<date>). WowExt.exe.bak is never listed: Restore Original Game needs it.
+// (WTF\_RemovedAddonSettings\<date>), and character settings a copy replaced (WTF\_AltSyncBackups). WowExt.exe.bak is never listed: Restore Original Game needs it.
 public static class Backups
 {
     public static IReadOnlyList<BackupItem> Find(string gameFolder, IEnumerable<ModDefinition> mods, string dllFolder)
@@ -47,7 +47,12 @@ public static class Backups
             ? Directory.EnumerateDirectories(moved)
                 .Select(d => new BackupItem(d, $"Saved settings of removed addons, moved aside {Path.GetFileName(d)}", FolderSize(d)))
             : [];
-        return addonBackups.Concat(configBackups).Concat(wowExtBackups).Concat(reforged).Concat(movedSettings)
+        var copies = Addons.CharacterSettings.BackupsPath(gameFolder);
+        var copyBackups = Directory.Exists(copies)
+            ? Directory.EnumerateDirectories(copies)
+                .Select(d => new BackupItem(d, $"Character settings before a copy ({Path.GetFileName(d)})", FolderSize(d)))
+            : [];
+        return addonBackups.Concat(configBackups).Concat(wowExtBackups).Concat(reforged).Concat(movedSettings).Concat(copyBackups)
             .OrderBy(b => b.Label, StringComparer.OrdinalIgnoreCase).ToList();
     }
 

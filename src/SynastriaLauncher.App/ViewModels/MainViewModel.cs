@@ -280,7 +280,7 @@ public sealed partial class MainViewModel : ObservableObject
     public string BackupSummary => BackupItems.Count switch
     {
         0 => "Nothing to clean up. The original WowExt.exe backup is always kept for Restore Original Game.",
-        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files, old WowExt files, switched-off Project Reforged parts and removed addons' settings moved aside. "
+        var n => $"{n} backup{(n == 1 ? "" : "s")}, {Backups.FormatSize(BackupItems.Sum(b => b.Bytes))}: old addon versions, replaced settings files, old WowExt files, switched-off Project Reforged parts, removed addons' settings moved aside and settings a character copy replaced. "
             + "The original WowExt.exe backup is always kept.",
     };
 
@@ -304,6 +304,40 @@ public sealed partial class MainViewModel : ObservableObject
             + string.Join(", ", addons.Take(5)) + (addons.Count > 5 ? $" and {addons.Count - 5} more" : "")
             + ". Moving them aside keeps them in WTF\\_RemovedAddonSettings until you clean up backups.",
     };
+
+    // Starts from the character Launch logs in as, when the game has kept settings for it.
+    [RelayCommand]
+    private async Task CopyCharacterSettingsAsync()
+    {
+        var characters = GameFolder is null ? [] : CharacterSettings.Characters(GameFolder);
+        var launch = Accounts.LaunchChoice?.Target;
+        var from = characters.FirstOrDefault(c => launch?.Character is { } name
+            && SavedAccount.SameCharacter(c.Name, name) && string.Equals(c.Account, launch.Account, StringComparison.OrdinalIgnoreCase));
+        var form = characters.Count < 2 ? null : await Dialogs.CopyCharacterSettingsAsync(characters, from);
+        if (characters.Count < 2)
+        {
+            await Dialogs.AlertAsync("Not Enough Characters",
+                "The game keeps settings for a character once it has logged in on it. Log in on both characters once, then try again.");
+        }
+        else if (form is not null)
+        {
+            CharacterCopyResult? result = null;
+            await RunGameWriteAsync("copy character settings", () =>
+            {
+                result = CharacterSettings.Copy(GameFolder!, form.From, form.To, form.Parts, DateTime.Now);
+                return Task.CompletedTask;
+            });
+            if (result is not null)
+            {
+                RefreshBackups();
+                await Dialogs.AlertAsync(result.BackupFolder is null ? "Nothing to Copy" : "Settings Copied",
+                    result.Changes.Count == 0
+                        ? $"{form.To.Name} already has {form.From.Name}'s settings."
+                        : string.Join("\n", result.Changes.Select(c => $"•  {c}"))
+                            + (result.BackupFolder is null ? "" : "\n\nThe replaced files are in Settings, Backups until you clean up."));
+            }
+        }
+    }
 
     [RelayCommand]
     private async Task MoveLeftoverSettingsAsync()

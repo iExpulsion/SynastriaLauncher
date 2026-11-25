@@ -1,10 +1,17 @@
+using SynastriaLauncher.Core.Addons;
+
 namespace SynastriaLauncher.App.Services;
 
 // An account as the editor shows it. Password is null when editing leaves the saved one as it is.
 public sealed record AccountForm(string Name, string? Password);
 
+public sealed record CharacterCopyForm(WtfCharacter From, WtfCharacter To, CharacterParts Parts);
+
 public interface IDialogs
 {
+    // Null when cancelled. Needs at least two characters.
+    Task<CharacterCopyForm?> CopyCharacterSettingsAsync(IReadOnlyList<WtfCharacter> characters, WtfCharacter? from);
+
     Task AlertAsync(string title, string message);
     Task<bool> ConfirmAsync(string title, string message, string confirmLabel, string cancelLabel = "Cancel");
 
