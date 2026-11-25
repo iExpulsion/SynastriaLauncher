@@ -5,7 +5,7 @@ namespace SynastriaLauncher.App.Services;
 // An account as the editor shows it. Password is null when editing leaves the saved one as it is.
 public sealed record AccountForm(string Name, string? Password);
 
-public sealed record CharacterCopyForm(WtfCharacter From, WtfCharacter To, CharacterParts Parts);
+public sealed record CharacterCopyForm(WtfCharacter From, IReadOnlyList<WtfCharacter> To, CharacterParts Parts);
 
 public interface IDialogs
 {

@@ -198,16 +198,40 @@ public partial class MainWindow : Window, IDialogs
 
     public async Task<CharacterCopyForm?> CopyCharacterSettingsAsync(IReadOnlyList<WtfCharacter> characters, WtfCharacter? from)
     {
-        var labels = characters.Select(c => c.Label).ToList();
         var fromIndex = from is null ? 0 : Math.Max(0, characters.ToList().FindIndex(c => c.SameAs(from)));
-        var source = new ComboBox { ItemsSource = labels, SelectedIndex = fromIndex, HorizontalAlignment = HorizontalAlignment.Stretch };
-        var target = new ComboBox { ItemsSource = labels, SelectedIndex = fromIndex == 0 ? 1 : 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var source = new ComboBox
+        {
+            ItemsSource = characters.Select(c => c.Label).ToList(), SelectedIndex = fromIndex, HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        var targets = characters.Select(c => new CheckBox { Content = c.Label }).ToList();
+        var all = new CheckBox { Content = "Select All" };
+        var syncing = false;
+        void ShowTargets()
+        {
+            for (var i = 0; i < targets.Count; i++)
+            {
+                targets[i].IsVisible = i != source.SelectedIndex;
+            }
+            syncing = true;
+            all.IsChecked = targets.Where(t => t.IsVisible).All(t => t.IsChecked == true);
+            syncing = false;
+        }
+        source.SelectionChanged += (_, _) => ShowTargets();
+        all.IsCheckedChanged += (_, _) =>
+        {
+            if (!syncing)
+            {
+                targets.Where(t => t.IsVisible).ToList().ForEach(t => t.IsChecked = all.IsChecked == true);
+            }
+        };
+        targets.ForEach(t => t.IsCheckedChanged += (_, _) => ShowTargets());
+        ShowTargets();
         (CheckBox Box, CharacterParts Part)[] parts =
         [
+            (new CheckBox { Content = "Game Options", IsChecked = true }, CharacterParts.GameOptions),
             (new CheckBox { Content = "Addon Profiles", IsChecked = true }, CharacterParts.AddonProfiles),
             (new CheckBox { Content = "Enabled Addons", IsChecked = true }, CharacterParts.EnabledAddons),
             (new CheckBox { Content = "Frame Positions and Chat Windows", IsChecked = true }, CharacterParts.Layout),
-            (new CheckBox { Content = "Game Options", IsChecked = true }, CharacterParts.GameOptions),
         ];
         var problem = ProblemText();
         CharacterCopyForm? result = null;
@@ -215,31 +239,36 @@ public partial class MainWindow : Window, IDialogs
         copy.Content = "Copy";
         copy.Click += (_, _) =>
         {
-            var chosen = parts.Where(p => p.Box.IsChecked == true).Aggregate(CharacterParts.None, (all, p) => all | p.Part);
-            var error = source.SelectedIndex == target.SelectedIndex ? "Pick two different characters."
+            var chosen = parts.Where(p => p.Box.IsChecked == true).Aggregate(CharacterParts.None, (sum, p) => sum | p.Part);
+            var to = characters.Where((_, i) => targets[i].IsVisible && targets[i].IsChecked == true).ToList();
+            var error = to.Count == 0 ? "Pick at least one character to copy to."
                 : chosen == CharacterParts.None ? "Pick at least one thing to copy."
                 : null;
             problem.Text = error ?? "";
             problem.IsVisible = error is not null;
             if (error is null)
             {
-                result = new CharacterCopyForm(characters[source.SelectedIndex], characters[target.SelectedIndex], chosen);
+                result = new CharacterCopyForm(characters[source.SelectedIndex], to, chosen);
                 dialog.Close();
             }
         };
+        var list = new StackPanel();
+        targets.ForEach(t => list.Children.Add(t));
         body.Children.InsertRange(0,
         [
             new TextBlock { Classes = { "name" }, Text = "Copy From" },
             source,
             new TextBlock { Classes = { "name" }, Text = "Copy To", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
-            target,
-            new StackPanel { Margin = new Avalonia.Thickness(0, 8, 0, 0), Children = { parts[0].Box, parts[1].Box, parts[2].Box, parts[3].Box } },
+            all,
+            new ScrollViewer { MaxHeight = 220, Content = list, Margin = new Avalonia.Thickness(16, 0, 0, 0) },
+            new TextBlock { Classes = { "name" }, Text = "What to Copy", Margin = new Avalonia.Thickness(0, 8, 0, 0) },
+            new StackPanel { Children = { parts[0].Box, parts[1].Box, parts[2].Box, parts[3].Box } },
             new TextBlock
             {
                 Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                Text = "Addon profiles are linked, not copied: addons that use profiles (ElvUI, Skada and others) give both characters "
-                    + "the same one, so later changes show up on both. That works only on the same account. Game options leave "
-                    + "out tracked quests and other character state. Everything replaced is backed up first.",
+                Text = "Game options leave out tracked quests and other character state. Addon profiles (ElvUI, Skada and others) are "
+                    + "linked on the same account, so later changes show up on both; another account gets a copy of the profile, "
+                    + "so later changes need another copy. Everything replaced is backed up first.",
             },
             problem,
         ]);

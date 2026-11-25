@@ -332,8 +332,9 @@ public sealed partial class MainViewModel : ObservableObject
                 RefreshBackups();
                 await Dialogs.AlertAsync(result.BackupFolder is null ? "Nothing to Copy" : "Settings Copied",
                     result.Changes.Count == 0
-                        ? $"{form.To.Name} already has {form.From.Name}'s settings."
-                        : string.Join("\n", result.Changes.Select(c => $"•  {c}"))
+                        ? $"{(form.To.Count == 1 ? form.To[0].Name + " already has" : "They already have")} {form.From.Name}'s settings."
+                        : string.Join("\n", result.Changes.Take(15).Select(c => $"•  {c}"))
+                            + (result.Changes.Count > 15 ? $"\n•  and {result.Changes.Count - 15} more" : "")
                             + (result.BackupFolder is null ? "" : "\n\nThe replaced files are in Settings, Backups until you clean up."));
             }
         }
