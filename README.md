@@ -78,6 +78,8 @@ Improvements to the game client, each with its own switch:
 | Cursor Optimizations | Keeps the frame rate up when you move the mouse. |
 | Ground Target Macros | Macros can drop ground spells at your cursor, on yourself or on your target (see below). |
 | Graphics Limits | Higher limits on the video settings sliders: view distance, ground clutter and more. |
+| Camera Zoom | Set how far the camera can zoom out, up to 100 yards. |
+| Field of View | A wider (or narrower) camera view. Try angles in game with `/console cameraFov 110`. |
 | No Zoom Transparency | Your character doesn't turn see-through when the camera is zoomed in close. |
 | HD Portraits | Sharper character portraits on unit frames. |
 | Short Combat Numbers | Big damage and healing numbers over targets are shortened (12.3K, 1.2M). |
@@ -140,6 +142,8 @@ list itself is kept up to date too, so new addons show up without a launcher upd
   addon profiles (ElvUI, Skada and others), enabled addons, frame positions and chat windows. Pick any characters on
   any of your accounts, with the game closed. On the same account, addon profiles are shared, so later changes show
   up on all of them; another account gets a copy. Everything replaced is backed up first.
+- **Shared Chat Windows** (Settings, under **Addons**): pick characters, and each launch gives them all the chat
+  windows of whichever one you changed last (tabs, channels, colors, positions). Replaced copies are backed up.
 
 You don't need a GitHub account.
 
