@@ -223,6 +223,47 @@ public sealed class CharacterSettingsTests : IDisposable
         Assert.Null(result.BackupFolder);
     }
 
+    private string Chat(WtfCharacter c, string text, DateTime savedUtc)
+    {
+        var path = Write($@"Account\{c.Account}\{c.Realm}\{c.Name}\chat-cache.txt", text);
+        File.SetLastWriteTimeUtc(path, savedUtc);
+        return path;
+    }
+
+    // Shared chat windows: the most recently saved chat-cache.txt goes to the rest of the group (across accounts too,
+    // and to a character with none yet), keeping its save time; the replaced copies are backed up.
+    [Fact]
+    public void SharedChatTakesTheNewest()
+    {
+        MakeCharacters();
+        var saved = new DateTime(2026, 11, 25, 9, 0, 0, DateTimeKind.Utc);
+        Chat(Main, "main chat", saved.AddHours(-2));
+        var alt = Chat(Alt, "alt chat", saved);
+        var result = CharacterSettings.SyncChat(_game, [Main, Alt, Other]);
+        Assert.Equal(Alt, result.From);
+        Assert.Equal([Main, Other], result.Updated);
+        Assert.Equal("alt chat", Read(@"Account\ONE\Realm\Main\chat-cache.txt"));
+        Assert.Equal("alt chat", Read(@"Account\TWO\Realm\Other\chat-cache.txt"));
+        Assert.Equal(saved, File.GetLastWriteTimeUtc(Path.Combine(Main.Folder(_game), "chat-cache.txt")));
+        Assert.Equal(saved, File.GetLastWriteTimeUtc(alt));
+        Assert.Equal("main chat", Read(@"_AltSyncBackups\Shared Chat Windows\ONE\Realm\Main\chat-cache.txt"));
+    }
+
+    // A group already the same changes nothing, and a character outside the group is left alone.
+    [Fact]
+    public void SharedChatLeavesMatchingAndOthersAlone()
+    {
+        MakeCharacters();
+        var saved = new DateTime(2026, 11, 25, 9, 0, 0, DateTimeKind.Utc);
+        Chat(Main, "same", saved);
+        Chat(Alt, "same", saved.AddHours(-1));
+        Chat(Third, "third's own", saved.AddHours(1));
+        var result = CharacterSettings.SyncChat(_game, [Main, Alt]);
+        Assert.Empty(result.Updated);
+        Assert.Equal("third's own", Read(@"Account\ONE\Realm\Third\chat-cache.txt"));
+        Assert.False(Directory.Exists(Path.Combine(_game, "WTF", "_AltSyncBackups")));
+    }
+
     // Bytes outside ASCII (accented names in saved text) survive a link unchanged.
     [Fact]
     public void KeepsLatin1Bytes()

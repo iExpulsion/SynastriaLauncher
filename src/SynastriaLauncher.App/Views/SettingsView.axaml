@@ -150,6 +150,15 @@
               </StackPanel>
             </DockPanel>
           </Border>
+          <Border Classes="row">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Choose Characters" Command="{Binding ShareChatWindowsCommand}" VerticalAlignment="Center" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Classes="name" Text="Shared Chat Windows" />
+                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding SharedChatSummary}" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
           <Border Classes="row" BorderThickness="0">
             <DockPanel>
               <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding KeepAddonBackups}" VerticalAlignment="Center" />

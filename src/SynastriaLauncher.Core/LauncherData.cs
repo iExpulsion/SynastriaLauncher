@@ -49,6 +49,9 @@ public sealed class LauncherData
     public Accounts.SavedAccount? FindAccount(string? name) =>
         name is null ? null : Accounts.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));
 
+    // Characters whose chat windows are kept the same (WtfCharacter.Key), synced before each game start.
+    public List<string> SharedChatCharacters { get; set; } = [];
+
     // WoW Dungeon Maps parts the launcher installed, by part id, with the release tag.
     public Dictionary<string, string> WdmTags { get; set; } = [];
 

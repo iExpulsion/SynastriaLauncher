@@ -182,6 +182,14 @@ public sealed partial class MainViewModel : ObservableObject
             }
             try
             {
+                await Task.Run(() => SyncSharedChat(game));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                App.LogCrash(e);
+            }
+            try
+            {
                 await Task.Run(() => Core.Reforged.SpellEffectsFix.Sync(game));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidDataException)
@@ -337,6 +345,44 @@ public sealed partial class MainViewModel : ObservableObject
                             + (result.Changes.Count > 15 ? $"\n•  and {result.Changes.Count - 15} more" : "")
                             + (result.BackupFolder is null ? "" : "\n\nThe replaced files are in Settings, Backups until you clean up."));
             }
+        }
+    }
+
+    private IReadOnlyList<WtfCharacter> SharedChatGroup(string game) =>
+        CharacterSettings.Characters(game).Where(c => Data.SharedChatCharacters.Any(c.HasKey)).ToList();
+
+    private void SyncSharedChat(string game)
+    {
+        var group = Data.SharedChatCharacters.Count > 1 ? SharedChatGroup(game) : [];
+        if (group.Count > 1)
+        {
+            CharacterSettings.SyncChat(game, group);
+        }
+    }
+
+    public string SharedChatSummary => Data.SharedChatCharacters.Count switch
+    {
+        0 => "Keep chat windows the same on several characters: change them on any one, and the others get them the next time you launch the game.",
+        var n => $"{n} characters share chat windows. Changes on any of them reach the others the next time you launch the game.",
+    };
+
+    [RelayCommand]
+    private async Task ShareChatWindowsAsync()
+    {
+        var characters = GameFolder is null ? [] : CharacterSettings.Characters(GameFolder);
+        var picked = characters.Count < 2 ? null : await Dialogs.PickSharedChatAsync(characters, SharedChatGroup(GameFolder!));
+        if (characters.Count < 2)
+        {
+            await Dialogs.AlertAsync("Not Enough Characters",
+                "The game keeps chat windows for a character once it has logged in on it. Log in on each character once, then try again.");
+        }
+        else if (picked is not null)
+        {
+            Data.SharedChatCharacters = picked.Select(c => c.Key).ToList();
+            Data.Save();
+            OnPropertyChanged(nameof(SharedChatSummary));
+            await RunGameWriteAsync("share chat windows", () => { SyncSharedChat(GameFolder!); return Task.CompletedTask; });
+            RefreshBackups();
         }
     }
 

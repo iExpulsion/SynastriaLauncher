@@ -12,6 +12,9 @@ public interface IDialogs
     // Null when cancelled. Needs at least two characters.
     Task<CharacterCopyForm?> CopyCharacterSettingsAsync(IReadOnlyList<WtfCharacter> characters, WtfCharacter? from);
 
+    // The characters picked to share chat windows, starting from those already sharing; null when cancelled.
+    Task<IReadOnlyList<WtfCharacter>?> PickSharedChatAsync(IReadOnlyList<WtfCharacter> characters, IReadOnlyList<WtfCharacter> sharing);
+
     Task AlertAsync(string title, string message);
     Task<bool> ConfirmAsync(string title, string message, string confirmLabel, string cancelLabel = "Cancel");
 

@@ -19,7 +19,14 @@ public sealed record WtfCharacter(string Account, string Realm, string Name)
         SameAccount(other)
         && string.Equals(Realm, other.Realm, StringComparison.OrdinalIgnoreCase)
         && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+
+    // How launcher.json remembers the character.
+    public string Key => $"{Account}/{Realm}/{Name}";
+
+    public bool HasKey(string key) => string.Equals(Key, key, StringComparison.OrdinalIgnoreCase);
 }
+
+public sealed record ChatSyncResult(WtfCharacter? From, IReadOnlyList<WtfCharacter> Updated);
 
 [Flags]
 public enum CharacterParts
@@ -44,7 +51,10 @@ public static class CharacterSettings
 {
     public const string BackupFolderName = "_AltSyncBackups";
 
-    private static readonly string[] LayoutFiles = ["layout-local.txt", "chat-cache.txt"];
+    public const string ChatFile = "chat-cache.txt";
+    public const string ChatSyncBackupName = "Shared Chat Windows";
+
+    private static readonly string[] LayoutFiles = ["layout-local.txt", ChatFile];
 
     private static readonly Regex StateCVar = new(@"^(trackedQuests|trackedAchievements|questLogCollapseFilter|cameraSaved\w*|lfgSelectedRoles|lfd\w*|currencyTokens\w*|showTokenFrame\w*|lastCharacterIndex)$",
         RegexOptions.IgnoreCase);
@@ -161,6 +171,37 @@ public static class CharacterSettings
         }
 
         return new CharacterCopyResult(changes, Directory.Exists(backup) ? backup : null);
+    }
+
+    // Shared chat windows: the group's most recently saved chat-cache.txt (the game writes it on logout) goes to every
+    // other character in the group that differs, keeping its save time so it doesn't count as newer. Each replaced
+    // file is kept in _AltSyncBackups\Shared Chat Windows, one copy per character, replaced each time.
+    public static ChatSyncResult SyncChat(string gameFolder, IReadOnlyList<WtfCharacter> group)
+    {
+        var files = group.Select(c => (Character: c, File: new FileInfo(Path.Combine(c.Folder(gameFolder), ChatFile))))
+            .Where(c => Directory.Exists(c.Character.Folder(gameFolder)))
+            .ToList();
+        var newest = files.Where(f => f.File.Exists).OrderByDescending(f => f.File.LastWriteTimeUtc).FirstOrDefault();
+        var updated = new List<WtfCharacter>();
+        if (newest.File is not null)
+        {
+            var bytes = File.ReadAllBytes(newest.File.FullName);
+            var backups = Path.Combine(BackupsPath(gameFolder), ChatSyncBackupName);
+            foreach (var (character, file) in files.Where(f => f.File.FullName != newest.File.FullName
+                && (!f.File.Exists || !File.ReadAllBytes(f.File.FullName).AsSpan().SequenceEqual(bytes))))
+            {
+                if (file.Exists)
+                {
+                    var saved = Path.Combine(backups, character.Account, character.Realm, character.Name, ChatFile);
+                    Directory.CreateDirectory(Path.GetDirectoryName(saved)!);
+                    File.Copy(file.FullName, saved, overwrite: true);
+                }
+                File.WriteAllBytes(file.FullName, bytes);
+                File.SetLastWriteTimeUtc(file.FullName, newest.File.LastWriteTimeUtc);
+                updated.Add(character);
+            }
+        }
+        return new ChatSyncResult(newest.Character, updated);
     }
 
     // Makes targetKey use the profile sourceKey uses, in every AceDB table of sourceText that knows sourceKey.

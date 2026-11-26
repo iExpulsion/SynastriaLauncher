@@ -276,6 +276,58 @@ public partial class MainWindow : Window, IDialogs
         return result;
     }
 
+    public async Task<IReadOnlyList<WtfCharacter>?> PickSharedChatAsync(IReadOnlyList<WtfCharacter> characters, IReadOnlyList<WtfCharacter> sharing)
+    {
+        var boxes = characters.Select(c => new CheckBox { Content = c.Label, IsChecked = sharing.Any(s => s.SameAs(c)) }).ToList();
+        var all = new CheckBox { Content = "Select All", IsChecked = boxes.All(b => b.IsChecked == true) };
+        var syncing = false;
+        all.IsCheckedChanged += (_, _) =>
+        {
+            if (!syncing)
+            {
+                boxes.ForEach(b => b.IsChecked = all.IsChecked == true);
+            }
+        };
+        boxes.ForEach(b => b.IsCheckedChanged += (_, _) =>
+        {
+            syncing = true;
+            all.IsChecked = boxes.All(x => x.IsChecked == true);
+            syncing = false;
+        });
+        var problem = ProblemText();
+        IReadOnlyList<WtfCharacter>? result = null;
+        var dialog = FormWindow("Shared Chat Windows", out var save, out var body);
+        save.Click += (_, _) =>
+        {
+            var picked = characters.Where((_, i) => boxes[i].IsChecked == true).ToList();
+            problem.Text = "Pick at least two characters, or none to stop sharing.";
+            problem.IsVisible = picked.Count == 1;
+            if (picked.Count != 1)
+            {
+                result = picked;
+                dialog.Close();
+            }
+        };
+        var list = new StackPanel();
+        boxes.ForEach(b => list.Children.Add(b));
+        body.Children.InsertRange(0,
+        [
+            new TextBlock { Classes = { "name" }, Text = "Characters" },
+            all,
+            new ScrollViewer { MaxHeight = 260, Content = list, Margin = new Avalonia.Thickness(16, 0, 0, 0) },
+            new TextBlock
+            {
+                Classes = { "small" }, TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Text = "Each time you launch the game, the chat windows of whichever of these you played last (tabs, channels, "
+                    + "colors and positions in chat-cache.txt) are copied to the others. The copy each one had before is kept in "
+                    + "Backups until you clean up.",
+            },
+            problem,
+        ]);
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
     private TextBlock ProblemText() => new()
     {
         Classes = { "small" }, Foreground = this.FindResource("Bad") as Avalonia.Media.IBrush, IsVisible = false,
