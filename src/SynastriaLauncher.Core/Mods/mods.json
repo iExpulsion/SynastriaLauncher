@@ -1,5 +1,5 @@
 {
-  "revision": 17,
+  "revision": 18,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -49,20 +49,20 @@
       "author": "Stormhand (fork of CoAVolFog)",
       "homepage": "https://github.com/Stormhand-dev/Luxvelum",
       "warning": "Heavy on performance: its fog and water effects can cut frame rates noticeably, more so alongside Project Reforged. Switch it off if the game runs slowly.",
-      "version": "v1.0.0",
+      "version": "v1.1.0",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/Luxvelum.dll", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "Luxvelum.dll",
-          "sha256": "2353887506d600df7275163026c2c192371ec53fb4b7b3222918299548ec221d" },
-        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "fogdata.bin",
+        { "path": "{dlls}/Luxvelum.dll", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum-Win32.zip", "entry": "Luxvelum.dll",
+          "sha256": "efa310340462367c114cedf194a1e5b018672e7cbc26c30cc77a99697ccbe8d4" },
+        { "path": "{dlls}/fogdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum-Win32.zip", "entry": "fogdata.bin",
           "sha256": "0cb7ce2cd2b673475032fce1c2d20288ad7fd00a4dfc0b9f4c49a54245d67785" },
-        { "path": "{dlls}/fogdata-without-darker-nights.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "fogdata-without-darker-nights.bin",
+        { "path": "{dlls}/fogdata-without-darker-nights.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum-Win32.zip", "entry": "fogdata-without-darker-nights.bin",
           "sha256": "b441891ecdccc4645c76aa10e1156cd842b683698e5cee63d64acd7f1df2acab" },
-        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "waterdata.bin",
+        { "path": "{dlls}/waterdata.bin", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum-Win32.zip", "entry": "waterdata.bin",
           "sha256": "6e09ad128d0d73c94231e76b4491a8bbac1a27fad9c1aaa54c846f04ad72d99c" },
-        { "path": "{dlls}/zones.ini", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum-Win32.zip", "entry": "zones.ini",
-          "sha256": "2a26881b854907f42a63cf4bca997364bfa1b9f170c8883a1404bf72940c1677" },
-        { "path": "{dlls}/WTF/Luxvelum.ini", "config": true, "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.0.0/Luxvelum.ini" }
+        { "path": "{dlls}/zones.ini", "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum-Win32.zip", "entry": "zones.ini",
+          "sha256": "b522ff5e91790d3a08343102cf2e651990ee26336f96a22de0c4bad0c2cbbef8" },
+        { "path": "{dlls}/WTF/Luxvelum.ini", "config": true, "url": "https://github.com/Stormhand-dev/Luxvelum/releases/download/v1.1.0/Luxvelum.ini" }
       ]
     },
     {
