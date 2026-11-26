@@ -39,6 +39,8 @@ namespace
         }
         printf("default NameplateDistance %d %d %d\n", DefaultNameplateDistance, MinNameplateDistance, MaxNameplateDistance);
         printf("default StackSpacing %d %d %d\n", DefaultStackSpacing, MinStackSpacing, MaxStackSpacing);
+        printf("default CameraZoom %d %d %d\n", DefaultCameraZoom, MinCameraZoom, MaxCameraZoom);
+        printf("default CameraFov %d %d %d\n", DefaultCameraFov, MinCameraFov, MaxCameraFov);
         printf("default DamageColors %s %d\n", DefaultDamageColors, static_cast<int>(MaxDamageTiers));
         return 0;
     }

@@ -23,6 +23,7 @@
 #include "../src/CursorOptimizations.h"
 #include "../src/InteractKey.h"
 #include "../src/AutoLogin.h"
+#include "../src/Camera.h"
 #include "NativeTests.h"
 
 #pragma warning(disable : 4731)
@@ -252,6 +253,7 @@ namespace
         uint8_t* renderTarget = originalAt("HdPortraits/CreateRenderTarget", 3);
         uint8_t* loadBindings = originalAt("InteractKey/LoadFrameXmlBindings", 22);
         uint8_t* texture = originalAt("HdPortraits/CreateTexture", 3);
+        uint8_t* cameraSettings = originalAt("CameraFov/RegisterCameraSettings", 3);
 
         PatchConfig config;
         for (const Patch& patch : Patches())
@@ -260,6 +262,8 @@ namespace
         }
         config.nameplateDistance = 60;
         config.stackSpacing = 100;
+        config.cameraZoom = 70;
+        config.cameraFov = 100;
         config.damageColors = { { 250000, 0xFFD700 } };
         std::vector<PatchReport> reports = image != nullptr ? ApplyPatches(image, config) : std::vector<PatchReport>();
         int applied = 0;
@@ -312,6 +316,7 @@ namespace
             { "CursorOptimizations/CursorUpdateEx", 47, reinterpret_cast<const void*>(&CursorUploadCheck) },
             { "CursorOptimizations/WindowSetCursor", 15, reinterpret_cast<const void*>(&WindowSetCursor) },
             { "InteractKey/LoadFrameXmlBindings", 22, reinterpret_cast<const void*>(&InteractKeyLoadBindings) },
+            { "CameraFov/RegisterCameraSettings", 3, reinterpret_cast<const void*>(&CameraRegisterCvars) },
         };
         for (const Expected& site : expected)
         {
@@ -347,6 +352,27 @@ namespace
             memcpy(&squared, distance + 8, 4);
         }
         Check(squared == 3600.0f, "Nameplate Distance writes 60 yards squared");
+        auto address = [&](uint8_t* p) { return p != nullptr ? reinterpret_cast<uintptr_t>(p) - reinterpret_cast<uintptr_t>(image) + 0x400000 : 0; };
+        uint8_t* cap = at["CameraZoom/DistanceCap"];
+        uint8_t* factor = at["CameraZoom/DistanceFactor"];
+        uint8_t* create = at["CameraFov/CreateCamera"];
+        float capValue = 0;
+        uint32_t factorOperand = 0;
+        uint32_t createOperand = 0;
+        if (cap != nullptr && factor != nullptr && create != nullptr)
+        {
+            memcpy(&capValue, cap + 4, 4);
+            memcpy(&factorOperand, factor + 10, 4);
+            memcpy(&createOperand, create + 2, 4);
+        }
+        Check(address(cap) + 4 == 0xA1E2FC && capValue == 70.0f, "Camera Zoom raises the camera's 50-yard cap to 70");
+        Check(address(factor) == 0x60013D && factor[8] == 0xD8 && factor[9] == 0x0D
+            && factorOperand == reinterpret_cast<uintptr_t>(&g_cameraZoomHalf) && g_cameraZoomHalf == 35.0f,
+            "Camera Zoom: the distance factor multiplies half of 70 instead of cameraDistanceMax");
+        Check(address(create) == 0x606B30 && createOperand == reinterpret_cast<uintptr_t>(&g_cameraFovRadians),
+            "Field of View: the world camera is created with the DLL's angle");
+        Check(cameraSettings != nullptr && reinterpret_cast<uint8_t*>(g_registerCameraCvars) == cameraSettings
+            && address(cameraSettings) == 0x5FD910, "Field of View hands on to the client's camera settings registration");
 
         // A second run: byte swaps read as already on, the rest can't find their code, and nothing changes.
         uint32_t before = image != nullptr ? Checksum(image, size) : 0;
@@ -377,6 +403,7 @@ int main(int argc, char** argv)
     GroundTests();
     CursorTests();
     InteractTests();
+    CameraTests();
     AutoLoginTests();
     if (argc > 1)
     {

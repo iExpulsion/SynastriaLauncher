@@ -111,6 +111,20 @@ namespace Client
     constexpr uint32_t UnitFieldNpcFlags = 0x130;
     constexpr uint32_t UnitFieldLevel = 0xC0;
 
+    // The camera. The world frame holds the active camera, whose projection reads its angle every frame.
+    constexpr uint32_t WorldActiveCamera = 0x7E20;         // CGCamera*
+    constexpr uint32_t CameraFov = 0x40;                   // float radians
+    constexpr float RadiansPerDegree = 3.14159265f / 180.0f;
+
+    // Console variables. Register returns the existing variable when one was already read from Config.wtf, running
+    // its change handler with the saved value. Set runs the handler first and stores the value only when it accepts.
+    constexpr uintptr_t RegisterCvar = 0x767FC0;           // CVar* (name, help, flags, value, handler, category, bool, user, bool)
+    constexpr uintptr_t SetCvar = 0x7668C0;                // bool __thiscall CVar::Set(value, runHandler, bool, bool, bool)
+    constexpr uint32_t CvarFlagsCamera = 0x10;             // what the stock camera settings pass
+    constexpr uint32_t CvarCategoryCamera = 5;
+    constexpr uintptr_t ConsoleWrite = 0x765360;           // void (format, color, ...), the console's printf
+    constexpr uintptr_t OutOfRangeFormat = 0xA1E384;       // "Value out of range (%f - %f)"
+
     // Idle tracking: the time of the last keyboard or mouse input.
     constexpr uintptr_t LastHardwareAction = 0xB499A4;     // uint32 ms
 

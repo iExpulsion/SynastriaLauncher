@@ -13,6 +13,12 @@ public sealed record PatchSettings(
     public const int DefaultStackSpacing = 100;
     public const int MinStackSpacing = 40;
     public const int MaxStackSpacing = 150;
+    public const int DefaultCameraZoom = 50;
+    public const int MinCameraZoom = 30;
+    public const int MaxCameraZoom = 100;
+    public const int DefaultCameraFov = 90;
+    public const int MinCameraFov = 60;
+    public const int MaxCameraFov = 150;
 
     public static PatchSettings Keep { get; } = new();
 
@@ -44,4 +50,6 @@ public sealed record CurrentSettings(
     int? NameplateDistance,
     int? StackSpacing,
     IReadOnlyList<DamageColorTier>? DamageColors,
-    string? DllFolder);
+    string? DllFolder,
+    int? CameraZoom = null,
+    int? CameraFov = null);

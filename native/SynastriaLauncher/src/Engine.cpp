@@ -194,6 +194,10 @@ PatchConfig ReadConfig(const std::string& iniPath)
     int spacing = static_cast<int>(GetPrivateProfileIntA("Settings", "StackSpacing", DefaultStackSpacing, iniPath.c_str()));
     config.nameplateDistance = std::clamp(distance, MinNameplateDistance, MaxNameplateDistance);
     config.stackSpacing = std::clamp(spacing, MinStackSpacing, MaxStackSpacing);
+    int zoom = static_cast<int>(GetPrivateProfileIntA("Settings", "CameraZoom", DefaultCameraZoom, iniPath.c_str()));
+    int fov = static_cast<int>(GetPrivateProfileIntA("Settings", "CameraFov", DefaultCameraFov, iniPath.c_str()));
+    config.cameraZoom = std::clamp(zoom, MinCameraZoom, MaxCameraZoom);
+    config.cameraFov = std::clamp(fov, MinCameraFov, MaxCameraFov);
     char colors[512];
     GetPrivateProfileStringA("Settings", "DamageColors", DefaultDamageColors, colors, sizeof(colors), iniPath.c_str());
     config.damageColors = ParseTiers(colors);

@@ -52,6 +52,8 @@ public static class PatchIds
     public const string GroundTargets = "GroundTargets";
     public const string CursorOptimizations = "CursorOptimizations";
     public const string InteractKey = "InteractKey";
+    public const string CameraZoom = "CameraZoom";
+    public const string CameraFov = "CameraFov";
 }
 
 // Patches are planned and applied in this order.
@@ -150,6 +152,18 @@ public static class PatchCatalog
                 new(0x1F40,
                     "6B 65 72 6E 65 6C 33 32 2E 64 6C 6C 00 00 00 00 4C 6F 61 64 4C 69 62 72 61 72 79 45 78 41 00"),
             ]),
+        new(PatchIds.CameraZoom, "Camera Zoom", PatchGroup.Visuals,
+            "Set how far the camera can zoom out",
+            "Replaces the game's camera zoom limit (30 yards on its slider, 50 at most) with the distance set here. The "
+                + "game's Max Camera Distance slider (Interface, Camera) then goes from half this distance to all of it. Only "
+                + "works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
+        new(PatchIds.CameraFov, "Field of View", PatchGroup.Visuals,
+            "A wider (or narrower) camera view",
+            "Sets how wide the camera sees; the game's own is 90 degrees. Also adds a cameraFov setting to try angles in "
+                + "game: /console cameraFov 110 changes it at once, until the game restarts. Only works with patches loaded in "
+                + "memory.",
+            true, [], [], MemoryOnly: true),
         new(PatchIds.GraphicsLimits, "Graphics Limits", PatchGroup.Visuals,
             "Higher limits on the video settings sliders (view distance, ground clutter and more)",
             "Raises the view distance, horizon, object detail and ground clutter limits, and the video menu sliders to match.",

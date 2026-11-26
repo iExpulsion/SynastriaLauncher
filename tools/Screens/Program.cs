@@ -263,6 +263,8 @@ var items = model.Patches.Groups.SelectMany(g => g.Items).ToList();
 items.First(i => i.HasDistance).IsExpanded = true;
 items.First(i => i.HasColors).IsExpanded = true;
 items.First(i => i.HasSpacing).IsExpanded = true;
+items.First(i => i.HasZoom).IsExpanded = true;
+items.First(i => i.HasFov).IsExpanded = true;
 items.First(i => i.Patch.Id == "NoMailDelay").IsOn = false;
 model.Patches.Distance = 75;
 Shot("patches-pending");

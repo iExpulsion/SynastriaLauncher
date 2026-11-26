@@ -19,9 +19,11 @@ public sealed partial class PatchItemViewModel(PatchDefinition patch, PatchesVie
     public bool HasSpacing => Patch.Id == PatchIds.NameplateStack;
     public bool HasColors => Patch.Id == PatchIds.DamageColors;
     public bool HasFolder => Patch.Id == PatchIds.DllLoader;
+    public bool HasZoom => Patch.Id == PatchIds.CameraZoom;
+    public bool HasFov => Patch.Id == PatchIds.CameraFov;
     public PatchesViewModel Owner { get; } = owner;
 
-    public bool HasSettings => HasDistance || HasSpacing || HasColors || HasFolder;
+    public bool HasSettings => HasDistance || HasSpacing || HasColors || HasFolder || HasZoom || HasFov;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel), nameof(IsAvailable), nameof(IsGood), nameof(IsPartial), nameof(IsBad), nameof(ShowStatus))]
@@ -80,6 +82,8 @@ public sealed partial class PatchItemViewModel(PatchDefinition patch, PatchesVie
         PatchIds.NameplateStack => $"{Owner.Spacing:0}% Spacing",
         PatchIds.DamageColors => Owner.ColorTiers.Count == 1 ? "1 Color Tier" : $"{Owner.ColorTiers.Count} Color Tiers",
         PatchIds.DllLoader => Owner.DllFolderText.Trim() + "\\",
+        PatchIds.CameraZoom => $"{Owner.Zoom:0} Yards",
+        PatchIds.CameraFov => $"{Owner.Fov:0}°",
         _ => "",
     };
 
@@ -143,6 +147,14 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
     public partial double Spacing { get; set; } = PatchSettings.DefaultStackSpacing;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ZoomLabel))]
+    public partial double Zoom { get; set; } = PatchSettings.DefaultCameraZoom;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FovLabel))]
+    public partial double Fov { get; set; } = PatchSettings.DefaultCameraFov;
+
+    [ObservableProperty]
     public partial string DllFolderText { get; set; } = DllFolder.Default;
 
     [ObservableProperty]
@@ -163,12 +175,19 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
 
     public string DistanceLabel => $"{Distance:0} yards (recommended {PatchSettings.DefaultNameplateDistance}; the game's own is 41)";
     public string SpacingLabel => $"{Spacing:0}% of a nameplate's height between stacked plates (recommended {PatchSettings.DefaultStackSpacing})";
+    public string ZoomLabel => $"{Zoom:0} yards zoom limit (the game's own is 30 on its slider, 50 with /console)";
+    public string FovLabel => $"{Fov:0} degrees (the game's own is {PatchSettings.DefaultCameraFov})";
+    public string FovCommandHint => "To try angles while playing, type /console cameraFov 110 in chat (any angle from "
+        + $"{PatchSettings.MinCameraFov} to {PatchSettings.MaxCameraFov}). It changes at once and lasts until the game restarts, "
+        + "which goes back to the angle set here.";
     public bool CanAddTier => ColorTiers.Count < DamageColors.MaxTiers;
 
     private IEnumerable<PatchItemViewModel> Items => Groups.SelectMany(g => g.Items);
 
     partial void OnDistanceChanged(double value) => UpdateSummary();
     partial void OnSpacingChanged(double value) => UpdateSummary();
+    partial void OnZoomChanged(double value) => UpdateSummary();
+    partial void OnFovChanged(double value) => UpdateSummary();
     partial void OnDllFolderTextChanged(string value) => UpdateSummary();
 
     // An exe still patched the old way, an older DLL Loader, or a missing or outdated SynastriaLauncher.dll: Apply
@@ -211,7 +230,8 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
         var exeSettings = ExePatcher.ReadSettings(bytes);
         _loaded = config is null
             ? exeSettings
-            : new CurrentSettings(config.NameplateDistance, config.StackSpacing, config.DamageColors, exeSettings.DllFolder);
+            : new CurrentSettings(config.NameplateDistance, config.StackSpacing, config.DamageColors, exeSettings.DllFolder,
+                config.CameraZoom, config.CameraFov);
         var items = PatchCatalog.All.Where(p => !p.Hidden).Select(p =>
         {
             var fits = p.MemoryOnly || ExePatcher.Plan(baseBytes, p, PatchSettings.Keep).Status != PatchStatus.Unavailable;
@@ -255,6 +275,8 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
         Distance = settings.NameplateDistance is { } d && d != 41 ? d : PatchSettings.DefaultNameplateDistance;
         Spacing = settings.StackSpacing ?? PatchSettings.DefaultStackSpacing;
         DllFolderText = settings.DllFolder ?? DllFolder.Default;
+        Zoom = settings.CameraZoom ?? PatchSettings.DefaultCameraZoom;
+        Fov = settings.CameraFov ?? PatchSettings.DefaultCameraFov;
         ColorTiers.Clear();
         foreach (var tier in (settings.DamageColors ?? DamageColors.Default).OrderBy(t => t.Amount))
         {
@@ -280,6 +302,8 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
             IsOn(PatchIds.NameplateStack) && (int)Spacing != _loaded.StackSpacing,
             IsOn(PatchIds.DamageColors) && tierErrors.Count == 0 && !tiers.SequenceEqual(_loaded.DamageColors ?? []),
             IsOn(PatchIds.DllLoader) && folder is not null && folder != _loaded.DllFolder,
+            IsOn(PatchIds.CameraZoom) && (int)Zoom != (_loaded.CameraZoom ?? PatchSettings.DefaultCameraZoom),
+            IsOn(PatchIds.CameraFov) && (int)Fov != (_loaded.CameraFov ?? PatchSettings.DefaultCameraFov),
         }.Count(c => c);
         var parts = new List<string>();
         if (NeedsUpdate) parts.Add("Update How Patches Load");
@@ -335,7 +359,7 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
             item.IsOn = PatchCatalog.RecommendedSetup.Contains(item.Patch.Id);
         }
         ResetSettings(new CurrentSettings(PatchSettings.DefaultNameplateDistance, PatchSettings.DefaultStackSpacing,
-            DamageColors.Default, DllFolder.Default));
+            DamageColors.Default, DllFolder.Default, PatchSettings.DefaultCameraZoom, PatchSettings.DefaultCameraFov));
         UpdateSummary();
     }
 
@@ -350,7 +374,7 @@ public sealed partial class PatchesViewModel(MainViewModel main) : ObservableObj
         var tiers = ParseTiers(out _);
         var folder = DllFolder.Normalize(DllFolderText);
         var config = new PatcherConfig(on.Where(PatchCatalog.InMemory).ToList(), (int)Distance, (int)Spacing,
-            tiers.Count > 0 ? tiers : DamageColors.Default);
+            tiers.Count > 0 ? tiers : DamageColors.Default, (int)Zoom, (int)Fov);
         StateResult? result = null;
         await main.RunGameWriteAsync("apply the patches", () =>
         {

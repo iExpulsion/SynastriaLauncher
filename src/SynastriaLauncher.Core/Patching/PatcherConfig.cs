@@ -22,7 +22,9 @@ public sealed record PatcherConfig(
     IReadOnlyList<string> On,
     int NameplateDistance,
     int StackSpacing,
-    IReadOnlyList<DamageColorTier> DamageColors)
+    IReadOnlyList<DamageColorTier> DamageColors,
+    int CameraZoom = PatchSettings.DefaultCameraZoom,
+    int CameraFov = PatchSettings.DefaultCameraFov)
 {
     public const string DllName = "SynastriaLauncher.dll";
     public const string IniName = "SynastriaLauncher.ini";
@@ -60,6 +62,8 @@ public sealed record PatcherConfig(
         text.Append($"NameplateDistance={NameplateDistance}\n");
         text.Append($"StackSpacing={StackSpacing}\n");
         text.Append($"DamageColors={FormatTiers(DamageColors)}\n");
+        text.Append($"CameraZoom={CameraZoom}\n");
+        text.Append($"CameraFov={CameraFov}\n");
         return text.ToString();
     }
 
@@ -79,7 +83,9 @@ public sealed record PatcherConfig(
                 on,
                 Number(settings, "NameplateDistance", PatchSettings.DefaultNameplateDistance),
                 Number(settings, "StackSpacing", PatchSettings.DefaultStackSpacing),
-                ParseTiers(settings.GetValueOrDefault("DamageColors")) ?? Patching.DamageColors.Default);
+                ParseTiers(settings.GetValueOrDefault("DamageColors")) ?? Patching.DamageColors.Default,
+                Number(settings, "CameraZoom", PatchSettings.DefaultCameraZoom),
+                Number(settings, "CameraFov", PatchSettings.DefaultCameraFov));
         }
         return config;
     }

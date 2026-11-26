@@ -75,6 +75,10 @@ public sealed class MemoryPatcherTests
             defaults["NameplateDistance"].Select(Number));
         Assert.Equal([PatchSettings.DefaultStackSpacing, PatchSettings.MinStackSpacing, PatchSettings.MaxStackSpacing],
             defaults["StackSpacing"].Select(Number));
+        Assert.Equal([PatchSettings.DefaultCameraZoom, PatchSettings.MinCameraZoom, PatchSettings.MaxCameraZoom],
+            defaults["CameraZoom"].Select(Number));
+        Assert.Equal([PatchSettings.DefaultCameraFov, PatchSettings.MinCameraFov, PatchSettings.MaxCameraFov],
+            defaults["CameraFov"].Select(Number));
         Assert.Equal(PatcherConfig.FormatTiers(DamageColors.Default), defaults["DamageColors"][0]);
         Assert.Equal(DamageColors.MaxTiers, Number(defaults["DamageColors"][1]));
     }
@@ -249,6 +253,38 @@ public sealed class MemoryPatcherTests
         Assert.Equal(0xE8, image[bindings]);
     }
 
+    // Camera Zoom and Field of View, which exist only in memory, change just the camera's 50-yard cap, its
+    // distance factor's multiply, the angle the world camera is created with, and the call that registers the camera
+    // settings, with or without the DLL Loader's patch section.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CameraPatchesChangeOnlyTheirSites(bool withSection)
+    {
+        var original = TestExe.OriginalBytes();
+        var host = TestExe.PatcherHost();
+        var baseExe = withSection ? ExePatcher.Apply(original, Base, new PatchSettings(DllFolder: "DLLs")).Bytes : original;
+        var config = new PatcherConfig([PatchIds.CameraZoom, PatchIds.CameraFov], 60, 100, DamageColors.Default, 80, 110);
+
+        var (image, run) = RunHost(host, baseExe, config);
+
+        Assert.Equal(PatcherOutcome.Applied, run.Patches[PatchIds.CameraZoom].Outcome);
+        Assert.Equal(PatcherOutcome.Applied, run.Patches[PatchIds.CameraFov].Outcome);
+        var mapped = TestExe.MapImage(baseExe);
+        int Site(string hex, int offset) => Bytes.FindAll(mapped, Bytes.FromHex(hex)).Single() + offset;
+        (int From, int Length)[] sites =
+        [
+            (Site("00 00 00 3F 00 00 48 42 00 00 00 00", 4), 4),
+            (Site("A1 88 49 C2 00 D9 40 2C 8B 0D 8C 49 C2 00 D8 49 2C", 8), 9),
+            (Site("D9 05 88 8D 9E 00 56 57 83 EC 0C D9 5C 24 08 8B F1", 2), 4),
+            (Site("83 C4 48 E8 BE EE 0D 00 6A 00 6A 00", 4), 4),
+        ];
+        var changed = Enumerable.Range(0, mapped.Length).Where(i => mapped[i] != image[i]).ToList();
+        Assert.NotEmpty(changed);
+        Assert.All(changed, i => Assert.True(sites.Any(s => i >= s.From && i < s.From + s.Length), $"byte {i:X} changed"));
+        Assert.Equal(80f, BitConverter.ToSingle(image, sites[0].From));
+    }
+
     // The DLL's own unit tests (each patch's logic, the assembly shims, and every site on the real exe when one is
     // given) all pass.
     [Fact]
@@ -271,12 +307,14 @@ public sealed class MemoryPatcherTests
     [Fact]
     public void ConfigRoundTrips()
     {
-        var config = new PatcherConfig([PatchIds.NoMailDelay, PatchIds.DamageColors], 75, 120, DamageColors.Parse("100K=00FF00,2.5M=FF0000"));
+        var config = new PatcherConfig([PatchIds.NoMailDelay, PatchIds.DamageColors], 75, 120, DamageColors.Parse("100K=00FF00,2.5M=FF0000"), 80, 115);
         var text = config.ToIni();
         var read = PatcherConfig.FromIni(text)!;
         Assert.Equal(config.On.Order(), read.On.Order());
         Assert.Equal(75, read.NameplateDistance);
         Assert.Equal(120, read.StackSpacing);
+        Assert.Equal(80, read.CameraZoom);
+        Assert.Equal(115, read.CameraFov);
         Assert.Equal(config.DamageColors, read.DamageColors);
         Assert.DoesNotContain(PatchIds.DllLoader, text);
         Assert.DoesNotContain(PatchIds.LargeAddressAware, text);

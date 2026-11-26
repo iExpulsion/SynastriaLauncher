@@ -142,6 +142,8 @@ const std::vector<Patch>& Patches()
         NoMailDelayPatch(),
         InteractKeyPatch(),
         CursorOptimizationsPatch(),
+        CameraZoomPatch(),
+        CameraFovPatch(),
         GraphicsLimitsPatch(),
         NoZoomFadePatch(),
         HdPortraitsPatch(),

@@ -69,3 +69,5 @@ Patch DamageColorsPatch();
 Patch GroundTargetsPatch();
 Patch CursorOptimizationsPatch();
 Patch InteractKeyPatch();
+Patch CameraZoomPatch();
+Patch CameraFovPatch();

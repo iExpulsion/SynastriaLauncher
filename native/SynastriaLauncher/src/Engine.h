@@ -14,6 +14,8 @@ struct PatchConfig
     std::vector<std::string> on;
     int nameplateDistance = 0;
     int stackSpacing = 0;
+    int cameraZoom = 0;
+    int cameraFov = 0;
     std::vector<DamageTier> damageColors;
 };
 

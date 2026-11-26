@@ -24,6 +24,7 @@ add_library(patcher_engine STATIC
     src/GroundTargets.cpp
     src/CursorOptimizations.cpp
     src/InteractKey.cpp
+    src/Camera.cpp
     src/AutoLogin.cpp)
 
 string(REPLACE "." "," LAUNCHER_VERSION_COMMAS "${LAUNCHER_VERSION}")
@@ -36,5 +37,5 @@ add_library(image_file STATIC src/ImageFile.cpp)
 add_executable(PatcherHost src/Host.cpp)
 target_link_libraries(PatcherHost PRIVATE patcher_engine image_file)
 
-add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp test/InteractTests.cpp test/AutoLoginTests.cpp)
+add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp test/InteractTests.cpp test/CameraTests.cpp test/AutoLoginTests.cpp)
 target_link_libraries(PatcherTests PRIVATE patcher_engine image_file)

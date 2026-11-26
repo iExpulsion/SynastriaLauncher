@@ -116,6 +116,17 @@
                                   <Slider Minimum="20" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Distance}" />
                                 </StackPanel>
 
+                                <StackPanel IsVisible="{Binding HasZoom}" Spacing="4">
+                                  <TextBlock Classes="muted" Text="{Binding Owner.ZoomLabel}" />
+                                  <Slider Minimum="30" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Zoom}" />
+                                </StackPanel>
+
+                                <StackPanel IsVisible="{Binding HasFov}" Spacing="4">
+                                  <TextBlock Classes="muted" Text="{Binding Owner.FovLabel}" />
+                                  <Slider Minimum="60" Maximum="150" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Fov}" />
+                                  <TextBlock Classes="muted" FontSize="12.5" TextWrapping="Wrap" Text="{Binding Owner.FovCommandHint}" />
+                                </StackPanel>
+
                                 <StackPanel IsVisible="{Binding HasSpacing}" Spacing="4">
                                   <TextBlock Classes="muted" Text="{Binding Owner.SpacingLabel}" />
                                   <Slider Minimum="40" Maximum="150" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Owner.Spacing}" />
