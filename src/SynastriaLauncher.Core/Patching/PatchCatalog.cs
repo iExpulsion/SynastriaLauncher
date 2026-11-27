@@ -47,6 +47,7 @@ public static class PatchIds
     public const string NameplateDistance = "NameplateDistance";
     public const string NameplateSort = "NameplateSort";
     public const string NameplateStack = "NameplateStack";
+    public const string NameplateUnits = "NameplateUnits";
     public const string ShortNumbers = "ShortNumbers";
     public const string DamageColors = "DamageColors";
     public const string GroundTargets = "GroundTargets";
@@ -279,6 +280,13 @@ public static class PatchCatalog
                 new(0xB00, "0A D7 23 3C 6F 12 03 3A"),
                 new(0xB10, "00 00 00 3F"),
             ]),
+        new(PatchIds.NameplateUnits, "Nameplate Unit Tokens", PatchGroup.Nameplates,
+            "Nameplate addons can read every nameplate, not just your target's",
+            "Gives nameplate addons what AwesomeWotLK gives them on other servers, so health, auras, cast bars and quest icons "
+                + "show on every nameplate instead of only your target, mouseover and focus. Adds the unit names nameplate1, "
+                + "nameplate2 and so on, C_NamePlate.GetNamePlates and C_NamePlate.GetNamePlateForUnit, and the NAME_PLATE "
+                + "events. Don't use it together with AwesomeWotLK. Only works with patches loaded in memory.",
+            true, [], [], MemoryOnly: true),
         new(PatchIds.ShortNumbers, "Short Combat Numbers", PatchGroup.CombatText,
             "Big damage and healing numbers shortened (12.3K, 1.2M)",
             "Shows damage and healing numbers over targets from 10,000 up as 12.3K, 1.2M or 2B.",

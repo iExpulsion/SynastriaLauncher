@@ -156,4 +156,45 @@ namespace Client
     // whether both of these are nonzero: the cursor is shown, and the hardware cursor is in use.
     constexpr uint32_t GxCursorShown = 0x2950;
     constexpr uint32_t GxCursorHardware = 0x2954;
+
+    // Unit tokens. Every unit function, tooltip SetUnit and InteractUnit turn a token into a GUID through one resolver,
+    // bool (const char* token, uint64* guid, bool emptyIsTarget). It reads the base token, then hands the rest
+    // ("target", "pet" chains) to the suffix resolver, bool (const char* rest, uint64* guid, CGObject* player). A
+    // valid token with no unit gives true and the GUID -2.
+    constexpr uintptr_t ResolveUnitToken = 0x60ABF0;
+    constexpr size_t ResolveUnitTokenPrologue = 5;         // push ebp; mov ebp, esp; push ecx; push edi
+    constexpr uintptr_t ResolveTokenSuffix = 0x60AAA0;
+    constexpr uint64_t NoUnitGuid = 0xFFFFFFFFFFFFFFFEull;
+    constexpr uint32_t ObjectDescriptors = 0x8;            // the object's fields; its GUID comes first
+
+    // A unit's nameplate. AddNameplate runs each frame for every unit that shows one (taking a frame from the pool the
+    // first time); RemoveNameplate gives it back and hides it. Both are thiscall on the unit.
+    constexpr uintptr_t AddNameplate = 0x7256C0;           // (C3Vector* position, int), ret 8
+    constexpr uintptr_t RemoveNameplate = 0x725840;
+    constexpr size_t RemoveNameplatePrologue = 9;          // push esi; mov esi, ecx; mov eax, [esi+0xC38]
+
+    // FrameScript: Lua functions, frames as Lua objects, and events.
+    constexpr uintptr_t LuaState = 0xD3F78C;               // lua_State*
+    constexpr uintptr_t LuaCreateTable = 0x84E6E0;         // void lua_createtable(L, narr, nrec)
+    constexpr uintptr_t LuaPushString = 0x84E350;          // void lua_pushstring(L, const char*)
+    constexpr uintptr_t LuaPushCClosure = 0x84E400;        // void lua_pushcclosure(L, lua_CFunction, n)
+    constexpr uintptr_t LuaInsert = 0x84DCC0;              // void lua_insert(L, index)
+    constexpr uintptr_t LuaSetTable = 0x84E970;            // void lua_settable(L, index)
+    constexpr uintptr_t LuaRawSet = 0x84E8D0;              // void lua_rawset(L, index)
+    constexpr uintptr_t LuaRawGetI = 0x84E670;             // void lua_rawgeti(L, index, n)
+    constexpr int LuaRegistryIndex = -10000;
+    constexpr int LuaGlobalsIndex = -10002;
+    constexpr uint32_t ScriptObjectHasLua = 0x4;           // nonzero once the frame's Lua object exists
+    constexpr uint32_t ScriptObjectLuaRef = 0x8;           // its reference in the Lua registry
+    constexpr uintptr_t ScriptObjectCreateLua = 0x819880;  // void __thiscall CScriptObject::CreateLuaObject(int), called with 0
+    constexpr uintptr_t InitializeEvents = 0x81B5F0;       // void (const char** names, uint32 count); IDs are the indexes
+    constexpr uintptr_t StockEventNames = 0xC24EB0;
+    constexpr uint32_t StockEventCount = 722;
+    constexpr uintptr_t SignalEvent = 0x81B530;            // void (int id, const char* format, ...): %b %d %f %s %u only
+    constexpr uintptr_t DispatchEvent = 0x81AA00;          // void (int id, lua_State*, int values): the name and its arguments on the stack
+    constexpr uintptr_t EventObjects = 0xD3F7D8;           // event object*[count]
+    constexpr uint32_t EventName = 0x14;
+    constexpr uint32_t EventFlags = 0x20;                  // bit 0 set: suppressed; zero: no frame listens
+    constexpr uintptr_t EventDepth = 0xD413A0;             // events being dispatched
+    constexpr uintptr_t EventKeepTaint = 0xD413A4;         // nonzero: dispatch keeps the current taint
 }

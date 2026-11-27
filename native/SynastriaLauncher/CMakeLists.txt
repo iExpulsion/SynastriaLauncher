@@ -21,6 +21,7 @@ add_library(patcher_engine STATIC
     src/DamageColors.cpp
     src/NameplateSort.cpp
     src/NameplateStack.cpp
+    src/NameplateUnits.cpp
     src/GroundTargets.cpp
     src/CursorOptimizations.cpp
     src/InteractKey.cpp
@@ -37,5 +38,5 @@ add_library(image_file STATIC src/ImageFile.cpp)
 add_executable(PatcherHost src/Host.cpp)
 target_link_libraries(PatcherHost PRIVATE patcher_engine image_file)
 
-add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp test/InteractTests.cpp test/CameraTests.cpp test/AutoLoginTests.cpp)
+add_executable(PatcherTests test/NativeTests.cpp test/NameplateTests.cpp test/NameplateUnitTests.cpp test/VisualTests.cpp test/GroundTests.cpp test/CursorTests.cpp test/InteractTests.cpp test/CameraTests.cpp test/AutoLoginTests.cpp)
 target_link_libraries(PatcherTests PRIVATE patcher_engine image_file)

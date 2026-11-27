@@ -150,6 +150,7 @@ const std::vector<Patch>& Patches()
         NameplateDistancePatch(),
         NameplateSortPatch(),
         NameplateStackPatch(),
+        NameplateUnitsPatch(),
         ShortNumbersPatch(),
         DamageColorsPatch(),
         GroundTargetsPatch(),

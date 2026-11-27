@@ -18,6 +18,7 @@
 #include "../src/ImageFile.h"
 #include "../src/NameplateSort.h"
 #include "../src/NameplateStack.h"
+#include "../src/NameplateUnits.h"
 #include "../src/Patch.h"
 #include "../src/ShortNumbers.h"
 #include "../src/CursorOptimizations.h"
@@ -254,6 +255,9 @@ namespace
         uint8_t* loadBindings = originalAt("InteractKey/LoadFrameXmlBindings", 22);
         uint8_t* texture = originalAt("HdPortraits/CreateTexture", 3);
         uint8_t* cameraSettings = originalAt("CameraFov/RegisterCameraSettings", 3);
+        uint8_t* addNameplate = originalAt("NameplateUnits/AddNameplateCall", 7);
+        uint8_t* initializeEvents = originalAt("NameplateUnits/InitializeEvents", 10);
+        uint8_t* runOnUpdates = originalAt("NameplateUnits/RunOnUpdates", 6);
 
         PatchConfig config;
         for (const Patch& patch : Patches())
@@ -317,6 +321,9 @@ namespace
             { "CursorOptimizations/WindowSetCursor", 15, reinterpret_cast<const void*>(&WindowSetCursor) },
             { "InteractKey/LoadFrameXmlBindings", 22, reinterpret_cast<const void*>(&InteractKeyLoadBindings) },
             { "CameraFov/RegisterCameraSettings", 3, reinterpret_cast<const void*>(&CameraRegisterCvars) },
+            { "NameplateUnits/AddNameplateCall", 7, reinterpret_cast<const void*>(&NameplateAddNameplate) },
+            { "NameplateUnits/InitializeEvents", 10, reinterpret_cast<const void*>(&NameplateInitializeEvents) },
+            { "NameplateUnits/RunOnUpdates", 6, reinterpret_cast<const void*>(&NameplateFlushThenRunOnUpdates) },
         };
         for (const Expected& site : expected)
         {
@@ -345,6 +352,23 @@ namespace
             && interact + 5 + static_cast<int32_t>(Read32(interact + 1)) == reinterpret_cast<uint8_t*>(&InteractKeyInteractUnit)
             && interact[5] == 0x90 && interact[6] == 0x90 && g_interactUnitResume == interact + 7,
             "Interact Key: InteractUnit's entry jumps to the wrapper, which resumes the client's function after its prologue");
+        auto clientAddress = [&](uint8_t* p) { return p != nullptr ? reinterpret_cast<uintptr_t>(p) - reinterpret_cast<uintptr_t>(image) + 0x400000 : 0; };
+        uint8_t* resolver = at["NameplateUnits/ResolveUnitTokenEntry"];
+        Check(resolver != nullptr && clientAddress(resolver) == Client::ResolveUnitToken && resolver[0] == 0xE9
+            && resolver + 5 + static_cast<int32_t>(Read32(resolver + 1)) == reinterpret_cast<uint8_t*>(&NameplateResolveUnitToken)
+            && resolver[5] == 0xE8 && g_resolveUnitTokenResume == resolver + 5,
+            "Nameplate Units: the token resolver's entry jumps to the wrapper, which resumes after the 5-byte prologue");
+        uint8_t* remove = at["NameplateUnits/RemoveNameplateEntry"];
+        Check(remove != nullptr && clientAddress(remove) == Client::RemoveNameplate && remove[0] == 0xE9
+            && remove + 5 + static_cast<int32_t>(Read32(remove + 1)) == reinterpret_cast<uint8_t*>(&NameplateRemoveNameplate)
+            && remove[5] == 0x90 && remove[8] == 0x90 && g_removeNameplateResume == remove + 9,
+            "Nameplate Units: RemoveNameplate's entry jumps to the wrapper, which resumes after the 9-byte prologue");
+        Check(addNameplate != nullptr && clientAddress(addNameplate) == Client::AddNameplate && g_addNameplate == addNameplate,
+            "Nameplate Units hands on to AddNameplate");
+        Check(initializeEvents != nullptr && clientAddress(initializeEvents) == Client::InitializeEvents && g_initializeEvents == initializeEvents,
+            "Nameplate Units hands on to the client's event table setup");
+        Check(runOnUpdates != nullptr && clientAddress(runOnUpdates) == 0x495320 && g_runOnUpdates == runOnUpdates,
+            "Nameplate Units hands on to the frames' OnUpdate run");
         uint8_t* distance = at["NameplateDistance/SquaredDistance"];
         float squared = 0;
         if (distance != nullptr)
@@ -399,6 +423,7 @@ int main(int argc, char** argv)
     ShortNumberTests();
     DamageColorTests();
     NameplateTests();
+    NameplateUnitTests();
     VisualTests();
     GroundTests();
     CursorTests();

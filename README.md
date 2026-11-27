@@ -87,6 +87,7 @@ Improvements to the game client, each with its own switch:
 | Nameplate Distance | Nameplates show from farther away (you choose how far, up to 100 yards). |
 | Nameplate Sorting | Nearer nameplates draw over farther ones, with your target always on top. |
 | Nameplate Stacking | Nameplates move apart instead of piling on top of each other. |
+| Nameplate Unit Tokens | Nameplate addons can read every nameplate, not just your target's (see below). |
 | Interface Edit | Lets the game load modified interface files, which some mods need. |
 
 **Recommended Setup** switches on the everyday patches: No Auto AFK, No Mail Refresh Delay, Short Combat Numbers,
@@ -116,6 +117,13 @@ corpse or chest you haven't just opened, and it passes over corpses your skinnin
 for. In macros, use `/interact`, which takes the usual conditions: `/interact [@mouseover]`, or
 `/interact [mod:shift] target; nearest`. If you switch the patch off, the game forgets the key you set for it. This
 patch is Experimental too.
+
+**Nameplate Unit Tokens** gives nameplate addons the same nameplate API AwesomeWotLK adds on other servers. Each
+nameplate's unit gets a name addons can use (`nameplate1`, `nameplate2` and so on), and there's
+`C_NamePlate.GetNamePlates()`, `C_NamePlate.GetNamePlateForUnit(unit)` and the `NAME_PLATE_CREATED`,
+`NAME_PLATE_UNIT_ADDED` and `NAME_PLATE_UNIT_REMOVED` events. Addons that look for it, such as DragonUI, then show
+health, auras, cast bars and quest icons on every nameplate instead of only your target, mouseover and focus. Don't
+run it together with AwesomeWotLK. It's Experimental as well.
 
 ### Addons
 

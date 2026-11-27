@@ -64,6 +64,7 @@ Patch HdPortraitsPatch();
 Patch NameplateDistancePatch();
 Patch NameplateSortPatch();
 Patch NameplateStackPatch();
+Patch NameplateUnitsPatch();
 Patch ShortNumbersPatch();
 Patch DamageColorsPatch();
 Patch GroundTargetsPatch();

@@ -14,5 +14,6 @@ public sealed class PatchCatalogTests
         Assert.All(PatchCatalog.RecommendedSetup, id => Assert.Null(byId[id].Warning));
         Assert.DoesNotContain(PatchIds.GraphicsLimits, PatchCatalog.RecommendedSetup);
         Assert.DoesNotContain(PatchIds.GroundTargets, PatchCatalog.RecommendedSetup);
+        Assert.DoesNotContain(PatchIds.NameplateUnits, PatchCatalog.RecommendedSetup);
     }
 }

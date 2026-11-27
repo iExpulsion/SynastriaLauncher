@@ -253,6 +253,39 @@ public sealed class MemoryPatcherTests
         Assert.Equal(0xE8, image[bindings]);
     }
 
+    // Nameplate Unit Tokens, which exists only in memory, changes just the token resolver's 5-byte prologue and
+    // RemoveNameplate's 9-byte one (jumps to the DLL), and the calls to AddNameplate, the event table setup and the
+    // frames' OnUpdate run, with or without the DLL Loader's patch section.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NameplateUnitsChangesOnlyItsSites(bool withSection)
+    {
+        var original = TestExe.OriginalBytes();
+        var host = TestExe.PatcherHost();
+        var baseExe = withSection ? ExePatcher.Apply(original, Base, new PatchSettings(DllFolder: "DLLs")).Bytes : original;
+        var config = new PatcherConfig([PatchIds.NameplateUnits], 60, 100, DamageColors.Default);
+
+        var (image, run) = RunHost(host, baseExe, config);
+
+        Assert.Equal(PatcherOutcome.Applied, run.Patches[PatchIds.NameplateUnits].Outcome);
+        var mapped = TestExe.MapImage(baseExe);
+        int Site(string hex, int offset) => Bytes.FindAll(mapped, Bytes.FromHex(hex)).Single() + offset;
+        (int From, int Length)[] sites =
+        [
+            (Site("55 8B EC 51 57 E8 96 8B EC FF 68 A0 00 00 00 68 40 23 9F 00 6A 10", 0), 5),
+            (Site("57 8D 4D F4 51 8B CE E8 3E A3 FF FF", 8), 4),
+            (Site("56 8B F1 8B 86 38 0C 00 00 85 C0 74 3F 39 05 04 12 CA 00", 0), 9),
+            (Site("68 D2 02 00 00 68 B0 4E C2 00 E8 C6 0A 2F 00", 11), 4),
+            (Site("51 8B CE D9 1C 24 E8 F8 FA FF FF 8B CE 5E 5D E9", 7), 4),
+        ];
+        var changed = Enumerable.Range(0, mapped.Length).Where(i => mapped[i] != image[i]).ToList();
+        Assert.NotEmpty(changed);
+        Assert.All(changed, i => Assert.True(sites.Any(s => i >= s.From && i < s.From + s.Length), $"byte {i:X} changed"));
+        Assert.Equal(0xE9, image[sites[0].From]);
+        Assert.Equal(0xE9, image[sites[2].From]);
+    }
+
     // Camera Zoom and Field of View, which exist only in memory, change just the camera's 50-yard cap, its
     // distance factor's multiply, the angle the world camera is created with, and the call that registers the camera
     // settings, with or without the DLL Loader's patch section.
