@@ -420,6 +420,7 @@ namespace
 
 int main(int argc, char** argv)
 {
+    setvbuf(stdout, nullptr, _IONBF, 0);
     ShortNumberTests();
     DamageColorTests();
     NameplateTests();

@@ -59,19 +59,13 @@ void PlateSlots::Removed(void* frame)
     }
 }
 
-void PlateSlots::Reannounce()
+void PlateSlots::Clear()
 {
     for (Slot& slot : m_slots)
     {
-        if (slot.frame != nullptr)
-        {
-            slot.created = true;
-            slot.removed = false;
-            slot.announced = false;
-            slot.added = slot.guid != 0;
-            m_pending = true;
-        }
+        slot = Slot();
     }
+    m_pending = false;
 }
 
 void PlateSlots::Flush(const PlateEventSink& sink)
@@ -187,6 +181,7 @@ namespace
     using LuaPushNilFn = void(__cdecl*)(void* L);
     using LuaTypeFn = int(__cdecl*)(void* L, int index);
     using LuaToLStringFn = const char*(__cdecl*)(void* L, int index, size_t* length);
+    using LuaToUserdataFn = void*(__cdecl*)(void* L, int index);
 
     template <typename T>
     T& At(uintptr_t address)
@@ -207,13 +202,51 @@ namespace
         return At<void*>(Client::LuaState);
     }
 
+    // Whether the frame's registry reference is its Lua object in this Lua state: a table holding the frame at key 0.
+    bool HoldsFrame(void* L, void* frame)
+    {
+        auto rawGetI = reinterpret_cast<LuaRawGetIFn>(Client::LuaRawGetI);
+        auto setTop = reinterpret_cast<LuaIndexFn>(Client::LuaSetTop);
+        rawGetI(L, Client::LuaRegistryIndex, Field<int>(frame, Client::ScriptObjectLuaRef));
+        bool table = reinterpret_cast<LuaTypeFn>(Client::LuaType)(L, -1) == Client::LuaTypeTable;
+        if (table)
+        {
+            rawGetI(L, -1, 0);
+        }
+        bool holds = table && reinterpret_cast<LuaToUserdataFn>(Client::LuaToUserdata)(L, -1) == frame;
+        setTop(L, table ? -3 : -2);
+        return holds;
+    }
+
+    // The frame's Lua object, made as the client makes it the first time; a reference left over from before a UI
+    // reload is dropped and the object made again.
     void PushFrame(void* L, void* frame)
     {
-        if (Field<uint32_t>(frame, Client::ScriptObjectHasLua) == 0)
+        uint32_t& count = *reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(frame) + Client::ScriptObjectHasLua);
+        if (count != 0 && !HoldsFrame(L, frame))
+        {
+            count = 0;
+        }
+        if (count == 0)
         {
             reinterpret_cast<CreateLuaObjectFn>(Client::ScriptObjectCreateLua)(frame, 0);
         }
         reinterpret_cast<LuaRawGetIFn>(Client::LuaRawGetI)(L, Client::LuaRegistryIndex, Field<int>(frame, Client::ScriptObjectLuaRef));
+    }
+
+    // The client's live event table is the one with the plate events: the same size, and their names at their IDs.
+    // The glue screens set up a table of their own, without them.
+    bool PlateEventsLive()
+    {
+        auto* objects = At<uint8_t**>(Client::EventObjects);
+        bool live = g_plateEventsAdded && objects != nullptr
+            && At<uint32_t>(Client::EventCount) == Client::StockEventCount + AddedEventCount;
+        for (uint32_t i = 0; i < AddedEventCount && live; ++i)
+        {
+            uint8_t* event = objects[g_firstPlateEvent + i];
+            live = event != nullptr && Field<const char*>(event, Client::EventName) == AddedEventNames[i];
+        }
+        return live;
     }
 
     // What SignalEvent does, for an argument its format can't carry: the event's name and the frame go on the stack
@@ -261,7 +294,7 @@ namespace
 
     void __cdecl FlushPlateEvents()
     {
-        if (g_plateEventsAdded && g_plateSlots.Pending() && Lua() != nullptr)
+        if (g_plateEventsAdded && g_plateSlots.Pending() && Lua() != nullptr && PlateEventsLive())
         {
             g_plateSlots.Flush(PlateEventSink { nullptr, &FirePlateEvent });
         }
@@ -462,6 +495,7 @@ extern "C" __declspec(naked) void NameplateFlushThenRunOnUpdates()
 void __cdecl NameplateInitializeEvents(const char** names, uint32_t count)
 {
     bool stock = names == reinterpret_cast<const char**>(Client::StockEventNames) && count == Client::StockEventCount;
+    g_plateSlots.Clear();
     if (stock)
     {
         memcpy(g_eventNames, names, count * sizeof(const char*));
@@ -469,7 +503,6 @@ void __cdecl NameplateInitializeEvents(const char** names, uint32_t count)
         g_firstPlateEvent = static_cast<int>(count);
         reinterpret_cast<InitializeEventsFn>(g_initializeEvents)(g_eventNames, count + AddedEventCount);
         CreateNamePlateTable(Lua());
-        g_plateSlots.Reannounce();
     }
     else
     {

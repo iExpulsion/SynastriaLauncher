@@ -182,9 +182,14 @@ namespace Client
     constexpr uintptr_t LuaSetTable = 0x84E970;            // void lua_settable(L, index)
     constexpr uintptr_t LuaRawSet = 0x84E8D0;              // void lua_rawset(L, index)
     constexpr uintptr_t LuaRawGetI = 0x84E670;             // void lua_rawgeti(L, index, n)
+    constexpr uintptr_t LuaToUserdata = 0x84E1C0;          // void* lua_touserdata(L, index)
+    constexpr int LuaTypeTable = 5;
     constexpr int LuaRegistryIndex = -10000;
     constexpr int LuaGlobalsIndex = -10002;
-    constexpr uint32_t ScriptObjectHasLua = 0x4;           // nonzero once the frame's Lua object exists
+    // A frame's Lua object is a table holding the frame as light userdata at key 0. The count and reference survive a
+    // UI reload, which closes the Lua state without resetting them, so plate frames (kept in the client's pool across
+    // reloads) then point into a registry that no longer exists.
+    constexpr uint32_t ScriptObjectHasLua = 0x4;           // count of Lua references; nonzero once the object exists
     constexpr uint32_t ScriptObjectLuaRef = 0x8;           // its reference in the Lua registry
     constexpr uintptr_t ScriptObjectCreateLua = 0x819880;  // void __thiscall CScriptObject::CreateLuaObject(int), called with 0
     constexpr uintptr_t InitializeEvents = 0x81B5F0;       // void (const char** names, uint32 count); IDs are the indexes
@@ -192,6 +197,7 @@ namespace Client
     constexpr uint32_t StockEventCount = 722;
     constexpr uintptr_t SignalEvent = 0x81B530;            // void (int id, const char* format, ...): %b %d %f %s %u only
     constexpr uintptr_t DispatchEvent = 0x81AA00;          // void (int id, lua_State*, int values): the name and its arguments on the stack
+    constexpr uintptr_t EventCount = 0xD3F7D4;             // the live table's size: the glue screens set up a table of their own
     constexpr uintptr_t EventObjects = 0xD3F7D8;           // event object*[count]
     constexpr uint32_t EventName = 0x14;
     constexpr uint32_t EventFlags = 0x20;                  // bit 0 set: suppressed; zero: no frame listens

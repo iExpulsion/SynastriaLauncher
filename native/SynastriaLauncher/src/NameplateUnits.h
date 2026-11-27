@@ -40,8 +40,10 @@ public:
     // The plate is being given back. UnitRemoved is queued only for a unit that was announced.
     void Removed(void* frame);
 
-    // A UI reload: the Lua side starts empty, so every known frame is created and every unit added again.
-    void Reannounce();
+    // A UI load: forgets every frame and unit, with nothing queued. The client drops all plates when the UI unloads
+    // without calling RemoveNameplate and may free its pooled frames when leaving the world, so nothing from before is
+    // kept; the plates shown on the next frame come back as new.
+    void Clear();
 
     // Fires what's queued: per slot, UnitRemoved, then Created, then UnitAdded.
     void Flush(const PlateEventSink& sink);

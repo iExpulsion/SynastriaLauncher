@@ -1,5 +1,5 @@
 // Unit tests for Nameplate Unit Tokens: "nameplate<N>" parsing, the token names, the slot table's events (a new
-// frame, a unit shown, a plate given back, a frame reused for another unit, changes inside one frame, a reload), and
+// frame, a unit shown, a plate given back, a frame reused for another unit, changes inside one frame, a UI load), and
 // the assembly shims around AddNameplate, RemoveNameplate, the OnUpdate run and the token resolver.
 #include <cstring>
 #include <string>
@@ -301,17 +301,17 @@ void NameplateUnitTests()
     slots.Removed(Frame(1));
     Check(Flush(slots).size() == 1, "plates: a second removal fires nothing more");
 
-    // A reload announces every frame again and every unit still shown.
-    slots.Reannounce();
-    std::vector<Fired> reload = Flush(slots);
-    int created = 0;
-    int added = 0;
-    for (const Fired& fired : reload)
-    {
-        created += fired.event == PlateEvent::Created ? 1 : 0;
-        added += fired.event == PlateEvent::UnitAdded ? 1 : 0;
-    }
-    Check(created == 3 && added == 1 && slots.Unit(2) == 505, "plates: a reload creates every frame again and adds the units shown");
+    // A UI load forgets every frame and unit and drops anything queued.
+    slots.Removed(Frame(2));
+    slots.Clear();
+    Check(Flush(slots).empty() && slots.Unit(2) == 0 && slots.Frame(1) == nullptr && slots.FrameOf(505) == nullptr && !slots.Pending(),
+        "plates: a UI load forgets every frame, unit and queued event");
+
+    // After it, a plate shown again is a new frame in slot 1: created, then added.
+    slots.Shown(Frame(2), 505);
+    std::vector<Fired> again = Flush(slots);
+    Check(again.size() == 2 && Is(again[0], PlateEvent::Created, 1) && Is(again[1], PlateEvent::UnitAdded, 1) && slots.Unit(1) == 505,
+        "plates: after a UI load, plates shown again are created and added anew");
 
     // Past 64 frames, plates get no slot and nothing breaks.
     PlateSlots full;
