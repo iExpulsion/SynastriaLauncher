@@ -1,5 +1,5 @@
 {
-  "revision": 9,
+  "revision": 10,
   "minLauncher": "1.0.10",
   "addons": [
     {
@@ -54,6 +54,14 @@
       "wotlk": true
     },
     {
+      "repo": "NeticSoul/DragonUI",
+      "name": "DragonUI",
+      "folders": ["DragonUI", "DragonUI_Options"],
+      "toc": "DragonUI/DragonUI.toc",
+      "description": "A retail-style look for the whole interface: action bars, unit frames, minimap, map and more, each part switchable.",
+      "wotlk": true
+    },
+    {
       "repo": "NoM0Re/UnifiedProfileManager-WotLK",
       "name": "Unified Profile Manager",
       "folders": ["UnifiedProfileManager"],
@@ -78,6 +86,14 @@
       "toc": "Soulstone.toc",
       "description": "Moves your action bars (both specs), character macros, keybindings and talents to another character or realm.",
       "wotlk": true
+    },
+    {
+      "repo": "ciftcieren/DragonUI_Synastria",
+      "name": "DragonUI Synastria",
+      "folders": ["DragonUI_Synastria"],
+      "toc": "DragonUI_Synastria/DragonUI_Synastria.toc",
+      "description": "Fits Synastria's own windows, attune bars and perks, and Scoots' addons, into DragonUI's look.",
+      "requires": ["NeticSoul/DragonUI"]
     },
     {
       "repo": "iExpulsion/AddonTraffic",
