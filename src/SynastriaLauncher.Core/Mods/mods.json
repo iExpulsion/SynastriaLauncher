@@ -1,5 +1,5 @@
 {
-  "revision": 18,
+  "revision": 19,
   "minLauncher": "0.1.0",
   "mods": [
     {
@@ -9,11 +9,11 @@
       "details": "Needs a graphics card with Vulkan support. If the game won't start or shows a black screen, switch it off.",
       "author": "Raz0r1337 (fork of DXVK)",
       "homepage": "https://github.com/Raz0r1337/DXVK",
-      "version": "v3.1.1",
+      "version": "v3.2",
       "requires": [ "DllLoader" ],
       "files": [
-        { "path": "{dlls}/d3d9.dll", "url": "https://github.com/Raz0r1337/DXVK/releases/download/v3.1.1/DXVK-WoW-x86.zip", "entry": "d3d9.dll",
-          "sha256": "78de4c3907ee7cb3dd62aea3fc16fc48b0dc0ca5acad823daee728485e125e71" },
+        { "path": "{dlls}/d3d9.dll", "url": "https://github.com/Raz0r1337/DXVK/releases/download/v3.2/DXVK-WoW-x86.zip", "entry": "d3d9.dll",
+          "sha256": "f82d4e8f48ecf0d23c4bb2b989cdd1f5136476f596b21ed43e146f9a92be9b9b" },
         {
           "path": "WTF/dxvk.conf", "config": true,
           "presets": [
